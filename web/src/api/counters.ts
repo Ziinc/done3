@@ -10,7 +10,9 @@ export interface Counter {
   updated_at: string;
 }
 export const listCounters = async () => {
-  const { data } = await client.from("counters").select();
+  const { data } = await client
+    .from("view_counters")
+    .select()
   return data as Counter[];
 };
 
@@ -31,4 +33,6 @@ export const deleteCounter = async (id: number) => {
   await client.from("counters").delete().eq("id", id);
 };
 
-export const increaseCounter = async (id: number) => {};
+export const increaseCounter = async (counter_id: number) => {
+  await client.from("counter_events").insert({ counter_id });
+};
