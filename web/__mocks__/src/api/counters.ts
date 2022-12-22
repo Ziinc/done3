@@ -1,5 +1,6 @@
 import { vi } from "vitest";
-export const listCounters = () => vi.fn();
-export const createCounters = (_attrs: any) => vi.fn();
-export const updateCounter = (_attrs: any) => vi.fn();
-export const deleteCounter = (_attrs: any) => vi.fn();
+export const listCounters = vi.fn().mockResolvedValue([]);
+export const createCounters = vi.fn();
+export const updateCounter = vi.fn();
+export const deleteCounter = vi.fn();
+export const increaseCounter = vi.fn();

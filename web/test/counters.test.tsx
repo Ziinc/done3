@@ -2,21 +2,21 @@ import {
   expect,
   test,
   Mock,
+  vitest,
 } from "vitest";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import React from "react";
 import { AuthedApp } from "../src/App";
 
 import {
   createCounter,
   deleteCounter,
-  increaseCounter,
   listCounters,
   updateCounter,
 } from "../src/api/counters";
 import userEvent from "@testing-library/user-event";
-
 test("create counter", async () => {
+  (listCounters as Mock).mockResolvedValue([]);
   render(<AuthedApp />);
   const btn = await screen.findByText("New counter");
   await userEvent.click(btn);
