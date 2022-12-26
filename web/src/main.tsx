@@ -7,9 +7,7 @@ import { Auth } from "@supabase/auth-ui-react";
 import { client } from "./utils";
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
-  <React.StrictMode>
-    <Auth.UserContextProvider supabaseClient={client}>
-      <App />
-    </Auth.UserContextProvider>
-  </React.StrictMode>
+  <Auth.UserContextProvider supabaseClient={client}>
+    <App />
+  </Auth.UserContextProvider>
 );

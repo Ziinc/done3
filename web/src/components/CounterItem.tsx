@@ -1,4 +1,5 @@
 import { Button, Dropdown } from "antd";
+import { MoreVerticalIcon, Plus } from "lucide-react";
 import { Counter } from "../api/counters";
 
 interface Props {
@@ -17,16 +18,26 @@ const CounterItem: React.FC<Props> = ({
   onIncrease,
   counter,
 }) => (
-  <WrapperTag className={[className, "rounded"].join(" ")}>
-    <Button
-      type="primary"
-      title={`Increase '${counter.name}' by 1`}
-      onClick={onIncrease}
-    >
-      +
-    </Button>
-    <span>{counter.name}</span>
-    <span>{counter.count}</span>
+  <WrapperTag
+    className={[
+      className,
+      "rounded-lg p-2 bg-stone-100",
+      "flex flex-row gap-2 items-center justify-between",
+    ].join(" ")}
+  >
+    <div>
+      <Button
+        type="primary"
+        shape="round"
+        title={`Increase '${counter.name}' by 1`}
+        onClick={onIncrease}
+        icon={<Plus size={16} strokeWidth={3}/>}
+        className="flex flex-row items-center gap-1"
+      >
+        {counter.count}
+      </Button>
+    </div>
+    <span className="text-lg">{counter.name}</span>
     <Dropdown
       menu={{
         items: [
@@ -43,7 +54,11 @@ const CounterItem: React.FC<Props> = ({
         ],
       }}
     >
-      <Button title={`More options for '${counter.name}'`}>...</Button>
+      <Button
+        type="ghost"
+        icon={<MoreVerticalIcon size={12} />}
+        title={`More options for '${counter.name}'`}
+      ></Button>
     </Dropdown>
   </WrapperTag>
 );

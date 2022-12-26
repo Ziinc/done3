@@ -1,9 +1,4 @@
-import {
-  expect,
-  test,
-  Mock,
-  vitest,
-} from "vitest";
+import { expect, test, Mock, vitest, describe, beforeAll } from "vitest";
 import { render, screen } from "@testing-library/react";
 import React from "react";
 import { AuthedApp } from "../src/App";
@@ -11,10 +6,34 @@ import { AuthedApp } from "../src/App";
 import {
   createCounter,
   deleteCounter,
+  rearrangeCounters,
   listCounters,
   updateCounter,
 } from "../src/api/counters";
 import userEvent from "@testing-library/user-event";
+import { counterFixture } from "./helpers/fixtures";
+
+describe("api & context", () => {
+  test("rearrangeCounters", () => {
+    (rearrangeCounters as Mock).mockRestore();
+    let counters = [0, 1, 2, 3].map((v) =>
+      counterFixture({ id: v, sort_index: v })
+    );
+    let newOrder = rearrangeCounters(counters, counters[2], 0);
+    expect(newOrder[0]).toMatchObject({ id: 2, sort_index: 0 });
+    expect(newOrder[1]).toMatchObject({ id: 0, sort_index: 1 });
+    expect(newOrder[2]).toMatchObject({ id: 1, sort_index: 2 });
+    expect(newOrder[3]).toMatchObject({ id: 3, sort_index: 3 });
+
+    // move down
+    newOrder = rearrangeCounters(counters, counters[0], 2);
+    expect(newOrder[0]).toMatchObject({ id: 1, sort_index: 0 });
+    expect(newOrder[1]).toMatchObject({ id: 2, sort_index: 1 });
+    expect(newOrder[2]).toMatchObject({ id: 0, sort_index: 2 });
+    expect(newOrder[3]).toMatchObject({ id: 3, sort_index: 3 });
+  });
+});
+
 test("create counter", async () => {
   (listCounters as Mock).mockResolvedValue([]);
   render(<AuthedApp />);
@@ -26,7 +45,7 @@ test("create counter", async () => {
   (listCounters as Mock).mockResolvedValue([{ id: 123, name: "my counter" }]);
 
   await userEvent.click(await screen.findByText("Submit"));
-  expect(()=> screen.getByPlaceholderText("Name")).toThrow();
+  expect(() => screen.getByPlaceholderText("Name")).toThrow();
   expect(createCounter).toBeCalled();
   await screen.findByText("my counter");
 });
@@ -54,9 +73,7 @@ test("list counter", async () => {
   expect(listCounters).toBeCalledTimes(1);
 });
 test("delete counter", async () => {
-  (listCounters as Mock).mockResolvedValue([
-    { id: 123, name: "my counter" },
-  ]);
+  (listCounters as Mock).mockResolvedValue([{ id: 123, name: "my counter" }]);
   render(<AuthedApp />);
   const more = await screen.findByTitle("More options for 'my counter'");
   (listCounters as Mock).mockResolvedValueOnce([]);
