@@ -1,8 +1,8 @@
-import { expect, test, Mock, vitest, describe, beforeAll } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { expect, test, Mock, describe, vi } from "vitest";
+import { screen } from "@testing-library/react";
+import { render, wait } from "./helpers/utils";
 import React from "react";
 import { AuthedApp } from "../src/App";
-
 import {
   createCounter,
   deleteCounter,
@@ -45,6 +45,7 @@ test("create counter", async () => {
   (listCounters as Mock).mockResolvedValue([{ id: 123, name: "my counter" }]);
 
   await userEvent.click(await screen.findByText("Submit"));
+  await wait()
   expect(() => screen.getByPlaceholderText("Name")).toThrow();
   expect(createCounter).toBeCalled();
   await screen.findByText("my counter");
@@ -66,7 +67,7 @@ test("update counters", async () => {
 test("list counter", async () => {
   (listCounters as Mock).mockResolvedValue([
     { id: 123, name: "my counter" },
-    { id: 124, name: "other counter" },
+    { id: 124, name: "other counter" }, 
   ]);
   render(<AuthedApp />);
   await screen.findByText("other counter");

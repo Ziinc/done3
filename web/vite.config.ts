@@ -9,7 +9,6 @@ export default defineConfig({
     environment: "jsdom",
     clearMocks: true,
     setupFiles: ["test/helpers/setup.ts", "global-jsdom/register"],
-    reporters: "verbose",
     coverage: {
       provider: 'c8' // or 'c8'
     },

@@ -1,5 +1,5 @@
 import { Button, Dropdown } from "antd";
-import { MoreVerticalIcon, Plus } from "lucide-react";
+import { MoreVertical, Plus } from "lucide-react";
 import { Counter } from "../api/counters";
 
 interface Props {
@@ -22,22 +22,30 @@ const CounterItem: React.FC<Props> = ({
     className={[
       className,
       "rounded-lg p-2 bg-stone-100",
-      "flex flex-row gap-2 items-center justify-between",
+      "flex flex-row gap-4 items-center justify-between",
     ].join(" ")}
   >
-    <div>
+    <div className="w-20">
       <Button
+        block
         type="primary"
         shape="round"
         title={`Increase '${counter.name}' by 1`}
         onClick={onIncrease}
-        icon={<Plus size={16} strokeWidth={3}/>}
-        className="flex flex-row items-center gap-1"
+        icon={<Plus size={16} strokeWidth={3} />}
+        className="flex flex-row items-center justify-between gap-1"
       >
         {counter.count}
       </Button>
     </div>
-    <span className="text-lg">{counter.name}</span>
+    <div
+      className="flex-grow"
+      onClick={() => {
+        onEdit();
+      }}
+    >
+      <span className="text-lg">{counter.name}</span>
+    </div>
     <Dropdown
       menu={{
         items: [
@@ -56,7 +64,7 @@ const CounterItem: React.FC<Props> = ({
     >
       <Button
         type="ghost"
-        icon={<MoreVerticalIcon size={12} />}
+        icon={<MoreVertical size={12} />}
         title={`More options for '${counter.name}'`}
       ></Button>
     </Dropdown>

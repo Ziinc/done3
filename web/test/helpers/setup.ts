@@ -3,6 +3,8 @@ import { cleanup } from "@testing-library/react";
 
 vi.mock("../../src/api/counters");
 
+vi.mock('react-beautiful-dnd')
+
 Object.defineProperty(window, "matchMedia", {
   writable: true,
   value: vi.fn().mockImplementation((query) => ({

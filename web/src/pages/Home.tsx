@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button } from "antd";
+import { Button, Drawer } from "antd";
 import {
   Counter,
   createCounter,
@@ -20,6 +20,8 @@ import {
 } from "react-beautiful-dnd";
 import CounterList from "../components/CounterList";
 import useSWR from "swr";
+import { X } from "lucide-react";
+
 const Home: React.FC = () => {
   const { data: counters = [], mutate } = useSWR<Counter[]>("counters", () =>
     listCounters()
@@ -57,34 +59,48 @@ const Home: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col gap-4 p-4">
-      {showNewForm && (
-        <div>
-          <CounterForm
-            onSubmit={async (data) => {
-              await createCounter(data);
-              setShowNewForm(false);
-              reload();
-            }}
-          />
-        </div>
-      )}
-      {editingId && (
+    <div className="flex flex-col gap-4 p-4 h-100 flex-grow">
+      <Drawer
+        title="New Counter"
+        width={520}
+        onClose={() => setShowNewForm(false)}
+        open={showNewForm}
+        closeIcon={<X strokeWidth={2} size={20} />}
+        destroyOnClose
+      >
+        <CounterForm
+          onSubmit={async (data) => {
+            await createCounter(data);
+            setShowNewForm(false);
+            reload();
+          }}
+        />
+      </Drawer>
+      <Drawer
+        destroyOnClose
+        title="Edit Counter"
+        width={520}
+        onClose={() => setEditingId(null)}
+        open={!!editingId}
+        closeIcon={<X strokeWidth={2} size={20} />}
+      >
         <CounterForm
           defaultValues={(counters || []).find((c) => c.id === editingId)}
           onSubmit={async (data) => {
-            await updateCounter(editingId, data);
+            await updateCounter(editingId!, data);
             setEditingId(null);
             reload();
           }}
         />
-      )}
-      <div className="flex flex-row gap-2">
+      </Drawer>
+
+      <div className="flex flex-row justify-end gap-2">
         <Button onClick={() => setShowNewForm(true)}>New counter</Button>
       </div>
 
       <DragDropContext onDragUpdate={handleDrag} onDragEnd={handleDrag}>
         <CounterList
+          className="flex-grow h-full"
           counters={counters}
           renderCounter={(counter) => (
             <CounterItem
