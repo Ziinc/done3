@@ -7,6 +7,7 @@ export interface CounterAttrs {
   created_at: string;
   updated_at: string;
   sort_index: number;
+  target: number;
 }
 export interface Counter extends CounterAttrs {
   readonly id: number;

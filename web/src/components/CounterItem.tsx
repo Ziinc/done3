@@ -1,5 +1,5 @@
 import { Button, Dropdown } from "antd";
-import { MoreVertical, Plus } from "lucide-react";
+import { MoreVertical, Plus, Target } from "lucide-react";
 import { Counter } from "../api/counters";
 
 interface Props {
@@ -33,7 +33,18 @@ const CounterItem: React.FC<Props> = ({
         title={`Increase '${counter.name}' by 1`}
         onClick={onIncrease}
         icon={<Plus size={16} strokeWidth={3} />}
-        className="flex flex-row items-center justify-between gap-1"
+        className={[
+          "flex flex-row items-center justify-between gap-1",
+          counter.count >= counter.target
+            ? "bg-green-700 hover:!bg-green-600"
+            : "",
+          counter.count < counter.target
+            ? "bg-yellow-600 hover:!bg-yellow-500"
+            : "",
+          counter.count > counter.target * 5
+            ? "bg-sky-600 hover:!bg-sky-500"
+            : "",
+        ].join(" ")}
       >
         {counter.count}
       </Button>

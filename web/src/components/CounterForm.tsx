@@ -29,6 +29,9 @@ const CounterForm: React.FC<Props> = ({ onSubmit, defaultValues }) => {
       >
         <Input ref={nameInputRef} placeholder="Name" />
       </Form.Item>
+      <Form.Item label="Target" name="target">
+        <Input ref={nameInputRef} type="number" defaultValue={1} />
+      </Form.Item>
 
       <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
         <Button type="primary" htmlType="submit">
