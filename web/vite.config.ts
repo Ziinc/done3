@@ -13,4 +13,7 @@ export default defineConfig({
       provider: 'c8' // or 'c8'
     },
   },
+  build: {
+    outDir: "dist/app"
+  }
 });
