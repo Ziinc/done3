@@ -5,7 +5,10 @@ interface Props {
   onSubmit: (params: Partial<CounterAttrs>) => void;
   defaultValues?: Partial<CounterAttrs>;
 }
-const CounterForm: React.FC<Props> = ({ onSubmit, defaultValues }) => {
+const CounterForm: React.FC<Props> = ({
+  onSubmit,
+  defaultValues = { target: 1 },
+}) => {
   const nameInputRef = useRef<InputRef | null>(null);
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -30,7 +33,7 @@ const CounterForm: React.FC<Props> = ({ onSubmit, defaultValues }) => {
         <Input ref={nameInputRef} placeholder="Name" />
       </Form.Item>
       <Form.Item label="Target" name="target">
-        <Input ref={nameInputRef} type="number" defaultValue={1} />
+        <Input type="number" />
       </Form.Item>
 
       <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
