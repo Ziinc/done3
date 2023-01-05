@@ -2,7 +2,7 @@
 #
 # To get started with Gatsby see: https://www.gatsbyjs.com/docs/quick-start/
 #
-name: Deploy Gatsby site to Pages
+name: Deploy to Pages
 
 on:
   # Runs on pushes targeting the default branch
@@ -41,7 +41,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: "16.18"
-          cache: ${{ steps.detect-package-manager.outputs.manager }}
+          cache: npm
       - name: Restore cache
         uses: actions/cache@v3
         with:
