@@ -32,6 +32,9 @@ const CounterForm: React.FC<Props> = ({
       >
         <Input ref={nameInputRef} placeholder="Name" />
       </Form.Item>
+      <Form.Item label="Notes" name="notes">
+        <Input.TextArea autoSize={{ minRows: 2, maxRows: 3 }} />
+      </Form.Item>
       <Form.Item label="Target" name="target">
         <Input type="number" />
       </Form.Item>

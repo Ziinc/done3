@@ -42,13 +42,21 @@ test("create counter", async () => {
   const input = await screen.findByPlaceholderText("Name");
   await userEvent.type(input, "my counter");
 
-  (listCounters as Mock).mockResolvedValue([{ id: 123, name: "my counter" }]);
+  await userEvent.type(
+    await screen.findByLabelText("Notes"),
+    "special counter"
+  );
+
+  (listCounters as Mock).mockResolvedValue([
+    { id: 123, name: "my counter", notes: "special" },
+  ]);
 
   await userEvent.click(await screen.findByText("Submit"));
-  await wait()
+  await wait();
   expect(() => screen.getByPlaceholderText("Name")).toThrow();
   expect(createCounter).toBeCalled();
   await screen.findByText("my counter");
+  await screen.findByText("special");
 });
 
 test("update counters", async () => {
@@ -67,7 +75,7 @@ test("update counters", async () => {
 test("list counter", async () => {
   (listCounters as Mock).mockResolvedValue([
     { id: 123, name: "my counter" },
-    { id: 124, name: "other counter" }, 
+    { id: 124, name: "other counter" },
   ]);
   render(<AuthedApp />);
   await screen.findByText("other counter");

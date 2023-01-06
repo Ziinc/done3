@@ -8,6 +8,7 @@ export interface CounterAttrs {
   updated_at: string;
   sort_index: number;
   target: number;
+  notes: string;
 }
 export interface Counter extends CounterAttrs {
   readonly id: number;

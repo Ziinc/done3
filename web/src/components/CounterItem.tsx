@@ -1,6 +1,8 @@
 import { Button, Dropdown } from "antd";
 import { MoreVertical, Plus, Target } from "lucide-react";
 import { Counter } from "../api/counters";
+import { marked } from "marked";
+import DOMPurify from "dompurify";
 
 interface Props {
   wrapperTag?: keyof JSX.IntrinsicElements;
@@ -56,6 +58,17 @@ const CounterItem: React.FC<Props> = ({
       }}
     >
       <span className="text-lg">{counter.name}</span>
+
+      {counter.notes && (
+        <div
+          className="text-xs text-slate-700 max-h-12 overflow-hidden"
+          dangerouslySetInnerHTML={{
+            __html: DOMPurify.sanitize(marked.parse(counter.notes), {
+              USE_PROFILES: { html: true },
+            }),
+          }}
+        ></div>
+      )}
     </div>
     <Dropdown
       menu={{
