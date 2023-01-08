@@ -2,17 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
+/* needed to center icons with text */
 .ant-btn {
   display: inline-flex;
   align-items: center;
 }
 
+/* add kbd styles, similar to daisyui but customized a little */
 @layer components {
-  .countdown > *:before {
-    text-align: center;
-    transition: all 1s cubic-bezier(1, 0, 0, 1);
-  }
-
   /* https://github.com/saadeghi/daisyui/blob/master/src/components/unstyled/kbd.css */
   /* https://github.com/saadeghi/daisyui/blob/master/src/components/styled/kbd.css */
   .kbd {
