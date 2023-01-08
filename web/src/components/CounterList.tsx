@@ -1,9 +1,11 @@
+import { PropsOf } from "@headlessui/react/dist/types";
+import { HTMLProps } from "react";
 import { Draggable, Droppable } from "react-beautiful-dnd";
 import { Counter } from "../api/counters";
 
 type RenderCounter = (counter: Counter) => React.ReactNode;
 
-interface Props {
+interface Props extends HTMLProps<HTMLUListElement> {
   counters: Counter[];
   renderCounter: RenderCounter;
   className?: string;
@@ -13,6 +15,7 @@ const CounterList: React.FC<Props> = ({
   counters,
   renderCounter,
   className = "",
+  ...props
 }) => {
   return (
     <Droppable droppableId="droppable-1" type="COUNTER">
@@ -20,6 +23,7 @@ const CounterList: React.FC<Props> = ({
         <ul
           ref={provided.innerRef}
           {...provided.droppableProps}
+          {...props}
           className={[
             className,
             "list-none",

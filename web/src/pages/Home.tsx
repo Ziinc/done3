@@ -101,7 +101,6 @@ const Home: React.FC = () => {
 
   return (
     <div
-      tabIndex={0}
       className="flex flex-col gap-4 p-4 h-100 flex-grow focus:border-none"
     >
       <Drawer
@@ -192,6 +191,7 @@ const Home: React.FC = () => {
 
       <DragDropContext onDragUpdate={handleDrag} onDragEnd={handleDrag}>
         <CounterList
+          tabIndex={0}
           className="flex-grow h-full"
           counters={counters}
           renderCounter={(counter) => (
