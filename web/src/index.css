@@ -1,3 +1,55 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.ant-btn {
+  display: inline-flex;
+  align-items: center;
+}
+
+@layer components {
+  .countdown > *:before {
+    text-align: center;
+    transition: all 1s cubic-bezier(1, 0, 0, 1);
+  }
+
+  /* https://github.com/saadeghi/daisyui/blob/master/src/components/unstyled/kbd.css */
+  /* https://github.com/saadeghi/daisyui/blob/master/src/components/styled/kbd.css */
+  .kbd {
+    @apply inline-flex items-center justify-center;
+    @apply border px-2 rounded;
+    border-bottom-width: 2px;
+    min-height: 2.2em;
+    min-width: 2.2em;
+  }
+}
+
+@layer utilities {
+  .kbd-light {
+    @apply border-slate-500 border-opacity-20 bg-slate-200 text-slate-900;
+  }
+  .kbd-dark {
+    @apply border-gray-800  border-opacity-50;
+  }
+  /* https://github.com/saadeghi/daisyui/blob/master/src/utilities/unstyled/kbd.css */
+  .kbd-xs {
+    @apply px-1 text-xs;
+    min-height: 1.2em;
+    min-width: 1.2em;
+  }
+  .kbd-sm {
+    @apply px-1 text-sm;
+    min-height: 1.6em;
+    min-width: 1.6em;
+  }
+  .kbd-md {
+    @apply px-2 text-base;
+    min-height: 2.2em;
+    min-width: 2.2em;
+  }
+  .kbd-lg {
+    @apply px-4 text-lg;
+    min-height: 2.5em;
+    min-width: 2.5em;
+  }
+}

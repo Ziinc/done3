@@ -3,6 +3,7 @@ import { MoreVertical, Plus, Target } from "lucide-react";
 import { Counter } from "../api/counters";
 import { marked } from "marked";
 import DOMPurify from "dompurify";
+import CountDisplay from "./CountDisplay";
 
 interface Props {
   wrapperTag?: keyof JSX.IntrinsicElements;
@@ -27,7 +28,7 @@ const CounterItem: React.FC<Props> = ({
       "flex flex-row gap-4 items-center justify-between",
     ].join(" ")}
   >
-    <div className="w-20">
+    <div className="w-fit">
       <Button
         block
         type="primary"
@@ -36,7 +37,7 @@ const CounterItem: React.FC<Props> = ({
         onClick={onIncrease}
         icon={<Plus size={16} strokeWidth={3} />}
         className={[
-          "flex flex-row items-center justify-between gap-1",
+          "gap-1",
           counter.count >= counter.target
             ? "bg-green-700 hover:!bg-green-600"
             : "",
@@ -48,7 +49,7 @@ const CounterItem: React.FC<Props> = ({
             : "",
         ].join(" ")}
       >
-        {counter.count}
+        <CountDisplay value={counter.count} />
       </Button>
     </div>
     <div

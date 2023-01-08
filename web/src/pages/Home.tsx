@@ -5,7 +5,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { Button, Drawer, Statistic } from "antd";
+import { Button, Drawer, Statistic, Tooltip } from "antd";
 import {
   Counter,
   createCounter,
@@ -178,7 +178,16 @@ const Home: React.FC = () => {
       </Drawer>
 
       <div className="flex flex-row justify-end gap-2">
-        <Button onClick={() => setShowNewForm(true)}>New counter</Button>
+        <Tooltip
+          placement="topLeft"
+          title={
+            <span>
+              <span className="kbd kbd-light kbd-xs">n</span>
+            </span>
+          }
+        >
+          <Button onClick={() => setShowNewForm(true)}>New counter</Button>
+        </Tooltip>
       </div>
 
       <DragDropContext onDragUpdate={handleDrag} onDragEnd={handleDrag}>
