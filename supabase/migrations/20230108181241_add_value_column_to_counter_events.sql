@@ -1,4 +1,4 @@
-alter table "public"."counter_events" add column "value" smallint not null;
+alter table "public"."counter_events" add column "value" smallint not null default 1;
 
 create or replace view "public"."view_counters" as  SELECT c.id,
     c.created_at,
