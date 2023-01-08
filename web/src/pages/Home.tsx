@@ -120,6 +120,10 @@ const Home: React.FC = () => {
                 mutate(newArr);
               }}
               onDelete={async () => {
+                const confirmation = confirm(
+                  "Delete cannot be undone. Proceed with delete?"
+                );
+                if (!confirmation) return;
                 await deleteCounter(counter.id);
                 reload();
               }}
