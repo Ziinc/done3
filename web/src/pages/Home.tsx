@@ -100,9 +100,7 @@ const Home: React.FC = () => {
   }, []);
 
   return (
-    <div
-      className="flex flex-col gap-4 p-4 h-100 flex-grow focus:border-none"
-    >
+    <div className="flex flex-col gap-4 p-4 h-100 flex-grow focus:border-none">
       <Drawer
         title="Create New Counter"
         width={520}
@@ -113,8 +111,9 @@ const Home: React.FC = () => {
       >
         {showNewForm && (
           <CounterForm
-            onSubmit={async (data) => {
+            onSubmit={async (data, { cancelLoading }) => {
               await createCounter(data);
+              cancelLoading();
               setShowNewForm(false);
               reload();
             }}
@@ -166,8 +165,9 @@ const Home: React.FC = () => {
             </div>
             <CounterForm
               defaultValues={editingCounter}
-              onSubmit={async (data) => {
+              onSubmit={async (data, { cancelLoading }) => {
                 await updateCounter(editingId!, data);
+                cancelLoading();
                 setEditingId(null);
                 reload();
               }}
