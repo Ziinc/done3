@@ -1,4 +1,10 @@
-import { useState } from "react";
+import {
+  KeyboardEventHandler,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { Button, Drawer, Statistic } from "antd";
 import {
   Counter,
@@ -23,6 +29,8 @@ import useSWR from "swr";
 import { Plus, X } from "lucide-react";
 
 const Home: React.FC = () => {
+  const hotkeyHandlerRef = useRef<EventListener>(() => null);
+  const homeRef = useRef<HTMLDivElement>(null);
   const { data: counters = [], mutate } = useSWR<Counter[]>(
     "counters",
     () => listCounters(),
@@ -30,7 +38,7 @@ const Home: React.FC = () => {
   );
   const [showNewForm, setShowNewForm] = useState(false);
   const [editingId, setEditingId] = useState<null | number>(null);
-
+  const [keydown, setKeydown] = useState<string | null>(null);
   const reload = () => {
     mutate();
   };
@@ -74,23 +82,45 @@ const Home: React.FC = () => {
   };
   const editingCounter = (counters || []).find((c) => c.id === editingId);
 
+  // hotkey management
+  useEffect(() => {
+    if (!keydown) return;
+    if (keydown === "n" && !showNewForm && !editingCounter) {
+      setShowNewForm(true);
+    }
+  }, [keydown]);
+
+  const hotkeyHandler = (e: KeyboardEvent) => {
+    setKeydown(e.key);
+  };
+
+  useEffect(() => {
+    document.addEventListener("keydown", hotkeyHandler);
+    return () => removeEventListener("keydown", hotkeyHandler, false);
+  }, []);
+
   return (
-    <div className="flex flex-col gap-4 p-4 h-100 flex-grow">
+    <div
+      tabIndex={0}
+      className="flex flex-col gap-4 p-4 h-100 flex-grow focus:border-none"
+    >
       <Drawer
-        title="New Counter"
+        title="Create New Counter"
         width={520}
         onClose={() => setShowNewForm(false)}
         open={showNewForm}
         closeIcon={<X strokeWidth={2} size={20} />}
         destroyOnClose
       >
-        <CounterForm
-          onSubmit={async (data) => {
-            await createCounter(data);
-            setShowNewForm(false);
-            reload();
-          }}
-        />
+        {showNewForm && (
+          <CounterForm
+            onSubmit={async (data) => {
+              await createCounter(data);
+              setShowNewForm(false);
+              reload();
+            }}
+          />
+        )}
       </Drawer>
       <Drawer
         destroyOnClose

@@ -92,3 +92,12 @@ test("delete counter", async () => {
   expect(listCounters).toBeCalledTimes(2);
   expect(screen.findByText("my counter")).rejects.toThrow();
 });
+
+describe("kbd shortcuts", () => {
+  test("open the new counter form", async () => {
+    (listCounters as Mock).mockResolvedValue([]);
+    render(<AuthedApp />);
+    await userEvent.type(await screen.findByText("New counter"), "n");
+    await screen.findAllByText("Create New Counter");
+  });
+});
