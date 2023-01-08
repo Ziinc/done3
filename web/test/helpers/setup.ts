@@ -3,7 +3,7 @@ import { cleanup } from "@testing-library/react";
 
 vi.mock("../../src/api/counters");
 
-vi.mock('react-beautiful-dnd')
+vi.mock("react-beautiful-dnd");
 
 Object.defineProperty(window, "matchMedia", {
   writable: true,
@@ -18,6 +18,8 @@ Object.defineProperty(window, "matchMedia", {
     dispatchEvent: vi.fn(),
   })),
 });
+
+window.confirm  = vi.fn().mockReturnValue(true);
 
 // react testing library cleanup
 beforeEach(() => {

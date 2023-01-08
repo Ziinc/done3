@@ -43,8 +43,8 @@ export const deleteCounter = async (id: number) => {
   await client.from("counters").delete().eq("id", id);
 };
 
-export const increaseCounter = async (counter_id: number) => {
-  await client.from("counter_events").insert({ counter_id });
+export const increaseCounter = async (counter_id: number, value: number) => {
+  await client.from("counter_events").insert({ counter_id, value });
 };
 
 export const upsertCounters = async (attrsArr: Partial<CounterAttrs>[]) => {

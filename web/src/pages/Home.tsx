@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button, Drawer } from "antd";
+import { Button, Drawer, Statistic } from "antd";
 import {
   Counter,
   createCounter,
@@ -20,17 +20,32 @@ import {
 } from "react-beautiful-dnd";
 import CounterList from "../components/CounterList";
 import useSWR from "swr";
-import { X } from "lucide-react";
+import { Plus, X } from "lucide-react";
 
 const Home: React.FC = () => {
-  const { data: counters = [], mutate } = useSWR<Counter[]>("counters", () =>
-    listCounters()
+  const { data: counters = [], mutate } = useSWR<Counter[]>(
+    "counters",
+    () => listCounters(),
+    { revalidateOnFocus: false }
   );
   const [showNewForm, setShowNewForm] = useState(false);
   const [editingId, setEditingId] = useState<null | number>(null);
 
   const reload = () => {
     mutate();
+  };
+  const handleIncrease = async (counter: Counter, value: number) => {
+    const index = counters.findIndex((c) => c.id === counter.id);
+    const updated = {
+      ...counters[index],
+      count: counters[index].count + value,
+    };
+    const newArr = counters.map((c) => (c.id === counter.id ? updated : c));
+    await Promise.all([
+      increaseCounter(counter.id, value),
+      mutate(newArr, { revalidate: false }),
+    ]);
+    reload();
   };
 
   const handleDrag: OnDragEndResponder & OnDragUpdateResponder = async ({
@@ -57,6 +72,7 @@ const Home: React.FC = () => {
     await upsertCounters(upsertAttrs);
     mutate(toUpsert);
   };
+  const editingCounter = (counters || []).find((c) => c.id === editingId);
 
   return (
     <div className="flex flex-col gap-4 p-4 h-100 flex-grow">
@@ -84,14 +100,51 @@ const Home: React.FC = () => {
         open={!!editingId}
         closeIcon={<X strokeWidth={2} size={20} />}
       >
-        <CounterForm
-          defaultValues={(counters || []).find((c) => c.id === editingId)}
-          onSubmit={async (data) => {
-            await updateCounter(editingId!, data);
-            setEditingId(null);
-            reload();
-          }}
-        />
+        {editingCounter && (
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col w-full items-center justify-center">
+              <Statistic title="Count" value={editingCounter.count} />
+              <div className="flex flex-row gap-1">
+                <Button
+                  className="flex flex-row justify-center items-center"
+                  shape="round"
+                  type="primary"
+                  icon={<Plus size={16} strokeWidth={3} />}
+                  onClick={() => handleIncrease(editingCounter, 1)}
+                >
+                  1
+                </Button>
+                <Button
+                  className="flex flex-row justify-center items-center"
+                  shape="round"
+                  type="primary"
+                  icon={<Plus size={16} strokeWidth={3} />}
+                  onClick={() => handleIncrease(editingCounter, 5)}
+                >
+                  5
+                </Button>
+
+                <Button
+                  className="flex flex-row justify-center items-center"
+                  shape="round"
+                  type="primary"
+                  onClick={() => handleIncrease(editingCounter, 10)}
+                  icon={<Plus size={16} strokeWidth={3} />}
+                >
+                  10
+                </Button>
+              </div>
+            </div>
+            <CounterForm
+              defaultValues={editingCounter}
+              onSubmit={async (data) => {
+                await updateCounter(editingId!, data);
+                setEditingId(null);
+                reload();
+              }}
+            />
+          </div>
+        )}
       </Drawer>
 
       <div className="flex flex-row justify-end gap-2">
@@ -107,20 +160,9 @@ const Home: React.FC = () => {
               key={counter.id}
               wrapperTag="li"
               counter={counter}
-              onIncrease={async () => {
-                await increaseCounter(counter.id);
-                const index = counters.findIndex((c) => c.id === counter.id);
-                const updated = {
-                  ...counters[index],
-                  count: counters[index].count + 1,
-                };
-                const newArr = counters.map((c) =>
-                  c.id === counter.id ? updated : c
-                );
-                mutate(newArr);
-              }}
+              onIncrease={() => handleIncrease(counter, 1)}
               onDelete={async () => {
-                const confirmation = confirm(
+                const confirmation = window.confirm(
                   "Delete cannot be undone. Proceed with delete?"
                 );
                 if (!confirmation) return;
