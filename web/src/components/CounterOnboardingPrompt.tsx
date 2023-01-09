@@ -1,7 +1,7 @@
 import { Menu, Plus, PlusSquare } from "lucide-react";
 
 const CounterOnboardingPrompt = () => (
-  <div className="flex flex-col items-center">
+  <div className="flex flex-col items-center my-auto">
     <div className="relative w-20 h-20">
       <Menu
         size={64}
