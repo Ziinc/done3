@@ -9,12 +9,14 @@ interface Props extends HTMLProps<HTMLUListElement> {
   counters: Counter[];
   renderCounter: RenderCounter;
   className?: string;
+  noDataFallback: React.ReactNode;
 }
 
 const CounterList: React.FC<Props> = ({
   counters,
   renderCounter,
   className = "",
+  noDataFallback,
   ...props
 }) => {
   return (
@@ -32,23 +34,25 @@ const CounterList: React.FC<Props> = ({
             snapshot.isDraggingOver ? "bg-sky-300" : "bg-sky-200",
           ].join(" ")}
         >
-          {counters.map((counter, index) => (
-            <Draggable
-              draggableId={`counter-${counter.id}`}
-              index={index}
-              key={counter.id}
-            >
-              {(provided, snapshot) => (
-                <span
-                  ref={provided.innerRef}
-                  {...provided.draggableProps}
-                  {...provided.dragHandleProps}
-                >
-                  {renderCounter(counter)}
-                </span>
-              )}
-            </Draggable>
-          ))}
+          {counters.length === 0 && noDataFallback}
+          {counters.length > 0 &&
+            counters.map((counter, index) => (
+              <Draggable
+                draggableId={`counter-${counter.id}`}
+                index={index}
+                key={counter.id}
+              >
+                {(provided, snapshot) => (
+                  <span
+                    ref={provided.innerRef}
+                    {...provided.draggableProps}
+                    {...provided.dragHandleProps}
+                  >
+                    {renderCounter(counter)}
+                  </span>
+                )}
+              </Draggable>
+            ))}
         </ul>
       )}
     </Droppable>

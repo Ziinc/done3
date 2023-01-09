@@ -27,6 +27,7 @@ import {
 import CounterList from "../components/CounterList";
 import useSWR from "swr";
 import { Plus, X } from "lucide-react";
+import CounterOnboardingPrompt from "../components/CounterOnboardingPrompt";
 
 const Home: React.FC = () => {
   const hotkeyHandlerRef = useRef<EventListener>(() => null);
@@ -194,6 +195,7 @@ const Home: React.FC = () => {
           tabIndex={0}
           className="flex-grow h-full"
           counters={counters}
+          noDataFallback={<CounterOnboardingPrompt />}
           renderCounter={(counter) => (
             <CounterItem
               key={counter.id}

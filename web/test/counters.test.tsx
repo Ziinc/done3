@@ -34,6 +34,12 @@ describe("api & context", () => {
   });
 });
 
+test("onboarding", async () => {
+  (listCounters as Mock).mockResolvedValue([]);
+  render(<AuthedApp />);
+  await screen.findByText(/Create a new counter/);
+});
+
 test("create counter", async () => {
   (listCounters as Mock).mockResolvedValue([]);
   render(<AuthedApp />);
