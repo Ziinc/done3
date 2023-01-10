@@ -30,8 +30,8 @@ const CounterList: React.FC<Props> = ({
             className,
             "list-none",
             "flex flex-col gap-2 p-4 rounded-lg",
-            "transition-all duration-500",
-            snapshot.isDraggingOver ? "bg-sky-300" : "bg-sky-200",
+            "transition-all duration-300",
+            snapshot.isDraggingOver ? "bg-sky-200" : "bg-blue-100",
           ].join(" ")}
         >
           {counters.length === 0 && noDataFallback}

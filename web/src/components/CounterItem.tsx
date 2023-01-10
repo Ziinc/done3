@@ -24,7 +24,7 @@ const CounterItem: React.FC<Props> = ({
   <WrapperTag
     className={[
       className,
-      "rounded-lg p-2 bg-stone-100",
+      "rounded-lg p-2 bg-stone-50",
       "flex flex-row gap-4 items-center justify-between",
     ].join(" ")}
   >
