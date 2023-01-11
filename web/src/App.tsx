@@ -7,6 +7,7 @@ import CenteredLayout from "./layouts/CenteredLayout";
 import LoadingSpinner from "./components/LoadingSpinner";
 import Auth from "./components/Auth";
 import { Route, Router } from "wouter";
+import { HashRouter } from "./router";
 
 function App() {
   const user = Auth.useAuth();
@@ -27,7 +28,7 @@ function App() {
   const showLoading = !minLoadingWait || loading;
 
   return (
-    <Router base={import.meta.env.BASE_URL}>
+    <HashRouter base={import.meta.env.BASE_URL}>
       <Route path="/">
         <Transition
           show={showLoading || !user.session}
@@ -51,7 +52,7 @@ function App() {
         </Transition>
       </Route>
       <Route path="/reset-password" component={ResetPassword} />
-    </Router>
+    </HashRouter>
   );
 }
 
