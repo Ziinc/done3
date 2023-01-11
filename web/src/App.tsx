@@ -26,16 +26,16 @@ function App() {
   }, []);
 
   const showLoading = !minLoadingWait || loading;
+
   return (
     <>
       <Transition
-        show={showLoading || !user.user}
-        className="transition-opacity duration-300 absolute inset-0 flex"
+        show={showLoading || !user.session}
+        className="transition-opacity duration-300"
         enterFrom="opacity-0"
         enterTo="opacity-100"
         leaveFrom="opacity-100"
         leaveTo="opacity-0"
-        unmount
       >
         <CenteredLayout className="bg-violet-50">
           <div className="relative w-72 h-96">
@@ -93,7 +93,7 @@ function App() {
         </CenteredLayout>
       </Transition>
       <Transition
-        show={!showLoading && Boolean(user.user)}
+        show={!showLoading && Boolean(user.session)}
         className="transition-opacity duration-500"
         enterFrom="opacity-0"
         enterTo="opacity-100"
