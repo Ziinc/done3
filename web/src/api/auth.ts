@@ -40,7 +40,7 @@ export const signInWithPassword = async (attrs: {
 };
 export const requestPasswordReset = async (email: string) => {
   const { data } = await client.auth.resetPasswordForEmail(email, {
-    redirectTo: "/reset-password",
+    redirectTo: "https://ounters.tznc.net/reset-password",
   });
   return data;
 };
