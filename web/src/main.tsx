@@ -1,13 +1,14 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import App from "./App";
+import App, { router } from "./App";
 import "antd/dist/reset.css";
 import "./index.css";
-import { Auth } from "@supabase/auth-ui-react";
 import { client } from "./utils";
+import Auth from "./components/Auth";
+import { RouterProvider } from "react-router-dom";
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
-  <Auth.UserContextProvider supabaseClient={client}>
-    <App />
-  </Auth.UserContextProvider>
+  <Auth.AuthProvider>
+    <RouterProvider router={router} />
+  </Auth.AuthProvider>
 );
