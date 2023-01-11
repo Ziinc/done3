@@ -1,4 +1,3 @@
-import { useUser } from "@supabase/auth-ui-react/dist/esm/src/components/Auth/UserContext";
 import { Session } from "@supabase/gotrue-js";
 import { Button, Form as AntForm, Input, Space, Tabs } from "antd";
 import { ArrowLeft } from "lucide-react";

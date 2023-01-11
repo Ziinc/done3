@@ -1,10 +1,4 @@
-import {
-  KeyboardEventHandler,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button, Drawer, Statistic, Tooltip } from "antd";
 import {
   Counter,
@@ -30,8 +24,6 @@ import { Plus, X } from "lucide-react";
 import CounterOnboardingPrompt from "../components/CounterOnboardingPrompt";
 
 const Home: React.FC = () => {
-  const hotkeyHandlerRef = useRef<EventListener>(() => null);
-  const homeRef = useRef<HTMLDivElement>(null);
   const { data: counters = [], mutate } = useSWR<Counter[]>(
     "counters",
     () => listCounters(),

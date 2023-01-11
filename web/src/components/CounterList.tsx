@@ -1,4 +1,3 @@
-import { PropsOf } from "@headlessui/react/dist/types";
 import { HTMLProps } from "react";
 import { Draggable, Droppable } from "react-beautiful-dnd";
 import { Counter } from "../api/counters";

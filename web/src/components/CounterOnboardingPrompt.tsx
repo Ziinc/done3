@@ -1,4 +1,4 @@
-import { Menu, Plus, PlusSquare } from "lucide-react";
+import { Menu, Plus } from "lucide-react";
 
 const CounterOnboardingPrompt = () => (
   <div className="flex flex-col items-center my-auto">

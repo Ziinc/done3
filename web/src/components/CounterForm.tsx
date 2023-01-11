@@ -1,4 +1,4 @@
-import { Button, Form, Input, Dropdown, InputRef } from "antd";
+import { Button, Form, Input, InputRef } from "antd";
 import { useEffect, useRef, useState } from "react";
 import { CounterAttrs } from "../api/counters";
 interface Callbacks {

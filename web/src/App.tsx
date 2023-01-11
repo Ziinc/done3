@@ -8,7 +8,6 @@ import LoadingSpinner from "./components/LoadingSpinner";
 import Auth from "./components/Auth";
 import {
   Route,
-  BrowserRouter,
   createBrowserRouter,
   createRoutesFromElements,
 } from "react-router-dom";
