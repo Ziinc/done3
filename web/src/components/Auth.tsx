@@ -2,7 +2,7 @@ import { Session } from "@supabase/gotrue-js";
 import { Button, Form as AntForm, Input, Space, Tabs } from "antd";
 import { ArrowLeft } from "lucide-react";
 import React, { useContext, useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link } from "wouter";
 import {
   getSession,
   onAuthStateChange,

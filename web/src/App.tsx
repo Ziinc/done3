@@ -6,11 +6,7 @@ import { Transition } from "@headlessui/react";
 import CenteredLayout from "./layouts/CenteredLayout";
 import LoadingSpinner from "./components/LoadingSpinner";
 import Auth from "./components/Auth";
-import {
-  Route,
-  createBrowserRouter,
-  createRoutesFromElements,
-} from "react-router-dom";
+import { Route, Router } from "wouter";
 
 function App() {
   const user = Auth.useAuth();
@@ -31,28 +27,31 @@ function App() {
   const showLoading = !minLoadingWait || loading;
 
   return (
-    <>
-      <Transition
-        show={showLoading || !user.session}
-        className="transition-opacity duration-300"
-        enterFrom="opacity-0"
-        enterTo="opacity-100"
-        leaveFrom="opacity-100"
-        leaveTo="opacity-0"
-      >
-        <AuthWall showLoading={showLoading} />
-      </Transition>
-      <Transition
-        show={!showLoading && Boolean(user.session)}
-        className="transition-opacity duration-500"
-        enterFrom="opacity-0"
-        enterTo="opacity-100"
-        leaveFrom="opacity-100"
-        leaveTo="opacity-0"
-      >
-        <AuthedApp />
-      </Transition>
-    </>
+    <Router base={import.meta.env.BASE_URL}>
+      <Route path="/">
+        <Transition
+          show={showLoading || !user.session}
+          className="transition-opacity duration-300"
+          enterFrom="opacity-0"
+          enterTo="opacity-100"
+          leaveFrom="opacity-100"
+          leaveTo="opacity-0"
+        >
+          <AuthWall showLoading={showLoading} />
+        </Transition>
+        <Transition
+          show={!showLoading && Boolean(user.session)}
+          className="transition-opacity duration-500"
+          enterFrom="opacity-0"
+          enterTo="opacity-100"
+          leaveFrom="opacity-100"
+          leaveTo="opacity-0"
+        >
+          <AuthedApp />
+        </Transition>
+      </Route>
+      <Route path="/reset-password" component={ResetPassword} />
+    </Router>
   );
 }
 
@@ -115,17 +114,5 @@ export const AuthedApp = () => {
     </MainLayout>
   );
 };
-
-export const router = createBrowserRouter(
-  createRoutesFromElements(
-    <Route path="/">
-      <Route path="reset-password" element={<ResetPassword />} />
-      <Route path="/" element={<App />} />
-    </Route>
-  ),
-  {
-    basename: import.meta.env.BASE_URL,
-  }
-);
 
 export default App;
