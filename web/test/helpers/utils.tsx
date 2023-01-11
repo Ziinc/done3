@@ -1,4 +1,5 @@
 import { render as originalRender, queries } from "@testing-library/react";
+import { BrowserRouter } from "react-router-dom";
 import { SWRConfig } from "swr";
 const TestWrapper = ({ children }) => {
   return (
@@ -8,7 +9,7 @@ const TestWrapper = ({ children }) => {
         shouldRetryOnError: false,
       }}
     >
-      {children}
+      <BrowserRouter>{children}</BrowserRouter>
     </SWRConfig>
   );
 };
@@ -18,5 +19,4 @@ export const render = (
   options: Parameters<typeof originalRender>[1] = {}
 ) => originalRender(ui, { wrapper: TestWrapper, ...options });
 
-
-export const wait  = (ms = 500) => new Promise(res => setTimeout(res, ms));
+export const wait = (ms = 500) => new Promise((res) => setTimeout(res, ms));

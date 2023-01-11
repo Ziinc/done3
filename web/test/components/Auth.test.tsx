@@ -23,7 +23,7 @@ test("sign up", async () => {
   render(<Auth.Form onSubmit={mockFn} />);
   await screen.findByText("Forgot your password?");
 
-  await userEvent.click(await screen.findByText(/Sign up/));
+  await userEvent.click(await screen.findByText(/Sign Up/));
   await userEvent.type(await screen.findByLabelText("Email"), "some@email.com");
   await userEvent.type(await screen.findByLabelText("Password"), "some pass");
   await userEvent.click(await screen.findByRole("button", { name: /Sign up/ }));
