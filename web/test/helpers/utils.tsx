@@ -1,5 +1,4 @@
 import { render as originalRender, queries } from "@testing-library/react";
-import { BrowserRouter } from "react-router-dom";
 import { SWRConfig } from "swr";
 const TestWrapper = ({ children }) => {
   return (
@@ -9,7 +8,7 @@ const TestWrapper = ({ children }) => {
         shouldRetryOnError: false,
       }}
     >
-      <BrowserRouter>{children}</BrowserRouter>
+      {children}
     </SWRConfig>
   );
 };

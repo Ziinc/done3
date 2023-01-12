@@ -21,7 +21,7 @@
     "react-beautiful-dnd": "^13.1.1",
     "react-dom": "^18.2.0",
     "swr": "^2.0.0",
-    "wouter": "^2.10.0-alpha.1"
+    "wouter": "^2.10.0-alpha.4"
   },
   "devDependencies": {
     "@testing-library/react": "^13.4.0",
