@@ -96,7 +96,6 @@ const Home: React.FC = () => {
     <div className="flex flex-col gap-4 p-4 h-100 flex-grow focus:border-none">
       <Drawer
         title="Create New Counter"
-        width={520}
         onClose={() => setShowNewForm(false)}
         open={showNewForm}
         closeIcon={<X strokeWidth={2} size={20} />}
@@ -116,7 +115,6 @@ const Home: React.FC = () => {
       <Drawer
         destroyOnClose
         title="Edit Counter"
-        width={520}
         onClose={() => setEditingId(null)}
         open={!!editingId}
         closeIcon={<X strokeWidth={2} size={20} />}
