@@ -1,5 +1,5 @@
 import { expect, test, Mock, describe, vi } from "vitest";
-import { screen } from "@testing-library/react";
+import { screen, fireEvent } from "@testing-library/react";
 import { render, wait } from "./helpers/utils";
 import React from "react";
 import { AuthedApp } from "../src/App";
@@ -9,7 +9,6 @@ import {
   rearrangeCounters,
   listCounters,
   updateCounter,
-  archiveCounter,
 } from "../src/api/counters";
 import userEvent from "@testing-library/user-event";
 import { counterFixture } from "./helpers/fixtures";
@@ -136,5 +135,49 @@ describe("kbd shortcuts", () => {
     await userEvent.pointer({ target: await screen.findByText("my-counter") });
     await userEvent.keyboard("e");
     await screen.findByDisplayValue("my-counter");
+  });
+});
+
+describe("context menu", () => {
+  test("context menu - edit", async () => {
+    (listCounters as Mock).mockResolvedValue([
+      counterFixture({ name: "my-counter" }),
+    ]);
+    render(<AuthedApp />);
+    await userEvent.pointer({
+      target: await screen.findByText("my-counter"),
+      keys: "[MouseRight]",
+    });
+    await userEvent.click(await screen.findByText(/Edit counter/));
+    await screen.findByDisplayValue("my-counter");
+  });
+
+  test("context menu - delete", async () => {
+    (listCounters as Mock).mockResolvedValue([
+      counterFixture({ name: "my-counter" }),
+    ]);
+    render(<AuthedApp />);
+    await userEvent.pointer({
+      target: await screen.findByText("my-counter"),
+      keys: "[MouseRight]",
+    });
+    (listCounters as Mock).mockResolvedValue([]);
+    await userEvent.click(await screen.findByText(/Delete counter/));
+    expect(screen.findByText("my-counter")).rejects.toThrow();
+    expect(deleteCounter).toBeCalled();
+  });
+
+  test("context menu - archive", async () => {
+    (listCounters as Mock).mockResolvedValue([
+      counterFixture({ id: 123, name: "my-counter" }),
+    ]);
+    render(<AuthedApp />);
+    await userEvent.pointer({
+      target: await screen.findByText("my-counter"),
+      keys: "[MouseRight]",
+    });
+    await userEvent.click(await screen.findByText(/Archive counter/));
+    expect(screen.findByText("my-counter")).rejects.toThrow();
+    expect(updateCounter).toBeCalledWith(123, { archived: true });
   });
 });

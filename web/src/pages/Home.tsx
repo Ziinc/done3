@@ -233,7 +233,7 @@ const Home: React.FC = () => {
               key={counter.id}
               wrapperTag="li"
               counter={counter}
-              onIncrease={() => handleIncrease(counter, 1)}
+              onIncrease={(value) => handleIncrease(counter, value)}
               onDelete={async () => {
                 const confirmation = window.confirm(
                   "Delete cannot be undone. Consider archiving instead. Proceed with delete?"

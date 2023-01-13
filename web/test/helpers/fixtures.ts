@@ -1,6 +1,6 @@
 import { Counter } from "../../src/api/counters";
 
-export const counterFixture = (attrs: Partial<Counter>): Counter => {
+export const counterFixture = (attrs: Partial<Counter> = {}): Counter => {
   return {
     id: 1,
     name: "my counter",

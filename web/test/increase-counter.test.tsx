@@ -1,27 +1,11 @@
-import {
-  afterEach,
-  beforeEach,
-  describe,
-  expect,
-  test,
-  vi,
-  Mocked,
-  Mock,
-} from "vitest";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { expect, test, Mock } from "vitest";
+import { render, screen } from "@testing-library/react";
 import React from "react";
 import { AuthedApp } from "../src/App";
 
-import {
-  createCounter,
-  deleteCounter,
-  increaseCounter,
-  listCounters,
-  updateCounter,
-} from "../src/api/counters";
+import { increaseCounter, listCounters } from "../src/api/counters";
 import userEvent from "@testing-library/user-event";
 import { counterFixture } from "./helpers/fixtures";
-
 
 test("increase counter", async () => {
   (listCounters as Mock).mockResolvedValue([
@@ -40,5 +24,18 @@ test("increase counter", async () => {
   ]);
   await userEvent.click(inc);
   await screen.findByText(/2/);
+  expect(increaseCounter).toBeCalled();
+});
+
+test("context menu - increase", async () => {
+  const counter = counterFixture();
+  (listCounters as Mock).mockResolvedValue([counter]);
+  render(<AuthedApp />);
+  expect(increaseCounter).not.toBeCalled();
+  await userEvent.pointer({
+    target: await screen.findByText(/my counter/),
+    keys: "[MouseRight]",
+  });
+  await userEvent.click(await screen.findByText(/Increase by 5/));
   expect(increaseCounter).toBeCalled();
 });
