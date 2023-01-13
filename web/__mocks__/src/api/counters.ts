@@ -6,3 +6,4 @@ export const deleteCounter = vi.fn();
 export const increaseCounter = vi.fn();
 export const rearrangeCounters = vi.fn();
 export const upsertCounters = vi.fn();
+export const getCounts = vi.fn()

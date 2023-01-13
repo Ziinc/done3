@@ -11,6 +11,9 @@ import {
   upsertCounters,
   CounterAttrs,
   archiveCounter,
+  getCounts,
+  CountMapping,
+  CountTally,
 } from "../api/counters";
 import CounterForm from "../components/CounterForm";
 import CounterItem from "../components/CounterItem";
@@ -30,6 +33,10 @@ const Home: React.FC = () => {
     () => listCounters(),
     { revalidateOnFocus: false }
   );
+  const { data: countMapping = {}, mutate: mutateCounts } =
+    useSWR<CountMapping>("counts", () => getCounts(), {
+      revalidateOnFocus: false,
+    });
   const [showNewForm, setShowNewForm] = useState(false);
   const [showArchive, setShowArchive] = useState(false);
   const [editingId, setEditingId] = useState<null | number>(null);
@@ -37,19 +44,20 @@ const Home: React.FC = () => {
   const [keydown, setKeydown] = useState<string | null>(null);
   const reload = () => {
     mutate();
+    mutateCounts();
   };
   const handleIncrease = async (counter: Counter, value: number) => {
-    const index = counters.findIndex((c) => c.id === counter.id);
-    const updated = {
-      ...counters[index],
-      count: counters[index].count + value,
-    };
-    const newArr = counters.map((c) => (c.id === counter.id ? updated : c));
+    let updated: CountTally = Object.assign({}, countMapping[counter.id]);
+    for (const [key, currValue] of Object.entries(updated)) {
+      updated[key as keyof CountTally] = currValue + value;
+    }
+
+    const newMapping = { ...countMapping, [counter.id]: updated };
     await Promise.all([
       increaseCounter(counter.id, value),
-      mutate(newArr, { revalidate: false }),
+      mutateCounts(newMapping, { revalidate: false }),
     ]);
-    reload();
+    mutateCounts();
   };
 
   const handleDrag: OnDragEndResponder & OnDragUpdateResponder = async ({
@@ -69,11 +77,7 @@ const Home: React.FC = () => {
       counters[counterIndex],
       destination.index
     );
-    const upsertAttrs = toUpsert.map((counter): CounterAttrs => {
-      const { count, ...rest } = counter;
-      return rest;
-    });
-    await upsertCounters(upsertAttrs);
+    await upsertCounters(toUpsert);
     mutate(toUpsert);
   };
   const editingCounter = (counters || []).find((c) => c.id === editingId);
@@ -127,7 +131,12 @@ const Home: React.FC = () => {
         {editingCounter && (
           <div className="flex flex-col gap-4">
             <div className="flex flex-col w-full items-center justify-center">
-              <Statistic title="Count" value={editingCounter.count} />
+              <Statistic
+                title="Count"
+                value={
+                  countMapping[editingCounter.id][editingCounter.tally_method]
+                }
+              />
               <div className="flex flex-row gap-1">
                 <Button
                   className="flex flex-row justify-center items-center"
@@ -227,32 +236,36 @@ const Home: React.FC = () => {
           tabIndex={0}
           className="flex-grow h-full"
           counters={counters.filter((c) => c.archived === false)}
+          countMapping={countMapping}
           noDataFallback={<CounterOnboardingPrompt />}
-          renderCounter={(counter, state) => (
-            <CounterItem
-              key={counter.id}
-              wrapperTag="li"
-              counter={counter}
-              onIncrease={(value) => handleIncrease(counter, value)}
-              onDelete={async () => {
-                const confirmation = window.confirm(
-                  "Delete cannot be undone. Consider archiving instead. Proceed with delete?"
-                );
-                if (!confirmation) return;
-                await deleteCounter(counter.id);
-                reload();
-              }}
-              onArchive={async () => {
-                await updateCounter(counter.id, { archived: true });
-                reload();
-              }}
-              {...state}
-              onEdit={() => setEditingId(counter.id)}
-              isHovering={hoveringId === counter.id}
-              onMouseEnter={() => setHoveringId(counter.id)}
-              onMouseLeave={() => setHoveringId(null)}
-            />
-          )}
+          renderCounter={(counter, tally, state) => {
+            return (
+              <CounterItem
+                key={counter.id}
+                count={tally ? tally[counter.tally_method] : 0}
+                wrapperTag="li"
+                counter={counter}
+                onIncrease={(value) => handleIncrease(counter, value)}
+                onDelete={async () => {
+                  const confirmation = window.confirm(
+                    "Delete cannot be undone. Consider archiving instead. Proceed with delete?"
+                  );
+                  if (!confirmation) return;
+                  await deleteCounter(counter.id);
+                  reload();
+                }}
+                onArchive={async () => {
+                  await updateCounter(counter.id, { archived: true });
+                  reload();
+                }}
+                {...state}
+                onEdit={() => setEditingId(counter.id)}
+                isHovering={hoveringId === counter.id}
+                onMouseEnter={() => setHoveringId(counter.id)}
+                onMouseLeave={() => setHoveringId(null)}
+              />
+            );
+          }}
         />
       </DragDropContext>
     </div>

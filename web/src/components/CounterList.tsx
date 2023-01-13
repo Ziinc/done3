@@ -1,11 +1,16 @@
 import { HTMLProps } from "react";
 import { Draggable, Droppable } from "react-beautiful-dnd";
-import { Counter } from "../api/counters";
+import { Counter, CountMapping, CountTally } from "../api/counters";
 
-type RenderCounter = (counter: Counter, state: {isDragging: boolean}) => React.ReactNode;
+type RenderCounter = (
+  counter: Counter,
+  tally: CountTally,
+  state: { isDragging: boolean }
+) => React.ReactNode;
 
 interface Props extends HTMLProps<HTMLUListElement> {
   counters: Counter[];
+  countMapping: CountMapping;
   renderCounter: RenderCounter;
   className?: string;
   noDataFallback: React.ReactNode;
@@ -13,6 +18,7 @@ interface Props extends HTMLProps<HTMLUListElement> {
 
 const CounterList: React.FC<Props> = ({
   counters,
+  countMapping,
   renderCounter,
   className = "",
   noDataFallback,
@@ -47,9 +53,9 @@ const CounterList: React.FC<Props> = ({
                     {...provided.draggableProps}
                     {...provided.dragHandleProps}
                   >
-                    {renderCounter(counter, {
-                      isDragging: snapshot.isDragging
-                    } )}
+                    {renderCounter(counter, countMapping[counter.id], {
+                      isDragging: snapshot.isDragging,
+                    })}
                   </span>
                 )}
               </Draggable>

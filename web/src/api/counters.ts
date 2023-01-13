@@ -10,17 +10,29 @@ export interface CounterAttrs {
   target: number;
   notes: string;
   archived: boolean;
+  tally_method: keyof CountTally;
+}
+
+export interface CountTally {
+  sum_1_day: number;
+  sum_3_day: number;
+  sum_7_day: number;
+  sum_30_day: number;
+  sum_90_day: number;
+  sum_lifetime: number;
+}
+export interface CountMapping {
+  [id: number]: CountTally;
 }
 export interface Counter extends CounterAttrs {
   readonly id: number;
-  readonly count: number;
 }
 
 export const listCounters = async () => {
   const { data } = await client
-    .from("view_counters")
+    .from("counters")
     .select()
-    .order("sort_index");
+    .order("sort_index", { ascending: true });
   return data as Counter[];
 };
 
@@ -71,4 +83,14 @@ export const rearrangeCounters = (
     ...counter,
     sort_index: index,
   }));
+};
+
+export const getCounts = async (): Promise<CountMapping> => {
+  const { data } = await client.from("view_counts").select();
+  const mapping = data?.reduce((acc, count) => {
+    const { id: _id, ...values } = count;
+    acc[count.id] = values;
+    return acc;
+  }, {});
+  return mapping;
 };

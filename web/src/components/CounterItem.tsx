@@ -11,6 +11,7 @@ interface Props extends React.HTMLProps<HTMLDivElement & HTMLLIElement> {
   counter: Counter;
   isDragging?: boolean;
   isHovering?: boolean;
+  count: number;
   onEdit?: () => void;
   onDelete?: () => void;
   onIncrease?: (value: number) => void;
@@ -26,6 +27,7 @@ const CounterItem: React.FC<Props> = ({
   isHovering = false,
   isDragging = false,
   onArchive,
+  count,
   ...rest
 }) => (
   <Tooltip
@@ -98,18 +100,14 @@ const CounterItem: React.FC<Props> = ({
             icon={<Plus size={16} strokeWidth={3} />}
             className={[
               "gap-1",
-              counter.count >= counter.target
-                ? "bg-green-700 hover:!bg-green-600"
-                : "",
-              counter.count < counter.target
+              count >= counter.target ? "bg-green-700 hover:!bg-green-600" : "",
+              count < counter.target
                 ? "bg-yellow-600 hover:!bg-yellow-500"
                 : "",
-              counter.count > counter.target * 5
-                ? "bg-sky-600 hover:!bg-sky-500"
-                : "",
+              count > counter.target * 5 ? "bg-sky-600 hover:!bg-sky-500" : "",
             ].join(" ")}
           >
-            <CountDisplay value={counter.count} />
+            <CountDisplay value={count} />
           </Button>
         </div>
         <div className="flex-grow" onClick={onEdit}>

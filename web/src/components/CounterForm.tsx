@@ -1,4 +1,4 @@
-import { Button, Form, Input, InputRef } from "antd";
+import { Button, Form, Input, InputRef, Select } from "antd";
 import { useEffect, useRef, useState } from "react";
 import { CounterAttrs } from "../api/counters";
 interface Callbacks {
@@ -10,7 +10,7 @@ interface Props {
 }
 const CounterForm: React.FC<Props> = ({
   onSubmit,
-  defaultValues = { target: 1 },
+  defaultValues = { target: 1, tally_method: "sum_7_day" },
 }) => {
   const nameInputRef = useRef<InputRef | null>(null);
   const [loading, setLoading] = useState(false);
@@ -19,7 +19,7 @@ const CounterForm: React.FC<Props> = ({
       nameInputRef.current?.focus({ cursor: "end" });
     }, 100);
     return () => clearTimeout(timer);
-  }, [nameInputRef.current]);
+  }, []);
   const handleSubmit = (values: CounterAttrs) => {
     const callbacks = {
       cancelLoading: () => setLoading(false),
@@ -48,6 +48,19 @@ const CounterForm: React.FC<Props> = ({
       </Form.Item>
       <Form.Item label="Target" name="target">
         <Input type="number" />
+      </Form.Item>
+
+      <Form.Item label="Tally Method" name="tally_method">
+        <Select
+          options={[
+            { value: "sum_1_day", label: "Sum 1 day" },
+            { value: "sum_3_day", label: "Sum 3 days" },
+            { value: "sum_7_day", label: "Sum 7 days" },
+            { value: "sum_30_day", label: "Sum 30 days" },
+            { value: "sum_90_day", label: "Sum 90 days" },
+            { value: "sum_lifetime_day", label: "Sum lifetime" },
+          ]}
+        />
       </Form.Item>
 
       <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
