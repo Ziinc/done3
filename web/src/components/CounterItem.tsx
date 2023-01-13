@@ -29,6 +29,7 @@ const CounterItem: React.FC<Props> = ({
   ...rest
 }) => (
   <Tooltip
+    mouseEnterDelay={1.5}
     title={
       <span>
         Press <span className="kbd kbd-xs kbd-light">e</span> to edit
