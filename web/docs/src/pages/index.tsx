@@ -18,7 +18,13 @@ function HomepageHeader() {
             href={siteConfig.url + "/app"}
             className="bg-blue-500 button button--secondary button--lg"
           >
-            Lets get started
+            Try For Free
+          </Link>
+          <Link
+            to={"/docs/intro"}
+            className="bg-blue-500 button button--primary button--lg"
+          >
+            Documentation
           </Link>
         </div>
       </div>
