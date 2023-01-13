@@ -103,7 +103,14 @@ describe("kbd shortcuts", () => {
   test("open the new counter form", async () => {
     (listCounters as Mock).mockResolvedValue([]);
     render(<AuthedApp />);
-    await userEvent.type(await screen.findByText("New counter"), "n");
+    await userEvent.keyboard("n")
     await screen.findAllByText("Create New Counter");
   });
+  test("edit the counter", async ()=>{
+  (listCounters as Mock).mockResolvedValue([{ id: 123, name: "my-counter" }]);
+    render(<AuthedApp />);
+    await userEvent.pointer({target: await screen.findByText("my-counter")});
+    await userEvent.keyboard("e")
+    await screen.findByDisplayValue("my-counter");
+  })
 });

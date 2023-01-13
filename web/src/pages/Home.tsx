@@ -31,6 +31,7 @@ const Home: React.FC = () => {
   );
   const [showNewForm, setShowNewForm] = useState(false);
   const [editingId, setEditingId] = useState<null | number>(null);
+  const [hoveringId, setHoveringId] = useState<null | number>(null)
   const [keydown, setKeydown] = useState<string | null>(null);
   const reload = () => {
     mutate();
@@ -80,6 +81,8 @@ const Home: React.FC = () => {
     if (!keydown) return;
     if (keydown === "n" && !showNewForm && !editingCounter) {
       setShowNewForm(true);
+    } else if (keydown === "e" && hoveringId !== null) {
+      setEditingId(hoveringId)
     }
   }, [keydown]);
 
@@ -186,7 +189,7 @@ const Home: React.FC = () => {
           className="flex-grow h-full"
           counters={counters}
           noDataFallback={<CounterOnboardingPrompt />}
-          renderCounter={(counter) => (
+          renderCounter={(counter, state) => (
             <CounterItem
               key={counter.id}
               wrapperTag="li"
@@ -200,8 +203,11 @@ const Home: React.FC = () => {
                 await deleteCounter(counter.id);
                 reload();
               }}
+              {...state}
               onEdit={() => setEditingId(counter.id)}
-              className=""
+              isHovering={hoveringId === counter.id}
+              onMouseEnter={()=> setHoveringId(counter.id)}
+              onMouseLeave={()=> setHoveringId(null)}
             />
           )}
         />
