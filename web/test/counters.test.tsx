@@ -9,6 +9,7 @@ import {
   rearrangeCounters,
   listCounters,
   updateCounter,
+  archiveCounter,
 } from "../src/api/counters";
 import userEvent from "@testing-library/user-event";
 import { counterFixture } from "./helpers/fixtures";
@@ -54,7 +55,7 @@ test("create counter", async () => {
   );
 
   (listCounters as Mock).mockResolvedValue([
-    { id: 123, name: "my counter", notes: "special" },
+    counterFixture({ name: "my counter", notes: "special" }),
   ]);
 
   await userEvent.click(await screen.findByText("Submit"));
@@ -66,12 +67,14 @@ test("create counter", async () => {
 });
 
 test("update counters", async () => {
-  (listCounters as Mock).mockResolvedValue([{ id: 123, name: "my counter" }]);
+  (listCounters as Mock).mockResolvedValue([
+    counterFixture({ id: 123, name: "my counter" }),
+  ]);
   render(<AuthedApp />);
   await screen.findByText("my counter");
   const more = await screen.findByTitle("More options for 'my counter'");
   await userEvent.click(more);
-  await userEvent.click(await screen.findByText("Edit"));
+  await userEvent.click(await screen.findByText(/Edit counter/));
   const input = await screen.findByLabelText("Name");
   await userEvent.type(input, "other name");
   await userEvent.click(await screen.findByText("Submit"));
@@ -80,20 +83,39 @@ test("update counters", async () => {
 
 test("list counter", async () => {
   (listCounters as Mock).mockResolvedValue([
-    { id: 123, name: "my counter" },
-    { id: 124, name: "other counter" },
+    counterFixture({ id: 123, name: "my counter" }),
+    counterFixture({ id: 124, name: "other counter" }),
   ]);
   render(<AuthedApp />);
   await screen.findByText("other counter");
   expect(listCounters).toBeCalledTimes(1);
 });
+
+test("archive counter", async () => {
+  (listCounters as Mock).mockResolvedValue([
+    counterFixture({ name: "my counter" }),
+  ]);
+  render(<AuthedApp />);
+  const more = await screen.findByTitle("More options for 'my counter'");
+  await userEvent.click(more);
+  (listCounters as Mock).mockResolvedValue([
+    counterFixture({ name: "archived-counter", archived: true }),
+  ]);
+  await userEvent.click(await screen.findByText(/Archive counter/));
+  expect(updateCounter).toHaveBeenCalledWith(1, { archived: true });
+  await userEvent.click(await screen.findByText("Archive"));
+  await screen.findByText("archived-counter");
+  await screen.findByText("Unarchive");
+});
 test("delete counter", async () => {
-  (listCounters as Mock).mockResolvedValue([{ id: 123, name: "my counter" }]);
+  (listCounters as Mock).mockResolvedValue([
+    counterFixture({ name: "my counter" }),
+  ]);
   render(<AuthedApp />);
   const more = await screen.findByTitle("More options for 'my counter'");
   (listCounters as Mock).mockResolvedValueOnce([]);
   await userEvent.click(more);
-  await userEvent.click(await screen.findByText("Delete"));
+  await userEvent.click(await screen.findByText(/Delete counter/));
   expect(deleteCounter).toBeCalled();
   expect(listCounters).toBeCalledTimes(2);
   expect(screen.findByText("my counter")).rejects.toThrow();
@@ -103,14 +125,16 @@ describe("kbd shortcuts", () => {
   test("open the new counter form", async () => {
     (listCounters as Mock).mockResolvedValue([]);
     render(<AuthedApp />);
-    await userEvent.keyboard("n")
+    await userEvent.keyboard("n");
     await screen.findAllByText("Create New Counter");
   });
-  test("edit the counter", async ()=>{
-  (listCounters as Mock).mockResolvedValue([{ id: 123, name: "my-counter" }]);
+  test("edit the counter", async () => {
+    (listCounters as Mock).mockResolvedValue([
+      counterFixture({ name: "my-counter" }),
+    ]);
     render(<AuthedApp />);
-    await userEvent.pointer({target: await screen.findByText("my-counter")});
-    await userEvent.keyboard("e")
+    await userEvent.pointer({ target: await screen.findByText("my-counter") });
+    await userEvent.keyboard("e");
     await screen.findByDisplayValue("my-counter");
-  })
+  });
 });

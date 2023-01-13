@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Button, Drawer, Statistic, Tooltip } from "antd";
+import { Button, Drawer, Modal, Statistic, Tooltip, List } from "antd";
 import {
   Counter,
   createCounter,
@@ -10,6 +10,7 @@ import {
   updateCounter,
   upsertCounters,
   CounterAttrs,
+  archiveCounter,
 } from "../api/counters";
 import CounterForm from "../components/CounterForm";
 import CounterItem from "../components/CounterItem";
@@ -30,8 +31,9 @@ const Home: React.FC = () => {
     { revalidateOnFocus: false }
   );
   const [showNewForm, setShowNewForm] = useState(false);
+  const [showArchive, setShowArchive] = useState(false);
   const [editingId, setEditingId] = useState<null | number>(null);
-  const [hoveringId, setHoveringId] = useState<null | number>(null)
+  const [hoveringId, setHoveringId] = useState<null | number>(null);
   const [keydown, setKeydown] = useState<string | null>(null);
   const reload = () => {
     mutate();
@@ -82,7 +84,7 @@ const Home: React.FC = () => {
     if (keydown === "n" && !showNewForm && !editingCounter) {
       setShowNewForm(true);
     } else if (keydown === "e" && hoveringId !== null) {
-      setEditingId(hoveringId)
+      setEditingId(hoveringId);
     }
   }, [keydown]);
 
@@ -170,7 +172,42 @@ const Home: React.FC = () => {
         )}
       </Drawer>
 
+      <Modal
+        title="Counter Archive"
+        open={showArchive}
+        onCancel={() => setShowArchive(false)}
+        okText={false}
+        cancelText="Close"
+      >
+        {showArchive && (
+          <List
+            rowKey="id"
+            bordered
+            dataSource={counters.filter((c) => c.archived === true)}
+            locale={{ emptyText: "No archived counters yet" }}
+            renderItem={(counter) => (
+              <List.Item
+                className="flex flex-row justify-between"
+                actions={[
+                  <Button
+                    onClick={async () => {
+                      await updateCounter(counter.id, { archived: false });
+                      reload();
+                    }}
+                  >
+                    Unarchive
+                  </Button>,
+                ]}
+              >
+                <span>{counter.name}</span>
+              </List.Item>
+            )}
+          />
+        )}
+      </Modal>
+
       <div className="flex flex-row justify-end gap-2">
+        <Button onClick={() => setShowArchive(true)}>Archive</Button>
         <Tooltip
           placement="topLeft"
           title={
@@ -187,7 +224,7 @@ const Home: React.FC = () => {
         <CounterList
           tabIndex={0}
           className="flex-grow h-full"
-          counters={counters}
+          counters={counters.filter((c) => c.archived === false)}
           noDataFallback={<CounterOnboardingPrompt />}
           renderCounter={(counter, state) => (
             <CounterItem
@@ -203,11 +240,15 @@ const Home: React.FC = () => {
                 await deleteCounter(counter.id);
                 reload();
               }}
+              onArchive={async () => {
+                await updateCounter(counter.id, { archived: true });
+                reload();
+              }}
               {...state}
               onEdit={() => setEditingId(counter.id)}
               isHovering={hoveringId === counter.id}
-              onMouseEnter={()=> setHoveringId(counter.id)}
-              onMouseLeave={()=> setHoveringId(null)}
+              onMouseEnter={() => setHoveringId(counter.id)}
+              onMouseLeave={() => setHoveringId(null)}
             />
           )}
         />

@@ -1,5 +1,5 @@
 import { Button, Dropdown, Tooltip } from "antd";
-import { MoreVertical, Plus, Target } from "lucide-react";
+import { MoreVertical, Plus } from "lucide-react";
 import { Counter } from "../api/counters";
 import { marked } from "marked";
 import DOMPurify from "dompurify";
@@ -9,11 +9,12 @@ interface Props extends React.HTMLProps<HTMLDivElement & HTMLLIElement> {
   wrapperTag?: "li" | "div";
   className?: string;
   counter: Counter;
-  isDragging: boolean;
-  isHovering: boolean;
-  onEdit: () => void;
-  onDelete: () => void;
-  onIncrease: () => void;
+  isDragging?: boolean;
+  isHovering?: boolean;
+  onEdit?: () => void;
+  onDelete?: () => void;
+  onIncrease?: () => void;
+  onArchive?: () => void;
 }
 const CounterItem: React.FC<Props> = ({
   wrapperTag: WrapperTag = "div",
@@ -22,8 +23,9 @@ const CounterItem: React.FC<Props> = ({
   onDelete,
   onIncrease,
   counter,
-  isHovering,
-  isDragging,
+  isHovering = false,
+  isDragging = false,
+  onArchive,
   ...rest
 }) => (
   <Tooltip
@@ -67,12 +69,7 @@ const CounterItem: React.FC<Props> = ({
           <CountDisplay value={counter.count} />
         </Button>
       </div>
-      <div
-        className="flex-grow"
-        onClick={() => {
-          onEdit();
-        }}
-      >
+      <div className="flex-grow" onClick={onEdit}>
         <span className="text-lg">{counter.name}</span>
 
         {counter.notes && (
@@ -91,12 +88,17 @@ const CounterItem: React.FC<Props> = ({
           items: [
             {
               key: "1",
-              label: "Edit",
+              label: "Edit counter",
               onClick: onEdit,
             },
             {
               key: "2",
-              label: "Delete",
+              label: "Archive counter",
+              onClick: onArchive,
+            },
+            {
+              key: "3",
+              label: "Delete counter",
               onClick: onDelete,
             },
           ],

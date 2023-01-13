@@ -20,22 +20,23 @@ import {
   updateCounter,
 } from "../src/api/counters";
 import userEvent from "@testing-library/user-event";
+import { counterFixture } from "./helpers/fixtures";
 
 
 test("increase counter", async () => {
   (listCounters as Mock).mockResolvedValue([
-    { id: 123, name: "my counter", count: 0 },
+    counterFixture({ name: "my counter", count: 0 }),
   ]);
   render(<AuthedApp />);
   await screen.findByText(/0/);
   const inc = await screen.findByTitle("Increase 'my counter' by 1");
   (listCounters as Mock).mockResolvedValue([
-    { id: 123, name: "my counter", count: 1 },
+    counterFixture({ name: "my counter", count: 1 }),
   ]);
   await userEvent.click(inc);
   await screen.findByText(/1/);
   (listCounters as Mock).mockResolvedValue([
-    { id: 123, name: "my counter", count: 2 },
+    counterFixture({ name: "my counter", count: 2 }),
   ]);
   await userEvent.click(inc);
   await screen.findByText(/2/);

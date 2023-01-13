@@ -9,6 +9,7 @@ export interface CounterAttrs {
   sort_index: number;
   target: number;
   notes: string;
+  archived: boolean;
 }
 export interface Counter extends CounterAttrs {
   readonly id: number;
@@ -29,6 +30,9 @@ export const createCounter = async (attrs: Partial<Counter>) => {
     .insert({ ...attrs, user_id: await getUserId() });
 };
 
+export const archiveCounter = async (id: number) => {
+  updateCounter(id, { archived: true });
+};
 export const updateCounter = async (
   id: number,
   attrs: Partial<CounterAttrs>

@@ -10,6 +10,8 @@ export const counterFixture = (attrs: Partial<Counter>): Counter => {
     user_id: "123-123",
     sort_index: 1,
     target: 1,
+    archived: false,
+    notes: null,
     ...attrs,
   };
 };
