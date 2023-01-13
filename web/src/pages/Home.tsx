@@ -209,10 +209,12 @@ const Home: React.FC = () => {
       <div className="flex flex-row justify-end gap-2">
         <Button onClick={() => setShowArchive(true)}>Archive</Button>
         <Tooltip
+          mouseEnterDelay={1.5}
           placement="topLeft"
           title={
             <span>
-              <span className="kbd kbd-light kbd-xs">n</span>
+              Press <span className="kbd kbd-light kbd-xs">n</span> to add a
+              counter
             </span>
           }
         >
