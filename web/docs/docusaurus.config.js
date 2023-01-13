@@ -7,7 +7,7 @@ const darkCodeTheme = require("prism-react-renderer/themes/dracula");
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   title: "Counters",
-  tagline: "Behavioural counters for the right habits",
+  tagline: "Behavioural tracking for high performance habits",
   url: "https://counters.tznc.net",
   baseUrl: "/",
   onBrokenLinks: "throw",
