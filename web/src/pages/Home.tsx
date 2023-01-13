@@ -234,7 +234,7 @@ const Home: React.FC = () => {
               onIncrease={() => handleIncrease(counter, 1)}
               onDelete={async () => {
                 const confirmation = window.confirm(
-                  "Delete cannot be undone. Proceed with delete?"
+                  "Delete cannot be undone. Consider archiving instead. Proceed with delete?"
                 );
                 if (!confirmation) return;
                 await deleteCounter(counter.id);
