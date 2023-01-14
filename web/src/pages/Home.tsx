@@ -258,7 +258,8 @@ const Home: React.FC = () => {
                   await updateCounter(counter.id, { archived: true });
                   reload();
                 }}
-                {...state}
+                wrapperProps={state.draggableProps}
+                isDragging={state.isDragging}
                 onEdit={() => setEditingId(counter.id)}
                 isHovering={hoveringId === counter.id}
                 onMouseEnter={() => setHoveringId(counter.id)}

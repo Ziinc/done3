@@ -7,6 +7,10 @@
   display: inline-flex;
   align-items: center;
 }
+#root *[tabindex],
+#root button {
+  @apply !outline-none focus:ring-4 ring-blue-300;
+}
 
 /* add kbd styles, similar to daisyui but customized a little */
 @layer components {
