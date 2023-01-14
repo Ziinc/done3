@@ -1,3 +1,4 @@
+import { Divider } from "antd";
 import React, { HTMLProps } from "react";
 import { Draggable, Droppable } from "react-beautiful-dnd";
 import { Counter, CountMapping, CountTally } from "../api/counters";
@@ -15,6 +16,7 @@ interface Props extends HTMLProps<HTMLUListElement> {
   renderCounter: RenderCounter;
   className?: string;
   noDataFallback: React.ReactNode;
+  header: React.ReactNode;
 }
 
 const CounterList: React.FC<Props> = ({
@@ -23,6 +25,7 @@ const CounterList: React.FC<Props> = ({
   renderCounter,
   className = "",
   noDataFallback,
+  header,
   ...props
 }) => {
   return (
@@ -40,6 +43,8 @@ const CounterList: React.FC<Props> = ({
             snapshot.isDraggingOver ? "bg-sky-200" : "bg-blue-100",
           ].join(" ")}
         >
+          {header}
+          <Divider className="my-1" />
           {counters.length === 0 && noDataFallback}
           {counters.length > 0 &&
             counters.map((counter, index) => (

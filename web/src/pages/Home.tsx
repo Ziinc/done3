@@ -217,22 +217,28 @@ const Home: React.FC = () => {
 
       <div className="flex flex-row justify-end gap-2">
         <Button onClick={() => setShowArchive(true)}>Archive</Button>
-        <Tooltip
-          mouseEnterDelay={1.5}
-          placement="topLeft"
-          title={
-            <span>
-              Press <span className="kbd kbd-light kbd-xs">n</span> to add a
-              counter
-            </span>
-          }
-        >
-          <Button onClick={() => setShowNewForm(true)}>New counter</Button>
-        </Tooltip>
       </div>
 
       <DragDropContext onDragUpdate={handleDrag} onDragEnd={handleDrag}>
         <CounterList
+          header={
+            <div className="flex flex-row justify-end gap-2">
+              <Tooltip
+                mouseEnterDelay={1.5}
+                placement="topLeft"
+                title={
+                  <span>
+                    Press <span className="kbd kbd-light kbd-xs">n</span> to add
+                    a counter
+                  </span>
+                }
+              >
+                <Button onClick={() => setShowNewForm(true)}>
+                  New counter
+                </Button>
+              </Tooltip>
+            </div>
+          }
           tabIndex={0}
           className="flex-grow h-full"
           counters={counters.filter((c) => c.archived === false)}
