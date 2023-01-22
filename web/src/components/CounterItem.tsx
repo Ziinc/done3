@@ -7,7 +7,7 @@ import CountDisplay from "./CountDisplay";
 import React from "react";
 interface Props extends React.HTMLProps<HTMLDivElement & HTMLLIElement> {
   wrapperTag?: "li" | "div";
-  wrapperProps?: unknown;
+  wrapperProps?: Object;
   className?: string;
   counter: Counter;
   isDragging?: boolean;
