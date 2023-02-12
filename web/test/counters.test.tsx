@@ -44,6 +44,13 @@ test("onboarding", async () => {
   await screen.findByText(/Create a new counter/);
 });
 
+test("refresh counters", async () => {
+  (listCounters as Mock).mockResolvedValue([]);
+  render(<AuthedApp />);
+  await userEvent.click(await screen.findByText(/Refresh/));
+  expect(listCounters).toBeCalled;
+  expect(getCounts).toBeCalled;
+});
 test("create counter", async () => {
   (listCounters as Mock).mockResolvedValue([]);
   render(<AuthedApp />);
@@ -188,6 +195,6 @@ describe("context menu", () => {
       keys: "[MouseRight]",
     });
     await userEvent.click(await screen.findByText(/Archive counter/));
-    expect(updateCounter).toBeCalled()
+    expect(updateCounter).toBeCalled();
   });
 });

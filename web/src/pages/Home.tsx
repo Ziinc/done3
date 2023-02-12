@@ -24,18 +24,18 @@ import {
 } from "react-beautiful-dnd";
 import CounterList from "../components/CounterList";
 import useSWR from "swr";
-import { Plus, X } from "lucide-react";
+import { Plus, RefreshCw, X } from "lucide-react";
 import CounterOnboardingPrompt from "../components/CounterOnboardingPrompt";
 
 const Home: React.FC = () => {
-  const { data: counters = [], mutate } = useSWR<Counter[]>(
+  const { data: counters = [], mutate, isLoading: isCountersLoading } = useSWR<Counter[]>(
     "counters",
     () => listCounters(),
     { revalidateOnFocus: false }
   );
-  const { data: countMapping = {}, mutate: mutateCounts } =
+  const { data: countMapping = {}, mutate: mutateCounts, isLoading: isCountsLoading } =
     useSWR<CountMapping>("counts", () => getCounts(), {
-      revalidateOnFocus: false,
+      revalidateOnFocus: true,
     });
   const [showNewForm, setShowNewForm] = useState(false);
   const [showArchive, setShowArchive] = useState(false);
@@ -57,6 +57,10 @@ const Home: React.FC = () => {
       increaseCounter(counter.id, value),
       mutateCounts(newMapping, { revalidate: false }),
     ]);
+    mutateCounts();
+  };
+  const handleRefresh = () => {
+    mutate();
     mutateCounts();
   };
 
@@ -216,6 +220,7 @@ const Home: React.FC = () => {
       </Modal>
 
       <div className="flex flex-row justify-end gap-2">
+        <Button icon={<RefreshCw size={14}  className="m-2"/>} loading={Boolean(isCountersLoading || isCountsLoading)} onClick={handleRefresh}>Refresh</Button>
         <Button onClick={() => setShowArchive(true)}>Archive</Button>
       </div>
 
