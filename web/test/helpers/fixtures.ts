@@ -12,6 +12,8 @@ export const counterFixture = (attrs: Partial<Counter> = {}): Counter => {
     archived: false,
     notes: null,
     tally_method: "sum_1_day",
+    subcounters: [],
+    parent_id: null,
     ...attrs,
   };
 };

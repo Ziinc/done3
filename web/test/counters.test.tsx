@@ -1,5 +1,5 @@
-import { expect, test, Mock, describe, vi, beforeEach } from "vitest";
-import { screen, fireEvent } from "@testing-library/react";
+import { expect, test, Mock, describe, beforeEach } from "vitest";
+import { screen } from "@testing-library/react";
 import { render, wait } from "./helpers/utils";
 import React from "react";
 import { AuthedApp } from "../src/App";
@@ -10,6 +10,7 @@ import {
   listCounters,
   updateCounter,
   getCounts,
+  increaseCounter,
 } from "../src/api/counters";
 import userEvent from "@testing-library/user-event";
 import { counterFixture, countsFixture } from "./helpers/fixtures";
@@ -188,6 +189,76 @@ describe("context menu", () => {
       keys: "[MouseRight]",
     });
     await userEvent.click(await screen.findByText(/Archive counter/));
-    expect(updateCounter).toBeCalled()
+    expect(updateCounter).toBeCalled();
+  });
+
+  test("context menu - subcounter up", async () => {
+    (listCounters as Mock).mockResolvedValue([
+      counterFixture({ id: 1, name: "main" }),
+      counterFixture({ id: 2, name: "sub" }),
+    ]);
+    render(<AuthedApp />);
+    await userEvent.pointer({
+      target: await screen.findByText("sub"),
+      keys: "[MouseRight]",
+    });
+    await userEvent.click(await screen.findByText(/Set as subcounter of/));
+    expect(updateCounter).toBeCalled();
+  });
+
+  test("context menu - subcounter down", async () => {
+    (listCounters as Mock).mockResolvedValue([
+      counterFixture({
+        id: 1,
+        name: "main",
+        subcounters: [counterFixture({ id: 2, name: "sub", parent_id: 1 })],
+      }),
+    ]);
+    render(<AuthedApp />);
+    await userEvent.pointer({
+      target: await screen.findByText("sub"),
+      keys: "[MouseRight]",
+    });
+    await userEvent.click(await screen.findByText(/Set as standalone counter/));
+    expect(updateCounter).toBeCalled();
+  });
+
+  test("context menu - no subcounter", async () => {
+    (listCounters as Mock).mockResolvedValue([
+      counterFixture({
+        id: 1,
+        name: "main",
+        subcounters: [counterFixture({ id: 2, name: "sub", parent_id: 1 })],
+      }),
+    ]);
+    render(<AuthedApp />);
+    await userEvent.pointer({
+      target: await screen.findByText("main"),
+      keys: "[MouseRight]",
+    });
+    expect(await screen.queryAllByText(/Set as standalone counter/)).toEqual(
+      []
+    );
+    expect(await screen.queryAllByText(/Set as Subcounter/)).toEqual([]);
+  });
+});
+
+describe("hierarchical counters", () => {
+  test("increase subcounter -> increase parent", async () => {
+    (listCounters as Mock).mockResolvedValue([
+      counterFixture({
+        id: 1,
+        name: "main",
+        subcounters: [counterFixture({ id: 2, name: "sub", parent_id: 1 })],
+      }),
+    ]);
+    render(<AuthedApp />);
+
+    await userEvent.pointer({
+      target: await screen.findByText("sub"),
+      keys: "[MouseRight]",
+    });
+    await userEvent.click(await screen.findByText(/Increase by 5/));
+    expect(increaseCounter).toBeCalledTimes(2);
   });
 });

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Button, Drawer, Modal, Statistic, Tooltip, List } from "antd";
 import {
   Counter,
@@ -9,8 +9,6 @@ import {
   listCounters,
   updateCounter,
   upsertCounters,
-  CounterAttrs,
-  archiveCounter,
   getCounts,
   CountMapping,
   CountTally,
@@ -47,15 +45,27 @@ const Home: React.FC = () => {
     mutateCounts();
   };
   const handleIncrease = async (counter: Counter, value: number) => {
-    let updated: CountTally = Object.assign({}, countMapping[counter.id]);
-    for (const [key, currValue] of Object.entries(updated)) {
-      updated[key as keyof CountTally] = currValue + value;
+    function getNewMapping(currentMapping: CountMapping, counterId: number) {
+      let updated: CountTally = Object.assign({}, currentMapping[counterId]);
+      for (const [key, currValue] of Object.entries(updated)) {
+        updated[key as keyof CountTally] = currValue + value;
+      }
+      return { ...currentMapping, [counterId]: updated };
+    }
+    let mapping = countMapping;
+    if (counter.parent_id) {
+      // increment the parent as well
+      mapping = getNewMapping(mapping, counter.parent_id);
     }
 
-    const newMapping = { ...countMapping, [counter.id]: updated };
+    mapping = getNewMapping(mapping, counter.id);
+
     await Promise.all([
       increaseCounter(counter.id, value),
-      mutateCounts(newMapping, { revalidate: false }),
+      counter.parent_id
+        ? increaseCounter(counter.parent_id, value)
+        : Promise.resolve(),
+      mutateCounts(mapping, { revalidate: false }),
     ]);
     mutateCounts();
   };
@@ -64,21 +74,29 @@ const Home: React.FC = () => {
     draggableId,
     destination,
   }) => {
+    console.log("counters", counters);
     if (destination?.index === undefined) return;
     const [_resource, strId] = draggableId.split("-");
     const id = Number(strId);
     const counterIndex = counters.findIndex((c) => c.id === id);
 
     // return early if no change in pos
-    if (counterIndex === destination.index) return;
+    console.log("moved", counters[counterIndex]);
 
+    if (counterIndex === destination.index) return;
     const toUpsert = rearrangeCounters(
       counters,
       counters[counterIndex],
       destination.index
     );
-    await upsertCounters(toUpsert);
-    mutate(toUpsert);
+    console.log("toUpsert", toUpsert);
+    mutate(
+      async () => {
+        await upsertCounters(toUpsert);
+        return listCounters();
+      },
+      { optimisticData: toUpsert }
+    );
   };
   const editingCounter = (counters || []).find((c) => c.id === editingId);
 
@@ -219,7 +237,7 @@ const Home: React.FC = () => {
         <Button onClick={() => setShowArchive(true)}>Archive</Button>
       </div>
 
-      <DragDropContext onDragUpdate={handleDrag} onDragEnd={handleDrag}>
+      <DragDropContext onDragEnd={handleDrag}>
         <CounterList
           header={
             <div className="flex flex-row justify-end gap-2">
@@ -246,31 +264,43 @@ const Home: React.FC = () => {
           noDataFallback={<CounterOnboardingPrompt />}
           renderCounter={(counter, tally, state) => {
             return (
-              <CounterItem
-                key={counter.id}
-                count={tally ? tally[counter.tally_method] : 0}
-                wrapperTag="li"
-                counter={counter}
-                onIncrease={(value) => handleIncrease(counter, value)}
-                onDelete={async () => {
-                  const confirmation = window.confirm(
-                    "Delete cannot be undone. Consider archiving instead. Proceed with delete?"
-                  );
-                  if (!confirmation) return;
-                  await deleteCounter(counter.id);
-                  reload();
-                }}
-                onArchive={async () => {
-                  await updateCounter(counter.id, { archived: true });
-                  reload();
-                }}
-                wrapperProps={state.draggableProps}
-                isDragging={state.isDragging}
-                onEdit={() => setEditingId(counter.id)}
-                isHovering={hoveringId === counter.id}
-                onMouseEnter={() => setHoveringId(counter.id)}
-                onMouseLeave={() => setHoveringId(null)}
-              />
+                <CounterItem
+                  className={state.className}
+                  key={counter.id}
+                  count={tally ? tally[counter.tally_method] : 0}
+                  wrapperTag="li"
+                  counter={counter}
+                  onIncrease={(value) => handleIncrease(counter, value)}
+                  onDelete={async () => {
+                    const confirmation = window.confirm(
+                      "Delete cannot be undone. Consider archiving instead. Proceed with delete?"
+                    );
+                    if (!confirmation) return;
+                    await deleteCounter(counter.id);
+                    reload();
+                  }}
+                  onArchive={async () => {
+                    await updateCounter(counter.id, { archived: true });
+                    reload();
+                  }}
+                  onSetAsStandalone={async () => {
+                    await updateCounter(counter.id, { parent_id: null });
+                    reload();
+                  }}
+                  onSetAsSubcounter={async (parentId) => {
+                    await updateCounter(counter.id, { parent_id: parentId });
+                    reload();
+                  }}
+                  previousCounter={state.previousCounter ?? undefined}
+                  wrapperProps={state.draggableProps}
+                  isDragging={state.isDragging}
+                  onEdit={() => setEditingId(counter.id)}
+                  isHovering={hoveringId === counter.id}
+                  onMouseEnter={() => setHoveringId(counter.id)}
+                  onMouseLeave={() => setHoveringId(null)}
+                >
+                  {state.subcounterChildren}
+                  </CounterItem>
             );
           }}
         />

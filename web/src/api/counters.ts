@@ -10,6 +10,7 @@ export interface CounterAttrs {
   target: number;
   notes: string;
   archived: boolean;
+  parent_id: number | null;
   tally_method: keyof CountTally;
 }
 
@@ -26,12 +27,19 @@ export interface CountMapping {
 }
 export interface Counter extends CounterAttrs {
   readonly id: number;
+  readonly subcounters: Counter[];
 }
 
 export const listCounters = async () => {
+  // @ts-ignore
   const { data } = await client
     .from("counters")
-    .select()
+    .select(
+      `
+    *,
+    subcounters:counters(*)`
+    )
+    .is("parent_id", null)
     .order("sort_index", { ascending: true });
   return data as Counter[];
 };
@@ -63,9 +71,12 @@ export const increaseCounter = async (counter_id: number, value: number) => {
   await client.from("counter_events").insert({ counter_id, value });
 };
 
-export const upsertCounters = async (attrsArr: Partial<CounterAttrs>[]) => {
+export const upsertCounters = async (attrsArr: Partial<Counter>[]) => {
   const user_id = await getUserId();
-  const values = attrsArr.map((v) => ({ ...v, user_id }));
+  const values = attrsArr.map((v: any) => {
+    delete v["subcounters"];
+    return v as CounterAttrs;
+  });
   await client.from("counters").upsert(values);
 };
 
@@ -79,10 +90,14 @@ export const rearrangeCounters = (
   );
   const part1 = filtered.slice(0, newIndex);
   const part2 = filtered.slice(newIndex);
-  return [...part1, movedCounter, ...part2].map((counter, index) => ({
-    ...counter,
-    sort_index: index,
-  }));
+  const result = part1
+    .concat([movedCounter])
+    .concat(part2)
+    .map((counter, index) => {
+      counter["sort_index"] = index;
+      return counter;
+    });
+  return result;
 };
 
 export const getCounts = async (): Promise<CountMapping> => {

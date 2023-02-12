@@ -17,6 +17,9 @@ interface Props extends React.HTMLProps<HTMLDivElement & HTMLLIElement> {
   onDelete?: () => void;
   onIncrease?: (value: number) => void;
   onArchive?: () => void;
+  onSetAsSubcounter?: (parentId: number) => void;
+  onSetAsStandalone?: () => void;
+  previousCounter?: Counter;
 }
 
 const CounterItem: React.FC<Props> = ({
@@ -32,6 +35,10 @@ const CounterItem: React.FC<Props> = ({
   onArchive,
   count,
   ref,
+  previousCounter,
+  onSetAsStandalone,
+  onSetAsSubcounter,
+  children,
   ...rest
 }) => (
   <Tooltip
@@ -60,7 +67,6 @@ const CounterItem: React.FC<Props> = ({
             key: "inc-10",
             onClick: () => onIncrease?.(10),
           },
-
           {
             type: "divider",
             className: "!bg-slate-200",
@@ -70,6 +76,25 @@ const CounterItem: React.FC<Props> = ({
             key: "edit",
             onClick: onEdit,
           },
+          ...(previousCounter
+            ? [
+                {
+                  label: `Set as subcounter of '${previousCounter.name}'`,
+                  key: "set-as-subcounter",
+                  onClick: () => onSetAsSubcounter?.(previousCounter.id),
+                },
+              ]
+            : []),
+          ...(counter.parent_id
+            ? [
+                {
+                  label: `Set as standalone counter`,
+                  key: "set-as-standalone",
+                  onClick: onSetAsStandalone,
+                },
+              ]
+            : []),
+
           {
             label: "Archive counter",
             key: "archive",
@@ -85,78 +110,86 @@ const CounterItem: React.FC<Props> = ({
       trigger={["contextMenu"]}
     >
       <WrapperTag
-        className={[
-          className,
-          isDragging || isHovering ? "bg-stone-100" : "bg-slate-50",
-          isDragging ? "shadow-lg ring-2 ring-violet-300" : "",
-          "rounded-lg p-2 transition-all ",
-          "flex flex-row gap-4 items-center justify-between",
-        ].join(" ")}
+        className={[className, "flex flex-col gap-2"].join(" ")}
         ref={ref}
         {...wrapperProps}
         {...rest}
       >
-        <div className="w-fit">
-          <Button
-            block
-            type="primary"
-            shape="round"
-            title={`Increase '${counter.name}' by 1`}
-            onClick={() => onIncrease?.(1)}
-            icon={<Plus size={16} strokeWidth={3} />}
-            className={[
-              "gap-1",
-              count >= counter.target ? "bg-green-700 hover:!bg-green-600" : "",
-              count < counter.target
-                ? "bg-yellow-600 hover:!bg-yellow-500"
-                : "",
-              count > counter.target * 5 ? "bg-sky-600 hover:!bg-sky-500" : "",
-            ].join(" ")}
-          >
-            <CountDisplay value={count} />
-          </Button>
-        </div>
-        <div className="flex-grow" onClick={onEdit}>
-          <span className="text-lg">{counter.name}</span>
-
-          {counter.notes && (
-            <div
-              className="text-xs text-slate-700 max-h-12 overflow-hidden"
-              dangerouslySetInnerHTML={{
-                __html: DOMPurify.sanitize(marked.parse(counter.notes), {
-                  USE_PROFILES: { html: true },
-                }),
-              }}
-            ></div>
-          )}
-        </div>
-        <Dropdown
-          menu={{
-            items: [
-              {
-                key: "1",
-                label: "Edit counter",
-                onClick: onEdit,
-              },
-              {
-                key: "2",
-                label: "Archive counter",
-                onClick: onArchive,
-              },
-              {
-                key: "3",
-                label: "Delete counter",
-                onClick: onDelete,
-              },
-            ],
-          }}
+        <div
+          className={[
+            isDragging || isHovering ? "bg-stone-100" : "bg-slate-50",
+            isDragging ? "shadow-lg ring-2 ring-violet-300" : "",
+            "rounded-lg p-2",
+            "flex flex-row gap-4 items-center justify-between",
+          ].join(" ")}
         >
-          <Button
-            type="ghost"
-            icon={<MoreVertical size={12} />}
-            title={`More options for '${counter.name}'`}
-          ></Button>
-        </Dropdown>
+          <div className="w-fit">
+            <Button
+              block
+              type="primary"
+              shape="round"
+              title={`Increase '${counter.name}' by 1`}
+              onClick={() => onIncrease?.(1)}
+              icon={<Plus size={16} strokeWidth={3} />}
+              className={[
+                "gap-1",
+                count >= counter.target
+                  ? "bg-green-700 hover:!bg-green-600"
+                  : "",
+                count < counter.target
+                  ? "bg-yellow-600 hover:!bg-yellow-500"
+                  : "",
+                count > counter.target * 5
+                  ? "bg-sky-600 hover:!bg-sky-500"
+                  : "",
+              ].join(" ")}
+            >
+              <CountDisplay value={count} />
+            </Button>
+          </div>
+          <div className="flex-grow" onClick={onEdit}>
+            <span className="text-lg">{counter.name}</span>
+
+            {counter.notes && (
+              <div
+                className="text-xs text-slate-700 max-h-12 overflow-hidden"
+                dangerouslySetInnerHTML={{
+                  __html: DOMPurify.sanitize(marked.parse(counter.notes), {
+                    USE_PROFILES: { html: true },
+                  }),
+                }}
+              ></div>
+            )}
+          </div>
+          <Dropdown
+            menu={{
+              items: [
+                {
+                  key: "1",
+                  label: "Edit counter",
+                  onClick: onEdit,
+                },
+                {
+                  key: "2",
+                  label: "Archive counter",
+                  onClick: onArchive,
+                },
+                {
+                  key: "3",
+                  label: "Delete counter",
+                  onClick: onDelete,
+                },
+              ],
+            }}
+          >
+            <Button
+              type="ghost"
+              icon={<MoreVertical size={12} />}
+              title={`More options for '${counter.name}'`}
+            ></Button>
+          </Dropdown>
+        </div>
+        {children}
       </WrapperTag>
     </Dropdown>
   </Tooltip>
