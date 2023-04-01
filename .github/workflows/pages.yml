@@ -40,11 +40,11 @@ jobs:
       - name: Install dependencies web/docs
         run: npm ci
         working-directory: web/docs
-      - name: Build app
-        run: npm run test && npm run build
       - name: Build web/docs
         run: npm run build
         working-directory: web/docs
+      - name: Build app
+        run: npm run test && npm run build
       - name: Publish
         uses: cloudflare/pages-action@1
         with:
