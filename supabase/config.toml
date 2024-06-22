@@ -40,12 +40,12 @@ file_size_limit = "50MiB"
 [auth]
 # The base URL of your website. Used as an allow-list for redirects and for constructing URLs used
 # in emails.
-site_url = "http://127.0.0.1:5173/app"
+site_url = "http://localhost:5173/"
 # A list of *exact* URLs that auth providers are permitted to redirect to post authentication.
-additional_redirect_urls = ["https://127.0.0.1:5173/app"]
+additional_redirect_urls = ["https://localhost:5173/app", "https://localhost:5173"]
 # How long tokens are valid for, in seconds. Defaults to 3600 (1 hour), maximum 604,800 seconds (one
 # week).
-jwt_expiry = 3600
+jwt_expiry = 604800
 # Allow/disallow new user signups to your project.
 enable_signup = true
 
@@ -69,3 +69,23 @@ redirect_uri = ""
 # Overrides the default auth provider URL. Used to support self-hosted gitlab, single-tenant Azure,
 # or any other third-party OIDC providers.
 url = ""
+[auth.external.google]
+enabled = true
+client_id = "17270902880-bd8fpdqulq8r57ohis3a7qd6605kr30t.apps.googleusercontent.com"
+secret = "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"
+# Overrides the default auth redirectUrl.
+redirect_uri = ""
+# Overrides the default auth provider URL. Used to support self-hosted gitlab, single-tenant Azure,
+# or any other third-party OIDC providers.
+url = ""
+
+[analytics]
+enabled = true
+port = 54327
+vector_port = 54328
+backend = "postgres"
+# Setup BigQuery project to enable log viewer on local development stack.
+# See: https://logflare.app/guides/bigquery-setup
+gcp_project_id = ""
+gcp_project_number = ""
+gcp_jwt_path = "supabase/gcloud.json"

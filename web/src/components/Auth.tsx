@@ -1,5 +1,6 @@
 import { Session } from "@supabase/gotrue-js";
-import { Button, Form as AntForm, Input, Space, Tabs } from "antd";
+import { Form as AntForm, Input, Space, Tabs } from "antd";
+import Button from "@mui/material/Button";
 import { ArrowLeft } from "lucide-react";
 import React, { useContext, useEffect, useState } from "react";
 import { Link } from "wouter";
@@ -8,9 +9,15 @@ import {
   onAuthStateChange,
   requestPasswordReset,
   signInWithPassword,
+  signIntoGoogle,
   signUp,
   updatePassword,
 } from "../api/auth";
+import { Divider } from "@mui/material";
+import { LoadingButton } from "@mui/lab";
+import { Google } from "@mui/icons-material";
+import { SupabaseClient } from "@supabase/supabase-js";
+import { client } from "../utils";
 namespace Auth {
   export enum Mode {
     SIGN_IN = "sign_in",
@@ -30,113 +37,25 @@ namespace Auth {
     onSubmit: (mode: Mode, attrs: Attrs, cbs: Callbacks) => void;
   }
 
-  export const Form: React.FC<FormProps> = ({
-    mode: modeProp = Mode.SIGN_IN,
-    onSubmit,
-  }) => {
-    const [mode, setMode] = useState(modeProp);
-    const [loading, setLoading] = useState(false);
-    const [msg, setMsg] = useState("");
-    const handleSubmit = async (attrs: Attrs) => {
-      setLoading(true);
-      const callbacks = {
-        cancelLoading: () => setLoading(false),
-      };
-      await onSubmit(mode, attrs, callbacks);
-      if (mode === Mode.REQUEST_RESET) {
-        setMsg("Password reset instructions has been sent your e-mail");
-      } else if (mode === Mode.SIGN_UP) {
-        setMsg("Confirmation instructions has been sent your e-mail");
-      }
+  export const Form: React.FC<FormProps> = () => {
+    const handleGoogleSignIn = async () => {
+      await signIntoGoogle()
+      
     };
-    const isSigningInOrUp = mode === Mode.SIGN_IN || mode === Mode.SIGN_UP;
 
-    useEffect(() => {
-      setMsg("");
-    }, [mode]);
     return (
       <>
-        {isSigningInOrUp ? (
-          <Tabs
-            defaultActiveKey={Mode.SIGN_IN}
-            size="middle"
-            centered
-            items={[
-              {
-                key: Mode.SIGN_IN,
-                label: (
-                  <span className="inline-block w-24 text-center">Sign In</span>
-                ),
-              },
-              {
-                key: Mode.SIGN_UP,
-                label: (
-                  <span className="inline-block w-24 text-center">Sign Up</span>
-                ),
-              },
-            ]}
-            onChange={(key) => setMode(key as Mode)}
-          />
-        ) : (
-          <Space className=" pt-2 pb-4">
-            <Link to="/" onClick={() => setMode(Mode.SIGN_IN)}>
-              <Button type="text" icon={<ArrowLeft size={16} />}>
-                Back to sign in
-              </Button>
-            </Link>
-          </Space>
-        )}
-        <AntForm
-          name={String(mode)}
-          labelCol={{ span: 8 }}
-          wrapperCol={{ span: 16 }}
-          onFinish={handleSubmit}
+        <Button
+          variant="contained"
+          sx={{
+            mt: 1,
+            width: "100%",
+          }}
+          startIcon={<Google />}
+          onClick={handleGoogleSignIn}
         >
-          {(isSigningInOrUp || mode === Mode.REQUEST_RESET) && (
-            <AntForm.Item
-              label="Email"
-              name="email"
-              rules={[{ required: true }]}
-            >
-              <Input type="email" />
-            </AntForm.Item>
-          )}
-          {(isSigningInOrUp || mode === Mode.UPDATE_PASSWORD) && (
-            <AntForm.Item
-              label="Password"
-              name="password"
-              rules={[{ required: true }]}
-            >
-              <Input type="password" />
-            </AntForm.Item>
-          )}
-          <AntForm.Item wrapperCol={{ span: 24 }}>
-            <Button
-              type="primary"
-              htmlType="submit"
-              loading={loading}
-              block
-              className="justify-center"
-            >
-              {mode === Mode.SIGN_IN && "Sign in"}
-              {mode === Mode.SIGN_UP && "Sign up"}
-              {mode === Mode.REQUEST_RESET &&
-                "Send reset password instructions"}
-              {mode === Mode.UPDATE_PASSWORD && "Confirm password change"}
-            </Button>
-          </AntForm.Item>
-        </AntForm>
-        {isSigningInOrUp && (
-          <Button
-            type="link"
-            onClick={() => {
-              setMode(Mode.REQUEST_RESET);
-            }}
-          >
-            Forgot your password?
-          </Button>
-        )}
-        {msg}
+          Sign in with Google
+        </Button>
       </>
     );
   };

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Button, Drawer, Modal, Statistic, Tooltip, List } from "antd";
 import {
   Counter,
@@ -9,8 +9,6 @@ import {
   listCounters,
   updateCounter,
   upsertCounters,
-  CounterAttrs,
-  archiveCounter,
   getCounts,
   CountMapping,
   CountTally,
@@ -26,13 +24,28 @@ import CounterList from "../components/CounterList";
 import useSWR from "swr";
 import { Plus, X } from "lucide-react";
 import CounterOnboardingPrompt from "../components/CounterOnboardingPrompt";
+import { listTaskLists } from "../api/task_lists";
+import TaskList from "../components/tasks/TaskList";
+import { Stack } from "@mui/material";
 
 const Home: React.FC = () => {
-  const { data: counters = [], mutate } = useSWR<Counter[]>(
-    "counters",
-    () => listCounters(),
-    { revalidateOnFocus: false }
-  );
+  let {
+    data: counters = [],
+    isLoading,
+    mutate,
+  } = useSWR<Counter[]>("counters", () => listCounters(), {
+    revalidateOnFocus: false,
+  });
+
+  let {
+    data: taskLists = [],
+    isLoading: isLoadingTaskLists,
+    mutate: mutateTaskLists,
+  } = useSWR("tasklists", () => listTaskLists(), {
+    revalidateOnFocus: false,
+  });
+
+
   const { data: countMapping = {}, mutate: mutateCounts } =
     useSWR<CountMapping>("counts", () => getCounts(), {
       revalidateOnFocus: false,
@@ -181,44 +194,11 @@ const Home: React.FC = () => {
         )}
       </Drawer>
 
-      <Modal
-        title="Counter Archive"
-        open={showArchive}
-        onCancel={() => setShowArchive(false)}
-        okText={false}
-        cancelText="Close"
-      >
-        {showArchive && (
-          <List
-            rowKey="id"
-            bordered
-            dataSource={counters.filter((c) => c.archived === true)}
-            locale={{ emptyText: "No archived counters yet" }}
-            renderItem={(counter) => (
-              <List.Item
-                className="flex flex-row justify-between"
-                actions={[
-                  <Button
-                    onClick={async () => {
-                      await updateCounter(counter.id, { archived: false });
-                      reload();
-                    }}
-                  >
-                    Unarchive
-                  </Button>,
-                ]}
-              >
-                <span>{counter.name}</span>
-              </List.Item>
-            )}
-          />
-        )}
-      </Modal>
-
-      <div className="flex flex-row justify-end gap-2">
-        <Button onClick={() => setShowArchive(true)}>Archive</Button>
-      </div>
-
+      <Stack direction="row" justifyContent={"start"} gap={1}>
+        {taskLists.map((list) => (
+          <TaskList key={list.id} taskList={list} />
+        ))}
+      </Stack>
       <DragDropContext onDragUpdate={handleDrag} onDragEnd={handleDrag}>
         <CounterList
           header={
