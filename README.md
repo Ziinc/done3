@@ -1,3 +1,7 @@
+# Done3 (DoneDoneDone) 
+
+A productivity app that extends and integrates GSuite apps for Getting Things Done.
+
 ## Development Process
 
 1. Make changes in local studio

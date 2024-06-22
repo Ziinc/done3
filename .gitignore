@@ -1,3 +1,6 @@
 node_modules/
 coverage/
 _current_branch
+supabase/.temp/
+supabase/.env
+.env

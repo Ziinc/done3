@@ -6,8 +6,10 @@ import { Transition } from "@headlessui/react";
 import CenteredLayout from "./layouts/CenteredLayout";
 import LoadingSpinner from "./components/LoadingSpinner";
 import Auth from "./components/Auth";
-import { Route, Router } from "wouter";
+import { Route } from "wouter";
 import { HashRouter } from "./router";
+import { Container, Divider, Paper, Stack, Typography } from "@mui/material";
+import Grid from "@mui/material/Unstable_Grid2";
 
 function App() {
   const user = Auth.useAuth();
@@ -21,7 +23,7 @@ function App() {
     handleStartup();
     const timeout = setTimeout(() => {
       setMinLoadingWait(true);
-    }, 600);
+    }, 100);
     return () => clearTimeout(timeout);
   }, []);
 
@@ -80,7 +82,7 @@ export const AuthWall = ({ showLoading }: { showLoading: boolean }) => {
 
   return (
     <CenteredLayout className="bg-violet-50">
-      <div className="relative w-72 h-96">
+      <div className="relative">
         <Transition
           show={showLoading}
           className="transition-opacity duration-300 absolute inset-0 flex"
@@ -99,9 +101,39 @@ export const AuthWall = ({ showLoading }: { showLoading: boolean }) => {
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <div className="bg-slate-50 p-4 rounded-xl border-solid border-b-2 border-t-0 border-l-0 border border-pink-500">
+          <Stack direction="column" spacing={2}>
+            <Container className="w-96">
+              <Typography variant="h1" textAlign={"center"}>
+                Done<sup>3</sup>
+              </Typography>
+              <Typography variant="subtitle1" textAlign={"left"}>
+                Your integrated dashboard for getting things done with Google
+                Tasks
+              </Typography>
+            </Container>
+            <Divider />
+            <Typography variant="h6" textAlign={"center"}>
+              Features
+            </Typography>
+            <Grid container spacing={2}>
+              <Grid xs={12} md={6}>
+                <Paper sx={{ p: 2 }}>
+                  <Typography variant="subtitle2">Tasks+</Typography>
+                  <Typography variant="body2">Extended Tasks features</Typography>
+                </Paper>
+              </Grid>
+              <Grid xs={12} md={6}>
+                <Paper sx={{ p: 2 }}>
+                  <Typography variant="subtitle2">Counters</Typography>
+                  <Typography variant="body2">
+                    Count-based metrics for Tasks and behaviours
+                  </Typography>
+                </Paper>
+              </Grid>
+            </Grid>
+            <Divider />
             <Auth.AuthContainer />
-          </div>
+          </Stack>
         </Transition>
       </div>
     </CenteredLayout>
