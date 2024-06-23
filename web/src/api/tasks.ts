@@ -51,7 +51,7 @@ export const listTasks = async (taskListId: string): Promise<Task[]> => {
 
 export const deleteTask = async (taskListId: string, id: string) => {
   return await instance().delete(
-    `/tasks/v1/users/@me/lists/${taskListId}/tasks/${id}`
+    `/tasks/v1/lists/${taskListId}/tasks/${id}`
   );
 };
 
