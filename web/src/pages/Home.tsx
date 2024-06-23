@@ -24,7 +24,11 @@ import CounterList from "../components/CounterList";
 import useSWR from "swr";
 import { Plus, X } from "lucide-react";
 import CounterOnboardingPrompt from "../components/CounterOnboardingPrompt";
-import { insertTaskList, listTaskLists } from "../api/task_lists";
+import {
+  deleteTaskList,
+  insertTaskList,
+  listTaskLists,
+} from "../api/task_lists";
 import TaskList from "../components/tasks/TaskList";
 import { IconButton, Stack, TextField } from "@mui/material";
 import { Cancel } from "@mui/icons-material";
@@ -196,7 +200,15 @@ const Home: React.FC = () => {
 
       <Stack direction="row" justifyContent={"start"} gap={1} overflow="scroll">
         {taskLists.map((list) => (
-          <TaskList key={list.id} taskList={list} />
+          <TaskList
+            key={list.id}
+            taskList={list}
+            onDeleteTaskList={() => {
+              deleteTaskList(list.id);
+              const updated = taskLists.filter((tl) => tl.id !== list.id);
+              mutateTaskLists(updated, { revalidate: false });
+            }}
+          />
         ))}
         <div>
           {newList ? (
