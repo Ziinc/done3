@@ -24,9 +24,10 @@ import CounterList from "../components/CounterList";
 import useSWR from "swr";
 import { Plus, X } from "lucide-react";
 import CounterOnboardingPrompt from "../components/CounterOnboardingPrompt";
-import { listTaskLists } from "../api/task_lists";
+import { insertTaskList, listTaskLists } from "../api/task_lists";
 import TaskList from "../components/tasks/TaskList";
-import { Stack } from "@mui/material";
+import { IconButton, Stack, TextField } from "@mui/material";
+import { Cancel } from "@mui/icons-material";
 
 const Home: React.FC = () => {
   let {
@@ -45,13 +46,12 @@ const Home: React.FC = () => {
     revalidateOnFocus: false,
   });
 
-
   const { data: countMapping = {}, mutate: mutateCounts } =
     useSWR<CountMapping>("counts", () => getCounts(), {
       revalidateOnFocus: false,
     });
   const [showNewForm, setShowNewForm] = useState(false);
-  const [showArchive, setShowArchive] = useState(false);
+  const [newList, setNewList] = useState(false);
   const [editingId, setEditingId] = useState<null | number>(null);
   const [hoveringId, setHoveringId] = useState<null | number>(null);
   const [keydown, setKeydown] = useState<string | null>(null);
@@ -194,10 +194,36 @@ const Home: React.FC = () => {
         )}
       </Drawer>
 
-      <Stack direction="row" justifyContent={"start"} gap={1}>
+      <Stack direction="row" justifyContent={"start"} gap={1} overflow="scroll">
         {taskLists.map((list) => (
           <TaskList key={list.id} taskList={list} />
         ))}
+        <div>
+          {newList ? (
+            <>
+              <form
+                className="w-48"
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  const { data } = await insertTaskList({
+                    title: e.currentTarget.taskListTitle.value,
+                  });
+                  mutateTaskLists([...taskLists, data]);
+                }}
+              >
+                <TextField label="Title" name="taskListTitle" required />
+                <Button htmlType="submit">Add list</Button>
+                <IconButton type="button" onClick={() => setNewList(false)}>
+                  <Cancel />
+                </IconButton>
+              </form>
+            </>
+          ) : (
+            <>
+              <Button onClick={() => setNewList(true)}>Add new list</Button>
+            </>
+          )}
+        </div>
       </Stack>
       <DragDropContext onDragUpdate={handleDrag} onDragEnd={handleDrag}>
         <CounterList
