@@ -1,7 +1,7 @@
 import MainLayout from "./layouts/MainLayout";
 import Home from "./pages/Home";
 import { useEffect, useState } from "react";
-import { checkAuthed } from "./api/auth";
+import { checkAuthed, refreshAccessTokens } from "./api/auth";
 import { Transition } from "@headlessui/react";
 import CenteredLayout from "./layouts/CenteredLayout";
 import LoadingSpinner from "./components/LoadingSpinner";
@@ -17,6 +17,7 @@ function App() {
   const [loading, setLoading] = useState(true);
   const handleStartup = async () => {
     await checkAuthed();
+    
     setLoading(false);
   };
   useEffect(() => {

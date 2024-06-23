@@ -1,8 +1,14 @@
-import useSWR from "swr";
+import useSWR, { mutate } from "swr";
 import { TaskList } from "../../api/task_lists";
-import { Task, insertTask, listTasks, patchTask } from "../../api/tasks";
 import {
-    Container,
+  Task,
+  deleteTask,
+  insertTask,
+  listTasks,
+  patchTask,
+} from "../../api/tasks";
+import {
+  Container,
   IconButton,
   List,
   ListItem,
@@ -20,6 +26,7 @@ import CheckIcon from "@mui/icons-material/Check";
 import {
   ChevronRightRounded,
   ChevronRightSharp,
+  Delete,
   Refresh,
 } from "@mui/icons-material";
 import { useMemo, useState } from "react";
@@ -69,8 +76,13 @@ const TaskList = ({ taskList }: Props) => {
       mutateTasks(updated, { revalidate: false });
     }
   };
+  const handleDelete = async (task: Task) => {
+    deleteTask(taskList.id, task.id);
+    const updated = tasks.filter((t) => t.id !== task.id);
+    mutateTasks(updated, { revalidate: false });
+  };
   return (
-    <Paper elevation={1}  sx={{ borderRadius: 3, p: 2, width: 350}}>
+    <Paper elevation={1} sx={{ borderRadius: 3, p: 2, width: 350 }}>
       <Stack direction="row" alignItems="center">
         <h3>{taskList.title}</h3>
         <IconButton onClick={() => mutateTasks()}>
@@ -90,7 +102,12 @@ const TaskList = ({ taskList }: Props) => {
         <>
           <List>
             {pendingTasks.map((task) => (
-              <Task key={task.id} task={task} onToggleTask={onToggleTask} />
+              <Task
+                key={task.id}
+                task={task}
+                onToggleTask={onToggleTask}
+                onDeleteTask={() => handleDelete(task)}
+              />
             ))}
             {completedTasks.length > 0 && (
               <Button
@@ -111,14 +128,22 @@ const TaskList = ({ taskList }: Props) => {
             )}
             {showCompleted &&
               completedTasks.map((task) => (
-                <Task task={task} onToggleTask={onToggleTask} />
+                <Task
+                  task={task}
+                  onDeleteTask={() => handleDelete(task)}
+                  onToggleTask={onToggleTask}
+                />
               ))}
           </List>
           <form
-            onSubmit={(e) => {
+            onSubmit={async (e) => {
               e.preventDefault();
               const title = e.currentTarget.taskTitle.value;
-              insertTask(taskList.id, { title });
+              await insertTask(taskList.id, { title });
+              mutateTasks([
+                { id: "new", title, status: "needsAction" } as any,
+                ...tasks,
+              ]);
             }}
           >
             <TextField name="taskTitle" label="Outlined" variant="outlined" />
@@ -133,8 +158,10 @@ const TaskList = ({ taskList }: Props) => {
 interface TaskProps {
   task: Task;
   onToggleTask: (task: Task) => void;
+  // bound
+  onDeleteTask: () => void;
 }
-const Task = ({ task, onToggleTask }: TaskProps) => (
+const Task = ({ task, onToggleTask, onDeleteTask }: TaskProps) => (
   <ListItem key={task.id} sx={{ p: 0 }} alignItems="center">
     <ListItemAvatar>
       <IconButton color={"primary"} onClick={() => onToggleTask(task)}>
@@ -158,6 +185,14 @@ const Task = ({ task, onToggleTask }: TaskProps) => (
       <Typography variant="body2" className="text-gray-500">
         {task.notes}
       </Typography>
+      <Button
+        color="secondary"
+        onClick={onDeleteTask}
+        size="small"
+        startIcon={<Delete />}
+      >
+        Delete
+      </Button>
     </ListItemText>
   </ListItem>
 );

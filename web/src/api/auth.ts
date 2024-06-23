@@ -1,7 +1,5 @@
 import { GoTrueClient } from "@supabase/gotrue-js";
 import { client } from "../utils";
-import axios from "axios";
-import { BrowserNotSupported, QrCodeScannerOutlined } from "@mui/icons-material";
 
 export const signOut = () => {
   client.auth.signOut();
@@ -18,33 +16,31 @@ export const getSession = async () => {
   return data;
 };
 
+export const refreshAccessTokens = async () => {
+  return await client.rpc("update_expiring_access_tokens");
+};
 export const checkAuthed = async () => {
-  const {error} = await client.auth.refreshSession();
-  console.log(error)
-  // const expiry  = window.localStorage.getItem('oauth_provider_expires_at')
+  await client.auth.refreshSession();
+  // force refresh of tokens if on dev
+  if (import.meta.env.MODE === "dev") {
+    await refreshAccessTokens();
+  }
+  getAndStoreGoogleAuth();
+};
 
-  // const providerRefreshToken = window.localStorage.getItem('oauth_provider_refresh_token')
-  // console.log('expiry', (Date.now()/ 1000) > Number(expiry))
-  // if (result.data.session && providerRefreshToken && (expiry && (Date.now()/ 1000) > Number(expiry) == false) ){
-  //   // refresh the
-  //   // await axios.post("https://oauth2.googleapis.com/token")
-  //   const res  = await client.functions.invoke("oauth-refresh", {body: {provider_refresh_token: providerRefreshToken}})
-  //   console.log('edge func res', res)
-  // }
-
-  const {data} = await getGoogleAuth()
+export const getAndStoreGoogleAuth = async () => {
+  const { data } = await getGoogleAuth();
   if (data?.access_token) {
     window.localStorage.setItem("oauth_provider_token", data?.access_token);
   }
 };
-
-export const getGoogleAuth = async ()=>{
+export const getGoogleAuth = async () => {
   return await client
     .from("google_auth")
     .select("access_token")
     .limit(1)
     .single();
-}
+};
 
 export const upsertGoogleAuth = async (attrs: {
   access_token: string;
@@ -52,7 +48,7 @@ export const upsertGoogleAuth = async (attrs: {
   expires_at: string;
 }) => {
   const userId = await getUserId();
-  console.log('upsert attrs', attrs)
+  console.log("upsert attrs", attrs);
   const { data } = await client
     .from("google_auth")
     .upsert(
