@@ -8,7 +8,6 @@ import {
   patchTask,
 } from "../../api/tasks";
 import {
-  Container,
   IconButton,
   List,
   ListItem,
@@ -24,7 +23,6 @@ import { Button } from "@mui/material";
 import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
 import CheckIcon from "@mui/icons-material/Check";
 import {
-  ChevronRightRounded,
   ChevronRightSharp,
   Delete,
   Refresh,
