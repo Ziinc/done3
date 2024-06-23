@@ -1,4 +1,4 @@
-import useSWR, { mutate } from "swr";
+import useSWR from "swr";
 import { TaskList } from "../../api/task_lists";
 import {
   Task,
@@ -8,12 +8,18 @@ import {
   patchTask,
 } from "../../api/tasks";
 import {
+  ClickAwayListener,
+  Grow,
   IconButton,
   List,
   ListItem,
   ListItemAvatar,
+  ListItemIcon,
   ListItemText,
+  MenuItem,
+  MenuList,
   Paper,
+  Popper,
   Skeleton,
   Stack,
   TextField,
@@ -25,9 +31,10 @@ import CheckIcon from "@mui/icons-material/Check";
 import {
   ChevronRightSharp,
   Delete,
+  MoreVert,
   Refresh,
 } from "@mui/icons-material";
-import { useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 interface Props {
   taskList: TaskList;
 }
@@ -159,39 +166,122 @@ interface TaskProps {
   // bound
   onDeleteTask: () => void;
 }
-const Task = ({ task, onToggleTask, onDeleteTask }: TaskProps) => (
-  <ListItem key={task.id} sx={{ p: 0 }} alignItems="center">
-    <ListItemAvatar>
-      <IconButton color={"primary"} onClick={() => onToggleTask(task)}>
-        {task.status == "needsAction" ? (
-          <RadioButtonUncheckedIcon />
-        ) : (
-          <CheckIcon />
-        )}
-      </IconButton>
-    </ListItemAvatar>
-    <ListItemText>
-      <Typography
-        variant="body1"
-        className={task.status === "completed" ? "text-gray-600" : ""}
-        sx={{
-          textDecoration: task.status === "completed" ? "line-through" : null,
-        }}
-      >
-        {task.title}
-      </Typography>
-      <Typography variant="body2" className="text-gray-500">
-        {task.notes}
-      </Typography>
-      <Button
-        color="secondary"
-        onClick={onDeleteTask}
-        size="small"
-        startIcon={<Delete />}
-      >
-        Delete
-      </Button>
-    </ListItemText>
-  </ListItem>
-);
+const Task = ({ task, onToggleTask, onDeleteTask }: TaskProps) => {
+  const [open, setOpen] = React.useState(false);
+  const anchorRef = React.useRef<HTMLButtonElement>(null);
+
+  const handleToggle = () => {
+    setOpen((prevOpen) => !prevOpen);
+  };
+
+  const handleClose = (event: Event | React.SyntheticEvent) => {
+    if (
+      anchorRef.current &&
+      anchorRef.current.contains(event.target as HTMLElement)
+    ) {
+      return;
+    }
+
+    setOpen(false);
+  };
+
+  function handleListKeyDown(event: React.KeyboardEvent) {
+    if (event.key === "Tab") {
+      event.preventDefault();
+      setOpen(false);
+    } else if (event.key === "Escape") {
+      setOpen(false);
+    }
+  }
+  return (
+    <ListItem key={task.id} sx={{ p: 0 }} alignItems="center">
+      <ListItemAvatar>
+        <IconButton color={"primary"} onClick={() => onToggleTask(task)}>
+          {task.status == "needsAction" ? (
+            <RadioButtonUncheckedIcon />
+          ) : (
+            <CheckIcon />
+          )}
+        </IconButton>
+      </ListItemAvatar>
+      <ListItemText className="group">
+        <Stack
+          direction="row"
+          align-items="start"
+          justifyContent="space-between"
+        >
+          <Typography
+            variant="body1"
+            className={task.status === "completed" ? "text-gray-600" : ""}
+            sx={{
+              textDecoration:
+                task.status === "completed" ? "line-through" : null,
+            }}
+          >
+            {task.title}
+          </Typography>
+          <IconButton
+            title="More task options"
+            className="group-hover:opacity-100 opacity-0"
+            size="small"
+            ref={anchorRef}
+            id="composition-button"
+            aria-controls={open ? "composition-menu" : undefined}
+            aria-expanded={open ? "true" : undefined}
+            aria-haspopup="true"
+            onClick={handleToggle}
+          >
+            <MoreVert />
+          </IconButton>
+        </Stack>
+        <div>
+          <Popper
+            open={open}
+            anchorEl={anchorRef.current}
+            role={undefined}
+            placement="bottom-start"
+            transition
+          >
+            {({ TransitionProps, placement }) => (
+              <Grow
+                {...TransitionProps}
+                style={{
+                  transformOrigin:
+                    placement === "bottom-start" ? "left top" : "left bottom",
+                }}
+              >
+                <Paper>
+                  <ClickAwayListener onClickAway={handleClose}>
+                    <MenuList
+                      autoFocusItem={open}
+                      id="composition-menu"
+                      aria-labelledby="composition-button"
+                      onKeyDown={handleListKeyDown}
+                    >
+                      <MenuItem
+                        onClick={(e) => {
+                          onDeleteTask();
+                          handleClose(e);
+                        }}
+                      >
+                        <ListItemIcon>
+                          <Delete />
+                        </ListItemIcon>
+                        <ListItemText>Delete</ListItemText>
+                      </MenuItem>
+                    </MenuList>
+                  </ClickAwayListener>
+                </Paper>
+              </Grow>
+            )}
+          </Popper>
+        </div>
+
+        <Typography variant="body2" className="text-gray-500">
+          {task.notes}
+        </Typography>
+      </ListItemText>
+    </ListItem>
+  );
+};
 export default TaskList;
