@@ -1,5 +1,5 @@
 import useSWR from "swr";
-import { TaskList } from "../../api/task_lists";
+import { TaskList, deleteTaskList } from "../../api/task_lists";
 import {
   Task,
   deleteTask,
@@ -22,9 +22,10 @@ import { useMemo, useState } from "react";
 import TaskListItem from "./Task";
 interface Props {
   taskList: TaskList;
+  onDeleteTaskList: () => void;
 }
 
-const TaskList = ({ taskList }: Props) => {
+const TaskList = ({ taskList, onDeleteTaskList }: Props) => {
   const [showCompleted, setShowCompleted] = useState(false);
   let {
     data: tasks = [],
@@ -89,6 +90,9 @@ const TaskList = ({ taskList }: Props) => {
         <h3>{taskList.title}</h3>
         <IconButton onClick={() => mutateTasks()}>
           <Refresh />
+        </IconButton>
+        <IconButton onClick={onDeleteTaskList}>
+          <Delete />
         </IconButton>
       </Stack>
 
