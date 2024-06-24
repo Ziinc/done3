@@ -1,4 +1,4 @@
-import { Task, patchTask } from "../../api/tasks";
+import { Task } from "../../api/tasks";
 import {
   ClickAwayListener,
   Grow,
@@ -15,11 +15,10 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { Button } from "@mui/material";
 import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
 import CheckIcon from "@mui/icons-material/Check";
 import { Delete, MoreVert } from "@mui/icons-material";
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 
 interface TaskProps {
   task: Task;
