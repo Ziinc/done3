@@ -1,10 +1,11 @@
-import { Button, Dropdown, Tooltip } from "antd";
+import { Dropdown, Tooltip } from "antd";
 import { MoreVertical, Plus } from "lucide-react";
 import { Counter } from "../api/counters";
 import { marked } from "marked";
 import DOMPurify from "dompurify";
 import CountDisplay from "./CountDisplay";
 import React from "react";
+import { Button } from "@mui/material";
 interface Props extends React.HTMLProps<HTMLDivElement & HTMLLIElement> {
   wrapperTag?: "li" | "div";
   wrapperProps?: Object;
@@ -98,12 +99,11 @@ const CounterItem: React.FC<Props> = ({
       >
         <div className="w-fit">
           <Button
-            block
-            type="primary"
-            shape="round"
+            variant="contained"
+            color="primary"
             title={`Increase '${counter.name}' by 1`}
             onClick={() => onIncrease?.(1)}
-            icon={<Plus size={16} strokeWidth={3} />}
+            startIcon={<Plus size={16} strokeWidth={3} />}
             className={[
               "gap-1",
               count >= counter.target ? "bg-green-700 hover:!bg-green-600" : "",
@@ -152,8 +152,8 @@ const CounterItem: React.FC<Props> = ({
           }}
         >
           <Button
-            type="ghost"
-            icon={<MoreVertical size={12} />}
+            variant="text"
+            startIcon={<MoreVertical size={12} />}
             title={`More options for '${counter.name}'`}
           ></Button>
         </Dropdown>

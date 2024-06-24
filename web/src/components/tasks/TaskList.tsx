@@ -1,5 +1,5 @@
 import useSWR from "swr";
-import { TaskList, deleteTaskList } from "../../api/task_lists";
+import { TaskList } from "../../api/task_lists";
 import {
   Task,
   deleteTask,
