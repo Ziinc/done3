@@ -28,6 +28,7 @@ import {
   deleteTaskList,
   insertTaskList,
   listTaskLists,
+  patchTaskList,
 } from "../api/task_lists";
 import TaskList from "../components/tasks/TaskList";
 import { IconButton, Stack, TextField } from "@mui/material";
@@ -207,6 +208,13 @@ const Home: React.FC = () => {
             onDeleteTaskList={() => {
               deleteTaskList(list.id);
               const updated = taskLists.filter((tl) => tl.id !== list.id);
+              mutateTaskLists(updated, { revalidate: false });
+            }}
+            onUpdateTaskList={async (attrs) => {
+              patchTaskList(list.id, attrs);
+              const updated = taskLists.map((tl) =>
+                tl.id === list.id ? { ...tl, ...attrs } : tl
+              );
               mutateTaskLists(updated, { revalidate: false });
             }}
           />
