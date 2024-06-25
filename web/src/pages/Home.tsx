@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Drawer, Modal, Statistic, Tooltip } from "antd";
+import { Button, Drawer, Modal, Statistic, Tooltip, List } from "antd";
 import {
   Counter,
   createCounter,
@@ -31,7 +31,6 @@ import {
 } from "../api/task_lists";
 import TaskList from "../components/tasks/TaskList";
 import { IconButton, Stack, TextField } from "@mui/material";
-import Button from "@mui/material/Button";
 import { Cancel } from "@mui/icons-material";
 
 const Home: React.FC = () => {
@@ -158,18 +157,18 @@ const Home: React.FC = () => {
               <div className="flex flex-row gap-1">
                 <Button
                   className="flex flex-row justify-center items-center"
-                  variant="contained"
-                  color="primary"
-                  startIcon={<Plus size={16} strokeWidth={3} />}
+                  shape="round"
+                  type="primary"
+                  icon={<Plus size={16} strokeWidth={3} />}
                   onClick={() => handleIncrease(editingCounter, 1)}
                 >
                   1
                 </Button>
                 <Button
                   className="flex flex-row justify-center items-center"
-                  variant="contained"
-                  color="primary"
-                  startIcon={<Plus size={16} strokeWidth={3} />}
+                  shape="round"
+                  type="primary"
+                  icon={<Plus size={16} strokeWidth={3} />}
                   onClick={() => handleIncrease(editingCounter, 5)}
                 >
                   5
@@ -177,10 +176,10 @@ const Home: React.FC = () => {
 
                 <Button
                   className="flex flex-row justify-center items-center"
-                  variant="contained"
-                  color="primary"
+                  shape="round"
+                  type="primary"
                   onClick={() => handleIncrease(editingCounter, 10)}
-                  startIcon={<Plus size={16} strokeWidth={3} />}
+                  icon={<Plus size={16} strokeWidth={3} />}
                 >
                   10
                 </Button>
@@ -225,9 +224,7 @@ const Home: React.FC = () => {
                 }}
               >
                 <TextField label="Title" name="taskListTitle" required />
-                <Button variant="outlined" color="secondary" type="submit">
-                  Add list
-                </Button>
+                <Button htmlType="submit">Add list</Button>
                 <IconButton type="button" onClick={() => setNewList(false)}>
                   <Cancel />
                 </IconButton>
