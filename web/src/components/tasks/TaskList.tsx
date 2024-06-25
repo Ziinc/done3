@@ -1,5 +1,5 @@
 import useSWR from "swr";
-import { TaskList } from "../../api/task_lists";
+import { TaskList, patchTaskList } from "../../api/task_lists";
 import {
   Task,
   deleteTask,
@@ -23,10 +23,12 @@ import TaskListItem from "./Task";
 interface Props {
   taskList: TaskList;
   onDeleteTaskList: () => void;
+  onUpdateTaskList: (attrs: Parameters<typeof patchTaskList>[1]) => void;
 }
 
-const TaskList = ({ taskList, onDeleteTaskList }: Props) => {
+const TaskList = ({ taskList, onDeleteTaskList, onUpdateTaskList }: Props) => {
   const [showCompleted, setShowCompleted] = useState(false);
+  const [editingTitle, setEditingTitle] = useState(false);
   let {
     data: tasks = [],
     isLoading: isLoadingTasks,
@@ -87,7 +89,34 @@ const TaskList = ({ taskList, onDeleteTaskList }: Props) => {
   return (
     <Paper elevation={1} sx={{ borderRadius: 3, p: 2, width: 350 }}>
       <Stack direction="row" alignItems="center">
-        <h3>{taskList.title}</h3>
+        {editingTitle ? (
+          <>
+            <>
+              <form onSubmit={(e) => e.preventDefault()}>
+                <TextField
+                  name="listTitle"
+                  label="List title"
+                  defaultValue={taskList.title}
+                  onBlur={(e) => {
+                    const value = e.currentTarget.value;
+                    setEditingTitle(false);
+                    if (value !== taskList.title) {
+                      // save the value
+                      onUpdateTaskList({ title: value });
+                    }
+                  }}
+                />
+                <Button hidden type="submit">
+                  Submit
+                </Button>
+              </form>
+            </>
+          </>
+        ) : (
+          <Button onClick={() => setEditingTitle(true)}>
+            <h3>{taskList.title}</h3>
+          </Button>
+        )}
         <IconButton onClick={() => mutateTasks()}>
           <Refresh />
         </IconButton>
