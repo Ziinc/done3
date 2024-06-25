@@ -9,7 +9,7 @@ import Auth from "./components/Auth";
 import { Route } from "wouter";
 import { HashRouter } from "./router";
 import { Container, Divider, Paper, Stack, Typography } from "@mui/material";
-import Grid from "@mui/material/Unstable_Grid2";
+import Grid from "@mui/material/Unstable_Grid2/Grid2";
 
 function App() {
   const user = Auth.useAuth();
