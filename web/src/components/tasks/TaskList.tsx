@@ -8,6 +8,7 @@ import {
   patchTask,
 } from "../../api/tasks";
 import {
+  ClickAwayListener,
   IconButton,
   List,
   Paper,
@@ -17,7 +18,13 @@ import {
   Typography,
 } from "@mui/material";
 import { Button } from "@mui/material";
-import { ChevronRightSharp, Delete, Refresh } from "@mui/icons-material";
+import {
+  AddTask,
+  CancelOutlined,
+  ChevronRightSharp,
+  Delete,
+  Refresh,
+} from "@mui/icons-material";
 import { useMemo, useState } from "react";
 import TaskListItem from "./Task";
 interface Props {
@@ -29,6 +36,7 @@ interface Props {
 const TaskList = ({ taskList, onDeleteTaskList, onUpdateTaskList }: Props) => {
   const [showCompleted, setShowCompleted] = useState(false);
   const [editingTitle, setEditingTitle] = useState(false);
+  const [showNewForm, setShowNewForm] = useState(false);
   let {
     data: tasks = [],
     isLoading: isLoadingTasks,
@@ -124,7 +132,30 @@ const TaskList = ({ taskList, onDeleteTaskList, onUpdateTaskList }: Props) => {
           <Delete />
         </IconButton>
       </Stack>
-
+      <Button startIcon={<AddTask />} onClick={() => setShowNewForm(true)}>
+        Add a task
+      </Button>
+      {showNewForm ? (
+        <ClickAwayListener onClickAway={() => setShowNewForm(false)}>
+          <form
+            onSubmit={async (e) => {
+              e.preventDefault();
+              const title = e.currentTarget.taskTitle.value;
+              await insertTask(taskList.id, { title });
+              mutateTasks([
+                { id: "new", title, status: "needsAction" } as any,
+                ...tasks,
+              ]);
+            }}
+          >
+            <TextField name="taskTitle" label="Task title" variant="outlined" />
+            <Button type="submit">Add</Button>
+            <IconButton onClick={() => setShowNewForm(false)}>
+              <CancelOutlined />
+            </IconButton>
+          </form>
+        </ClickAwayListener>
+      ) : null}
       {isLoadingTasks ? (
         <Stack spacing={1}>
           <Skeleton variant="rounded" height={30} />
@@ -172,20 +203,6 @@ const TaskList = ({ taskList, onDeleteTaskList, onUpdateTaskList }: Props) => {
                 />
               ))}
           </List>
-          <form
-            onSubmit={async (e) => {
-              e.preventDefault();
-              const title = e.currentTarget.taskTitle.value;
-              await insertTask(taskList.id, { title });
-              mutateTasks([
-                { id: "new", title, status: "needsAction" } as any,
-                ...tasks,
-              ]);
-            }}
-          >
-            <TextField name="taskTitle" label="Outlined" variant="outlined" />
-            <Button type="submit">Add</Button>
-          </form>
         </>
       )}
     </Paper>
