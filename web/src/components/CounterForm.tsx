@@ -1,7 +1,6 @@
-import { Form, Input, InputRef, Select } from "antd";
+import { Button, Form, Input, InputRef, Select } from "antd";
 import { useEffect, useRef, useState } from "react";
 import { CounterAttrs } from "../api/counters";
-import { LoadingButton } from "@mui/lab";
 interface Callbacks {
   cancelLoading: () => void;
 }
@@ -65,14 +64,9 @@ const CounterForm: React.FC<Props> = ({
       </Form.Item>
 
       <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-        <LoadingButton
-          variant="contained"
-          color="primary"
-          type="submit"
-          loading={loading}
-        >
+        <Button type="primary" htmlType="submit" loading={loading}>
           Submit
-        </LoadingButton>
+        </Button>
       </Form.Item>
     </Form>
   );

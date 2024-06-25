@@ -1,6 +1,9 @@
 import { Session } from "@supabase/gotrue-js";
+import { Form as AntForm, Input, Space, Tabs } from "antd";
 import Button from "@mui/material/Button";
+import { ArrowLeft } from "lucide-react";
 import React, { useContext, useEffect, useState } from "react";
+import { Link } from "wouter";
 import {
   getSession,
   onAuthStateChange,
@@ -10,7 +13,11 @@ import {
   signUp,
   updatePassword,
 } from "../api/auth";
+import { Divider } from "@mui/material";
+import { LoadingButton } from "@mui/lab";
 import { Google } from "@mui/icons-material";
+import { SupabaseClient } from "@supabase/supabase-js";
+import { client } from "../utils";
 namespace Auth {
   export enum Mode {
     SIGN_IN = "sign_in",
@@ -32,7 +39,8 @@ namespace Auth {
 
   export const Form: React.FC<FormProps> = () => {
     const handleGoogleSignIn = async () => {
-      await signIntoGoogle();
+      await signIntoGoogle()
+      
     };
 
     return (
