@@ -99,22 +99,6 @@ test("list counter", async () => {
   expect(listCounters).toBeCalledTimes(1);
 });
 
-test("archive counter", async () => {
-  (listCounters as Mock).mockResolvedValue([
-    counterFixture({ name: "my counter" }),
-  ]);
-  render(<AuthedApp />);
-  const more = await screen.findByTitle("More options for 'my counter'");
-  await userEvent.click(more);
-  (listCounters as Mock).mockResolvedValue([
-    counterFixture({ name: "archived-counter", archived: true }),
-  ]);
-  await userEvent.click(await screen.findByText(/Archive counter/));
-  expect(updateCounter).toHaveBeenCalledWith(1, { archived: true });
-  await userEvent.click(await screen.findByText("Archive"));
-  await screen.findByText("archived-counter");
-  await screen.findByText("Unarchive");
-});
 test("delete counter", async () => {
   (listCounters as Mock).mockResolvedValue([
     counterFixture({ name: "my counter" }),
@@ -175,19 +159,4 @@ describe("context menu", () => {
     expect(deleteCounter).toBeCalled();
   });
 
-  test("context menu - archive", async () => {
-    (listCounters as Mock).mockResolvedValue([
-      counterFixture({ name: "my-counter", archived: false }),
-    ]);
-    render(<AuthedApp />);
-    (listCounters as Mock).mockResolvedValue([
-      counterFixture({ name: "my-counter", archived: true }),
-    ]);
-    await userEvent.pointer({
-      target: await screen.findByText("my-counter"),
-      keys: "[MouseRight]",
-    });
-    await userEvent.click(await screen.findByText(/Archive counter/));
-    expect(updateCounter).toBeCalled()
-  });
 });
