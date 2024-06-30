@@ -1,4 +1,3 @@
-import { Divider } from "antd";
 import React, { HTMLProps, useState } from "react";
 import { Draggable, Droppable } from "react-beautiful-dnd";
 import { Counter, CountMapping, CountTally } from "../api/counters";

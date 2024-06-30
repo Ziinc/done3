@@ -1,4 +1,4 @@
-import { Dropdown, Tooltip } from "antd";
+import { Dropdown } from "antd";
 import { MoreVertical, Plus } from "lucide-react";
 import { Counter } from "../api/counters";
 import { marked } from "marked";
