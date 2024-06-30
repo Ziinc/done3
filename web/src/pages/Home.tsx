@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Drawer, Modal, Statistic, Tooltip } from "antd";
+import { Drawer, Statistic } from "antd";
 import {
   Counter,
   createCounter,
@@ -22,7 +22,7 @@ import {
 } from "react-beautiful-dnd";
 import CounterList from "../components/CounterList";
 import useSWR from "swr";
-import { Plus, PlusCircle, X } from "lucide-react";
+import { Plus, X } from "lucide-react";
 import CounterOnboardingPrompt from "../components/CounterOnboardingPrompt";
 import {
   deleteTaskList,
@@ -31,17 +31,9 @@ import {
   patchTaskList,
 } from "../api/task_lists";
 import TaskList from "../components/tasks/TaskList";
-import { IconButton, Stack, TextField, Typography } from "@mui/material";
+import { IconButton, Stack, TextField } from "@mui/material";
 import Button from "@mui/material/Button";
-import {
-  AddBox,
-  AddBoxOutlined,
-  Cancel,
-  HdrPlusOutlined,
-  PlusOne,
-  PlusOneOutlined,
-  PlusOneRounded,
-} from "@mui/icons-material";
+import { Cancel } from "@mui/icons-material";
 
 const Home: React.FC = () => {
   let {
