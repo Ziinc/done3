@@ -22,7 +22,7 @@ import {
 } from "react-beautiful-dnd";
 import CounterList from "../components/CounterList";
 import useSWR from "swr";
-import { Plus, X } from "lucide-react";
+import { Plus, PlusCircle, X } from "lucide-react";
 import CounterOnboardingPrompt from "../components/CounterOnboardingPrompt";
 import {
   deleteTaskList,
@@ -31,9 +31,17 @@ import {
   patchTaskList,
 } from "../api/task_lists";
 import TaskList from "../components/tasks/TaskList";
-import { IconButton, Stack, TextField } from "@mui/material";
+import { IconButton, Stack, TextField, Typography } from "@mui/material";
 import Button from "@mui/material/Button";
-import { Cancel } from "@mui/icons-material";
+import {
+  AddBox,
+  AddBoxOutlined,
+  Cancel,
+  HdrPlusOutlined,
+  PlusOne,
+  PlusOneOutlined,
+  PlusOneRounded,
+} from "@mui/icons-material";
 
 const Home: React.FC = () => {
   let {
@@ -105,7 +113,6 @@ const Home: React.FC = () => {
   useEffect(() => {
     if (!keydown) return;
     if (keydown === "n" && !showNewForm && !editingCounter) {
-      setShowNewForm(true);
     } else if (keydown === "e" && hoveringId !== null) {
       setEditingId(hoveringId);
     }
@@ -122,24 +129,6 @@ const Home: React.FC = () => {
 
   return (
     <div className="flex flex-col gap-4 p-4 h-100 flex-grow focus:border-none">
-      <Drawer
-        title="Create New Counter"
-        onClose={() => setShowNewForm(false)}
-        open={showNewForm}
-        closeIcon={<X strokeWidth={2} size={20} />}
-        destroyOnClose
-      >
-        {showNewForm && (
-          <CounterForm
-            onSubmit={async (data, { cancelLoading }) => {
-              await createCounter(data);
-              cancelLoading();
-              setShowNewForm(false);
-              reload();
-            }}
-          />
-        )}
-      </Drawer>
       <Drawer
         destroyOnClose
         title="Edit Counter"
@@ -188,6 +177,7 @@ const Home: React.FC = () => {
               </div>
             </div>
             <CounterForm
+              onCancel={() => null}
               defaultValues={editingCounter}
               onSubmit={async (data, { cancelLoading }) => {
                 await updateCounter(editingId!, data);
@@ -200,7 +190,53 @@ const Home: React.FC = () => {
         )}
       </Drawer>
 
-      <Stack direction="row" justifyContent={"start"} gap={1} overflow="scroll">
+      <Stack
+        direction="row"
+        justifyContent={"start"}
+        gap={1}
+        overflow="scroll"
+        flexGrow="inherit"
+      >
+        <DragDropContext onDragUpdate={handleDrag} onDragEnd={handleDrag}>
+          <CounterList
+            onAddCounter={async (data, { cancelLoading }) => {
+              await createCounter(data);
+              cancelLoading();
+              setShowNewForm(false);
+              reload();
+            }}
+            tabIndex={0}
+            counters={counters}
+            countMapping={countMapping}
+            noDataFallback={<CounterOnboardingPrompt />}
+            renderCounter={(counter, tally, state) => {
+              return (
+                <CounterItem
+                  key={counter.id}
+                  count={tally ? tally[counter.tally_method] : 0}
+                  wrapperTag="li"
+                  counter={counter}
+                  onIncrease={(value) => handleIncrease(counter, value)}
+                  onDelete={async () => {
+                    const confirmation = window.confirm(
+                      "Delete cannot be undone. Consider archiving instead. Proceed with delete?"
+                    );
+                    if (!confirmation) return;
+                    await deleteCounter(counter.id);
+                    reload();
+                  }}
+                  wrapperProps={state.draggableProps}
+                  isDragging={state.isDragging}
+                  onEdit={() => setEditingId(counter.id)}
+                  isHovering={hoveringId === counter.id}
+                  onMouseEnter={() => setHoveringId(counter.id)}
+                  onMouseLeave={() => setHoveringId(null)}
+                />
+              );
+            }}
+          />
+        </DragDropContext>
+
         {taskLists.map((list) => (
           <TaskList
             key={list.id}
@@ -248,62 +284,6 @@ const Home: React.FC = () => {
           )}
         </div>
       </Stack>
-      <DragDropContext onDragUpdate={handleDrag} onDragEnd={handleDrag}>
-        <CounterList
-          header={
-            <div className="flex flex-row justify-end gap-2">
-              <Tooltip
-                mouseEnterDelay={1.5}
-                placement="topLeft"
-                title={
-                  <span>
-                    Press <span className="kbd kbd-light kbd-xs">n</span> to add
-                    a counter
-                  </span>
-                }
-              >
-                <Button onClick={() => setShowNewForm(true)}>
-                  New counter
-                </Button>
-              </Tooltip>
-            </div>
-          }
-          tabIndex={0}
-          className="flex-grow h-full"
-          counters={counters.filter((c) => c.archived === false)}
-          countMapping={countMapping}
-          noDataFallback={<CounterOnboardingPrompt />}
-          renderCounter={(counter, tally, state) => {
-            return (
-              <CounterItem
-                key={counter.id}
-                count={tally ? tally[counter.tally_method] : 0}
-                wrapperTag="li"
-                counter={counter}
-                onIncrease={(value) => handleIncrease(counter, value)}
-                onDelete={async () => {
-                  const confirmation = window.confirm(
-                    "Delete cannot be undone. Consider archiving instead. Proceed with delete?"
-                  );
-                  if (!confirmation) return;
-                  await deleteCounter(counter.id);
-                  reload();
-                }}
-                onArchive={async () => {
-                  await updateCounter(counter.id, { archived: true });
-                  reload();
-                }}
-                wrapperProps={state.draggableProps}
-                isDragging={state.isDragging}
-                onEdit={() => setEditingId(counter.id)}
-                isHovering={hoveringId === counter.id}
-                onMouseEnter={() => setHoveringId(counter.id)}
-                onMouseLeave={() => setHoveringId(null)}
-              />
-            );
-          }}
-        />
-      </DragDropContext>
     </div>
   );
 };

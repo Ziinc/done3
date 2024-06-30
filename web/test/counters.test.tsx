@@ -38,16 +38,10 @@ describe("api & context", () => {
   });
 });
 
-test("onboarding", async () => {
-  (listCounters as Mock).mockResolvedValue([]);
-  render(<AuthedApp />);
-  await screen.findByText(/Create a new counter/);
-});
-
 test("create counter", async () => {
   (listCounters as Mock).mockResolvedValue([]);
   render(<AuthedApp />);
-  const btn = await screen.findByText("New counter");
+  const btn = await screen.findByText("Add a counter");
   await userEvent.click(btn);
   const input = await screen.findByPlaceholderText("Name");
   await userEvent.type(input, "my counter");
@@ -114,12 +108,6 @@ test("delete counter", async () => {
 });
 
 describe("kbd shortcuts", () => {
-  test("open the new counter form", async () => {
-    (listCounters as Mock).mockResolvedValue([]);
-    render(<AuthedApp />);
-    await userEvent.keyboard("n");
-    await screen.findAllByText("Create New Counter");
-  });
   test("edit the counter", async () => {
     (listCounters as Mock).mockResolvedValue([
       counterFixture({ name: "my-counter" }),
@@ -158,5 +146,4 @@ describe("context menu", () => {
     await userEvent.click(await screen.findByText(/Delete counter/));
     expect(deleteCounter).toBeCalled();
   });
-
 });
