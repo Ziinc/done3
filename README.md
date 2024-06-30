@@ -1,4 +1,4 @@
-# Done3 (DoneDoneDone) 
+# Done<sup>3</sup> (DoneDoneDone) 
 
 A productivity app that extends and integrates GSuite apps for Getting Things Done.
 
@@ -7,7 +7,7 @@ A productivity app that extends and integrates GSuite apps for Getting Things Do
 1. Make changes in local studio
 2. Diff changes to migration file
    ```
-   supabase db diff -f <migration_name>
+   make diff f=my_migration_name
    ```
 3. push changes
    ```
