@@ -41,4 +41,5 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           projectName: done3-docs
           directory: build
+          workingDirectory: docs
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
