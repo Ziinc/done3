@@ -76,7 +76,7 @@ BEGIN
     FOR token_rec IN
         SELECT t.user_id, t.refresh_token, t.expires_at
         FROM google_auth t
-        WHERE (expires_at - INTERVAL '1 hour') < NOW()
+        WHERE (expires_at - INTERVAL '15 minute') < NOW()
     LOOP
         
         RETURN QUERY SELECT token_rec.user_id::text, (select public.refresh_user_token(token_rec, client_id, client_secret));
@@ -157,36 +157,8 @@ create extension if not exists "http" with schema "extensions";
 
 create extension if not exists "pg_cron" with schema "extensions";
 
-
-grant delete on table "cron"."job" to "postgres";
-
-grant insert on table "cron"."job" to "postgres";
-
-grant references on table "cron"."job" to "postgres";
-
-grant select on table "cron"."job" to "postgres";
-
-grant trigger on table "cron"."job" to "postgres";
-
-grant truncate on table "cron"."job" to "postgres";
-
-grant update on table "cron"."job" to "postgres";
-
-grant delete on table "cron"."job_run_details" to "postgres";
-
-grant insert on table "cron"."job_run_details" to "postgres";
-
-grant references on table "cron"."job_run_details" to "postgres";
-
-grant select on table "cron"."job_run_details" to "postgres";
-
-grant trigger on table "cron"."job_run_details" to "postgres";
-
-grant truncate on table "cron"."job_run_details" to "postgres";
-
-grant update on table "cron"."job_run_details" to "postgres";
-
-DROP TRIGGER IF EXISTS cron_job_cache_invalidate on "cron"."job";
-CREATE TRIGGER cron_job_cache_invalidate AFTER INSERT OR DELETE OR UPDATE OR TRUNCATE ON cron.job FOR EACH STATEMENT EXECUTE FUNCTION cron.job_cache_invalidate();
-
-
+CREATE EXTENSION if not exists supabase_vault CASCADE;
+-- include base cron job
+SELECT cron.schedule('10min_update_expiring_access_tokens',
+                     '*/10 * * * *',
+                     $$ SELECT update_expiring_access_tokens() $$);
