@@ -10,10 +10,18 @@ export default defineConfig({
     clearMocks: true,
     setupFiles: ["test/helpers/setup.ts", "global-jsdom/register"],
     coverage: {
-      provider: 'c8' // or 'c8'
+      provider: "c8", // or 'c8'
     },
   },
   build: {
-    outDir: "dist/app",
+    outDir: "dist",
+    rollupOptions: {
+      onwarn(warning, warn) {
+        if (warning.code === "MODULE_LEVEL_DIRECTIVE") {
+          return;
+        }
+        warn(warning);
+      },
+    },
   },
 });
