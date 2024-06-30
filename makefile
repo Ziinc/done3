@@ -1,5 +1,5 @@
 diff:
-	supabase db diff -f $(f) -s public,extensions,cron --local
+	supabase db diff -f $(f) -s public,extensions --local
 
 build.app:
 	npm run build --prefix=web
