@@ -27,7 +27,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: "16.18"
+          node-version: "20.11"
           cache: npm
           cache-dependency-path: '**/package-lock.json'
       - name: Install dependencies web
