@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { Drawer, Statistic } from "antd";
 import {
   Counter,
   createCounter,
@@ -36,6 +35,7 @@ import {
   Container,
   IconButton,
   TextField,
+  Typography,
 } from "@mui/material";
 import Button from "@mui/material/Button";
 import { Cancel } from "@mui/icons-material";
@@ -185,14 +185,13 @@ const Home: React.FC = () => {
                         <div className="flex flex-col gap-4">
                           {editingCounter && (
                             <div className="flex flex-col w-full items-center justify-center">
-                              <Statistic
-                                title="Count"
-                                value={
+                              <Typography variant="h4">
+                                {
                                   countMapping[editingCounter.id][
                                     editingCounter.tally_method
                                   ]
                                 }
-                              />
+                              </Typography>
                               <div className="flex flex-row gap-1">
                                 <Button
                                   className="flex flex-row justify-center items-center"
