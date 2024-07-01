@@ -10,7 +10,7 @@ export default defineConfig({
     clearMocks: true,
     setupFiles: ["test/helpers/setup.ts", "global-jsdom/register"],
     coverage: {
-      provider: "c8", // or 'c8'
+      provider: "v8", // or 'c8'
     },
   },
   build: {

@@ -64,11 +64,6 @@ const CounterItem: React.FC<Props> = ({
           onClick: onEdit,
         },
         {
-          label: "Archive counter",
-          key: "archive",
-          onClick: onArchive,
-        },
-        {
           label: "Delete counter",
           key: "delete",
           onClick: onDelete,

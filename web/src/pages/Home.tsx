@@ -31,9 +31,10 @@ import {
   patchTaskList,
 } from "../api/task_lists";
 import TaskList from "../components/tasks/TaskList";
-import { IconButton, Stack, TextField } from "@mui/material";
+import { Container, IconButton, TextField } from "@mui/material";
 import Button from "@mui/material/Button";
 import { Cancel } from "@mui/icons-material";
+import Grid from "@mui/material/Unstable_Grid2/Grid2";
 
 const Home: React.FC = () => {
   let {
@@ -120,7 +121,7 @@ const Home: React.FC = () => {
   }, []);
 
   return (
-    <div className="flex flex-col gap-4 p-4 h-100 flex-grow focus:border-none">
+    <>
       <Drawer
         destroyOnClose
         title="Edit Counter"
@@ -182,70 +183,78 @@ const Home: React.FC = () => {
         )}
       </Drawer>
 
-      <Stack
+      <Grid
+        container
+        spacing={2}
         direction="row"
+        sx={{ overflowX: "scroll" }}
+        wrap="nowrap"
         justifyContent={"start"}
         gap={1}
         overflow="scroll"
         flexGrow="inherit"
       >
-        <DragDropContext onDragUpdate={handleDrag} onDragEnd={handleDrag}>
-          <CounterList
-            onAddCounter={async (data, { cancelLoading }) => {
-              await createCounter(data);
-              cancelLoading();
-              setShowNewForm(false);
-              reload();
-            }}
-            tabIndex={0}
-            counters={counters}
-            countMapping={countMapping}
-            noDataFallback={<CounterOnboardingPrompt />}
-            renderCounter={(counter, tally, state) => {
-              return (
-                <CounterItem
-                  key={counter.id}
-                  count={tally ? tally[counter.tally_method] : 0}
-                  wrapperTag="li"
-                  counter={counter}
-                  onIncrease={(value) => handleIncrease(counter, value)}
-                  onDelete={async () => {
-                    const confirmation = window.confirm(
-                      "Delete cannot be undone. Consider archiving instead. Proceed with delete?"
-                    );
-                    if (!confirmation) return;
-                    await deleteCounter(counter.id);
-                    reload();
-                  }}
-                  wrapperProps={state.draggableProps}
-                  isDragging={state.isDragging}
-                  onEdit={() => setEditingId(counter.id)}
-                  isHovering={hoveringId === counter.id}
-                  onMouseEnter={() => setHoveringId(counter.id)}
-                  onMouseLeave={() => setHoveringId(null)}
-                />
-              );
-            }}
-          />
-        </DragDropContext>
+        <Grid flexGrow="inherit" minWidth={380} xs={12} md={4}>
+          <DragDropContext onDragUpdate={handleDrag} onDragEnd={handleDrag}>
+            <CounterList
+              onAddCounter={async (data, { cancelLoading }) => {
+                await createCounter(data);
+                cancelLoading();
+                setShowNewForm(false);
+                reload();
+              }}
+              tabIndex={0}
+              counters={counters}
+              countMapping={countMapping}
+              noDataFallback={<CounterOnboardingPrompt />}
+              renderCounter={(counter, tally, state) => {
+                return (
+                  <CounterItem
+                    key={counter.id}
+                    count={tally ? tally[counter.tally_method] : 0}
+                    wrapperTag="li"
+                    counter={counter}
+                    onIncrease={(value) => handleIncrease(counter, value)}
+                    onDelete={async () => {
+                      const confirmation = window.confirm(
+                        "Delete cannot be undone. Consider archiving instead. Proceed with delete?"
+                      );
+                      if (!confirmation) return;
+                      await deleteCounter(counter.id);
+                      reload();
+                    }}
+                    wrapperProps={state.draggableProps}
+                    isDragging={state.isDragging}
+                    onEdit={() => setEditingId(counter.id)}
+                    isHovering={hoveringId === counter.id}
+                    onMouseEnter={() => setHoveringId(counter.id)}
+                    onMouseLeave={() => setHoveringId(null)}
+                  />
+                );
+              }}
+            />
+          </DragDropContext>
+        </Grid>
 
         {taskLists.map((list) => (
-          <TaskList
-            key={list.id}
-            taskList={list}
-            onDeleteTaskList={() => {
-              deleteTaskList(list.id);
-              const updated = taskLists.filter((tl) => tl.id !== list.id);
-              mutateTaskLists(updated, { revalidate: false });
-            }}
-            onUpdateTaskList={async (attrs) => {
-              patchTaskList(list.id, attrs);
-              const updated = taskLists.map((tl) =>
-                tl.id === list.id ? { ...tl, ...attrs } : tl
-              );
-              mutateTaskLists(updated, { revalidate: false });
-            }}
-          />
+          <Grid minWidth={300} xs={12} md={4}>
+            <TaskList
+              key={list.id}
+              taskList={list}
+              onDeleteTaskList={() => {
+                deleteTaskList(list.id);
+                const updated = taskLists.filter((tl) => tl.id !== list.id);
+                mutateTaskLists(updated, { revalidate: false });
+              }}
+              onUpdateTaskList={async (attrs) => {
+                patchTaskList(list.id, attrs);
+                const updated = taskLists.map((tl) =>
+                  tl.id === list.id ? { ...tl, ...attrs } : tl
+                );
+                mutateTaskLists(updated, { revalidate: false });
+              }}
+            />
+          </Grid>
         ))}
         <div>
           {newList ? (
@@ -270,13 +279,19 @@ const Home: React.FC = () => {
               </form>
             </>
           ) : (
-            <>
-              <Button onClick={() => setNewList(true)}>Add new list</Button>
-            </>
+            <Container sx={{ minWidth: 380, p: 1 }}>
+              <Button
+                variant="contained"
+                sx={{ width: 300 }}
+                onClick={() => setNewList(true)}
+              >
+                Add new list
+              </Button>
+            </Container>
           )}
         </div>
-      </Stack>
-    </div>
+      </Grid>
+    </>
   );
 };
 

@@ -95,7 +95,10 @@ const TaskList = ({ taskList, onDeleteTaskList, onUpdateTaskList }: Props) => {
     mutateTasks(updated, { revalidate: false });
   };
   return (
-    <Paper elevation={1} sx={{ borderRadius: 3, p: 2, width: 350 }}>
+    <Paper
+      elevation={1}
+      sx={{ borderRadius: 3, p: 2, flexGrow: "inherit", height: "100%" }}
+    >
       <Stack direction="row" alignItems="center">
         {editingTitle ? (
           <>

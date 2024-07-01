@@ -36,6 +36,8 @@ const CounterList: React.FC<Props> = ({
     <Droppable droppableId="droppable-1" type="COUNTER">
       {(provided, snapshot) => (
         <Paper
+          sx={{ flexGrow: "inherit", height: "100%", borderRadius: 3 }}
+          elevation={1}
           className={[
             className,
             "list-none",
