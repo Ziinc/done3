@@ -31,7 +31,12 @@ import {
   patchTaskList,
 } from "../api/task_lists";
 import TaskList from "../components/tasks/TaskList";
-import { Container, IconButton, TextField } from "@mui/material";
+import {
+  ClickAwayListener,
+  Container,
+  IconButton,
+  TextField,
+} from "@mui/material";
 import Button from "@mui/material/Button";
 import { Cancel } from "@mui/icons-material";
 import Grid from "@mui/material/Unstable_Grid2/Grid2";
@@ -122,70 +127,9 @@ const Home: React.FC = () => {
 
   return (
     <>
-      <Drawer
-        destroyOnClose
-        title="Edit Counter"
-        onClose={() => setEditingId(null)}
-        open={!!editingId}
-        closeIcon={<X strokeWidth={2} size={20} />}
-      >
-        {editingCounter && (
-          <div className="flex flex-col gap-4">
-            <div className="flex flex-col w-full items-center justify-center">
-              <Statistic
-                title="Count"
-                value={
-                  countMapping[editingCounter.id][editingCounter.tally_method]
-                }
-              />
-              <div className="flex flex-row gap-1">
-                <Button
-                  className="flex flex-row justify-center items-center"
-                  variant="contained"
-                  color="primary"
-                  startIcon={<Plus size={16} strokeWidth={3} />}
-                  onClick={() => handleIncrease(editingCounter, 1)}
-                >
-                  1
-                </Button>
-                <Button
-                  className="flex flex-row justify-center items-center"
-                  variant="contained"
-                  color="primary"
-                  startIcon={<Plus size={16} strokeWidth={3} />}
-                  onClick={() => handleIncrease(editingCounter, 5)}
-                >
-                  5
-                </Button>
-
-                <Button
-                  className="flex flex-row justify-center items-center"
-                  variant="contained"
-                  color="primary"
-                  onClick={() => handleIncrease(editingCounter, 10)}
-                  startIcon={<Plus size={16} strokeWidth={3} />}
-                >
-                  10
-                </Button>
-              </div>
-            </div>
-            <CounterForm
-              onCancel={() => null}
-              defaultValues={editingCounter}
-              onSubmit={async (data, { cancelLoading }) => {
-                await updateCounter(editingId!, data);
-                cancelLoading();
-                setEditingId(null);
-                reload();
-              }}
-            />
-          </div>
-        )}
-      </Drawer>
-
       <Grid
         container
-        spacing={2}
+        spacing={1}
         direction="row"
         sx={{ overflowX: "scroll" }}
         wrap="nowrap"
@@ -209,27 +153,98 @@ const Home: React.FC = () => {
               noDataFallback={<CounterOnboardingPrompt />}
               renderCounter={(counter, tally, state) => {
                 return (
-                  <CounterItem
-                    key={counter.id}
-                    count={tally ? tally[counter.tally_method] : 0}
-                    wrapperTag="li"
-                    counter={counter}
-                    onIncrease={(value) => handleIncrease(counter, value)}
-                    onDelete={async () => {
-                      const confirmation = window.confirm(
-                        "Delete cannot be undone. Consider archiving instead. Proceed with delete?"
-                      );
-                      if (!confirmation) return;
-                      await deleteCounter(counter.id);
-                      reload();
-                    }}
-                    wrapperProps={state.draggableProps}
-                    isDragging={state.isDragging}
-                    onEdit={() => setEditingId(counter.id)}
-                    isHovering={hoveringId === counter.id}
-                    onMouseEnter={() => setHoveringId(counter.id)}
-                    onMouseLeave={() => setHoveringId(null)}
-                  />
+                  <>
+                    <CounterItem
+                      key={counter.id}
+                      count={tally ? tally[counter.tally_method] : 0}
+                      wrapperTag="li"
+                      counter={counter}
+                      onIncrease={(value) => handleIncrease(counter, value)}
+                      onDelete={async () => {
+                        const confirmation = window.confirm(
+                          "Delete cannot be undone. Consider archiving instead. Proceed with delete?"
+                        );
+                        if (!confirmation) return;
+                        await deleteCounter(counter.id);
+                        reload();
+                      }}
+                      wrapperProps={state.draggableProps}
+                      isDragging={state.isDragging}
+                      onEdit={() => setEditingId(counter.id)}
+                      isHovering={hoveringId === counter.id}
+                      onMouseEnter={() => setHoveringId(counter.id)}
+                      onMouseLeave={() => setHoveringId(null)}
+                    />
+                    {counter.id === editingId && (
+                      <ClickAwayListener
+                        onClickAway={() => {
+                          // maybe submit
+                          setEditingId(null);
+                        }}
+                      >
+                        <div className="flex flex-col gap-4">
+                          {editingCounter && (
+                            <div className="flex flex-col w-full items-center justify-center">
+                              <Statistic
+                                title="Count"
+                                value={
+                                  countMapping[editingCounter.id][
+                                    editingCounter.tally_method
+                                  ]
+                                }
+                              />
+                              <div className="flex flex-row gap-1">
+                                <Button
+                                  className="flex flex-row justify-center items-center"
+                                  variant="contained"
+                                  color="primary"
+                                  startIcon={<Plus size={16} strokeWidth={3} />}
+                                  onClick={() =>
+                                    handleIncrease(editingCounter, 1)
+                                  }
+                                >
+                                  1
+                                </Button>
+                                <Button
+                                  className="flex flex-row justify-center items-center"
+                                  variant="contained"
+                                  color="primary"
+                                  startIcon={<Plus size={16} strokeWidth={3} />}
+                                  onClick={() =>
+                                    handleIncrease(editingCounter, 5)
+                                  }
+                                >
+                                  5
+                                </Button>
+
+                                <Button
+                                  className="flex flex-row justify-center items-center"
+                                  variant="contained"
+                                  color="primary"
+                                  onClick={() =>
+                                    handleIncrease(editingCounter, 10)
+                                  }
+                                  startIcon={<Plus size={16} strokeWidth={3} />}
+                                >
+                                  10
+                                </Button>
+                              </div>
+                            </div>
+                          )}
+                          <CounterForm
+                            onCancel={() => setEditingId(null)}
+                            defaultValues={editingCounter}
+                            onSubmit={async (data, { cancelLoading }) => {
+                              await updateCounter(editingId!, data);
+                              cancelLoading();
+                              setEditingId(null);
+                              reload();
+                            }}
+                          />
+                        </div>
+                      </ClickAwayListener>
+                    )}
+                  </>
                 );
               }}
             />
@@ -237,7 +252,7 @@ const Home: React.FC = () => {
         </Grid>
 
         {taskLists.map((list) => (
-          <Grid minWidth={300} xs={12} md={4}>
+          <Grid minWidth={380} xs={12} md={4}>
             <TaskList
               key={list.id}
               taskList={list}
