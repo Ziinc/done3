@@ -9,7 +9,7 @@ interface Callbacks {
 }
 export interface CounterFormProps {
   onSubmit: (params: Partial<CounterAttrs>, callbacks: Callbacks) => void;
-  onCancel: ()=> void
+  onCancel: () => void;
   defaultValues?: Partial<CounterAttrs>;
 }
 const CounterForm: React.FC<CounterFormProps> = ({

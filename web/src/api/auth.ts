@@ -55,7 +55,7 @@ export const upsertGoogleAuth = async (attrs: {
       { ...attrs, user_id: userId },
       {
         onConflict: "user_id",
-      }
+      },
     )
     .select();
   console.log("upsertGoogleAuth", data);
@@ -88,17 +88,17 @@ const setOauthProviderAccessToken = (session: {
 }) => {
   window.localStorage.setItem(
     "oauth_provider_refresh_token",
-    session.refresh_token
+    session.refresh_token,
   );
   window.localStorage.setItem(
     "oauth_provider_expires_at",
-    String(session.expires_at)
+    String(session.expires_at),
   );
   window.localStorage.setItem("oauth_provider_token", session.access_token);
 };
 
 export const onAuthStateChange = (
-  callback: Parameters<GoTrueClient["onAuthStateChange"]>[0]
+  callback: Parameters<GoTrueClient["onAuthStateChange"]>[0],
 ) => {
   const { data } = client.auth.onAuthStateChange(callback);
   return data;

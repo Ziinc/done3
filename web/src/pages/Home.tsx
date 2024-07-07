@@ -100,7 +100,7 @@ const Home: React.FC = () => {
     const toUpsert = rearrangeCounters(
       counters,
       counters[counterIndex],
-      destination.index
+      destination.index,
     );
     await upsertCounters(toUpsert);
     mutate(toUpsert);
@@ -162,7 +162,7 @@ const Home: React.FC = () => {
                       onIncrease={(value) => handleIncrease(counter, value)}
                       onDelete={async () => {
                         const confirmation = window.confirm(
-                          "Delete cannot be undone. Consider archiving instead. Proceed with delete?"
+                          "Delete cannot be undone. Consider archiving instead. Proceed with delete?",
                         );
                         if (!confirmation) return;
                         await deleteCounter(counter.id);
@@ -263,7 +263,7 @@ const Home: React.FC = () => {
               onUpdateTaskList={async (attrs) => {
                 patchTaskList(list.id, attrs);
                 const updated = taskLists.map((tl) =>
-                  tl.id === list.id ? { ...tl, ...attrs } : tl
+                  tl.id === list.id ? { ...tl, ...attrs } : tl,
                 );
                 mutateTaskLists(updated, { revalidate: false });
               }}

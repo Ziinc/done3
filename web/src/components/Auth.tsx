@@ -95,7 +95,7 @@ namespace Auth {
     const handleSubmit: FormProps["onSubmit"] = async (
       mode,
       attrs,
-      callbacks
+      callbacks,
     ) => {
       switch (mode) {
         case Mode.SIGN_IN:
