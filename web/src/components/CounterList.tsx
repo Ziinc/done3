@@ -9,7 +9,7 @@ type RenderCounter = (
   counter: Counter,
   tally: CountTally,
   // note: adding types for the draggable props is not worth the effort
-  state: { isDragging: boolean; draggableProps: any },
+  state: { isDragging: boolean; draggableProps: any }
 ) => React.ReactNode;
 
 interface Props extends HTMLProps<HTMLUListElement> {
@@ -44,22 +44,19 @@ const CounterList: React.FC<Props> = ({
             "pt-5 px-4 rounded-lg",
             "transition-all duration-300",
             snapshot.isDraggingOver ? "bg-sky-200" : "",
-          ].join(" ")}
-        >
+          ].join(" ")}>
           <ul
             ref={provided.innerRef}
             {...provided.droppableProps}
             {...props}
             className={["list-none", "flex flex-col p-0 gap-1 rounded-lg"].join(
-              " ",
-            )}
-          >
+              " "
+            )}>
             <div className="flex flex-col justify-start items-start gap-2">
               <Typography variant="h6">Counters</Typography>
               <Button
                 startIcon={<AddBoxOutlined />}
-                onClick={() => setShowAddForm(true)}
-              >
+                onClick={() => setShowAddForm(true)}>
                 Add a counter
               </Button>
             </div>
@@ -81,8 +78,7 @@ const CounterList: React.FC<Props> = ({
                 <Draggable
                   draggableId={`counter-${counter.id}`}
                   index={index}
-                  key={counter.id}
-                >
+                  key={counter.id}>
                   {(provided, snapshot) => (
                     <>
                       {renderCounter(counter, countMapping[counter.id], {

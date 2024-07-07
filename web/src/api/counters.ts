@@ -47,7 +47,7 @@ export const archiveCounter = async (id: number) => {
 };
 export const updateCounter = async (
   id: number,
-  attrs: Partial<CounterAttrs>,
+  attrs: Partial<CounterAttrs>
 ) => {
   await client
     .from("counters")
@@ -65,17 +65,17 @@ export const increaseCounter = async (counter_id: number, value: number) => {
 
 export const upsertCounters = async (attrsArr: Partial<CounterAttrs>[]) => {
   const user_id = await getUserId();
-  const values = attrsArr.map((v) => ({ ...v, user_id }));
+  const values = attrsArr.map(v => ({ ...v, user_id }));
   await client.from("counters").upsert(values);
 };
 
 export const rearrangeCounters = (
   orderedCounters: Counter[],
   movedCounter: Counter,
-  newIndex: number,
+  newIndex: number
 ): Counter[] => {
   const filtered = orderedCounters.filter(
-    (counter) => counter.id !== movedCounter.id,
+    counter => counter.id !== movedCounter.id
   );
   const part1 = filtered.slice(0, newIndex);
   const part2 = filtered.slice(newIndex);

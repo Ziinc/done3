@@ -92,7 +92,7 @@ const Home: React.FC = () => {
     if (destination?.index === undefined) return;
     const [_resource, strId] = draggableId.split("-");
     const id = Number(strId);
-    const counterIndex = counters.findIndex((c) => c.id === id);
+    const counterIndex = counters.findIndex(c => c.id === id);
 
     // return early if no change in pos
     if (counterIndex === destination.index) return;
@@ -100,12 +100,12 @@ const Home: React.FC = () => {
     const toUpsert = rearrangeCounters(
       counters,
       counters[counterIndex],
-      destination.index,
+      destination.index
     );
     await upsertCounters(toUpsert);
     mutate(toUpsert);
   };
-  const editingCounter = (counters || []).find((c) => c.id === editingId);
+  const editingCounter = (counters || []).find(c => c.id === editingId);
 
   // hotkey management
   useEffect(() => {
@@ -136,8 +136,7 @@ const Home: React.FC = () => {
         justifyContent={"start"}
         gap={1}
         overflow="scroll"
-        flexGrow="inherit"
-      >
+        flexGrow="inherit">
         <Grid flexGrow="inherit" minWidth={380} xs={12} md={4}>
           <DragDropContext onDragUpdate={handleDrag} onDragEnd={handleDrag}>
             <CounterList
@@ -159,10 +158,10 @@ const Home: React.FC = () => {
                       count={tally ? tally[counter.tally_method] : 0}
                       wrapperTag="li"
                       counter={counter}
-                      onIncrease={(value) => handleIncrease(counter, value)}
+                      onIncrease={value => handleIncrease(counter, value)}
                       onDelete={async () => {
                         const confirmation = window.confirm(
-                          "Delete cannot be undone. Consider archiving instead. Proceed with delete?",
+                          "Delete cannot be undone. Consider archiving instead. Proceed with delete?"
                         );
                         if (!confirmation) return;
                         await deleteCounter(counter.id);
@@ -180,8 +179,7 @@ const Home: React.FC = () => {
                         onClickAway={() => {
                           // maybe submit
                           setEditingId(null);
-                        }}
-                      >
+                        }}>
                         <div className="flex flex-col gap-4">
                           {editingCounter && (
                             <div className="flex flex-col w-full items-center justify-center">
@@ -200,8 +198,7 @@ const Home: React.FC = () => {
                                   startIcon={<Plus size={16} strokeWidth={3} />}
                                   onClick={() =>
                                     handleIncrease(editingCounter, 1)
-                                  }
-                                >
+                                  }>
                                   1
                                 </Button>
                                 <Button
@@ -211,8 +208,7 @@ const Home: React.FC = () => {
                                   startIcon={<Plus size={16} strokeWidth={3} />}
                                   onClick={() =>
                                     handleIncrease(editingCounter, 5)
-                                  }
-                                >
+                                  }>
                                   5
                                 </Button>
 
@@ -223,8 +219,9 @@ const Home: React.FC = () => {
                                   onClick={() =>
                                     handleIncrease(editingCounter, 10)
                                   }
-                                  startIcon={<Plus size={16} strokeWidth={3} />}
-                                >
+                                  startIcon={
+                                    <Plus size={16} strokeWidth={3} />
+                                  }>
                                   10
                                 </Button>
                               </div>
@@ -250,20 +247,20 @@ const Home: React.FC = () => {
           </DragDropContext>
         </Grid>
 
-        {taskLists.map((list) => (
+        {taskLists.map(list => (
           <Grid minWidth={380} xs={12} md={4}>
             <TaskList
               key={list.id}
               taskList={list}
               onDeleteTaskList={() => {
                 deleteTaskList(list.id);
-                const updated = taskLists.filter((tl) => tl.id !== list.id);
+                const updated = taskLists.filter(tl => tl.id !== list.id);
                 mutateTaskLists(updated, { revalidate: false });
               }}
-              onUpdateTaskList={async (attrs) => {
+              onUpdateTaskList={async attrs => {
                 patchTaskList(list.id, attrs);
-                const updated = taskLists.map((tl) =>
-                  tl.id === list.id ? { ...tl, ...attrs } : tl,
+                const updated = taskLists.map(tl =>
+                  tl.id === list.id ? { ...tl, ...attrs } : tl
                 );
                 mutateTaskLists(updated, { revalidate: false });
               }}
@@ -275,14 +272,13 @@ const Home: React.FC = () => {
             <>
               <form
                 className="w-48"
-                onSubmit={async (e) => {
+                onSubmit={async e => {
                   e.preventDefault();
                   const { data } = await insertTaskList({
                     title: e.currentTarget.taskListTitle.value,
                   });
                   mutateTaskLists([...taskLists, data]);
-                }}
-              >
+                }}>
                 <TextField label="Title" name="taskListTitle" required />
                 <Button variant="outlined" color="secondary" type="submit">
                   Add list
@@ -297,8 +293,7 @@ const Home: React.FC = () => {
               <Button
                 variant="contained"
                 sx={{ width: 300 }}
-                onClick={() => setNewList(true)}
-              >
+                onClick={() => setNewList(true)}>
                 Add new list
               </Button>
             </Container>

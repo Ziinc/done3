@@ -30,23 +30,23 @@ const instance = () =>
     baseURL: "https://tasks.googleapis.com",
     headers: {
       Authorization: `Bearer ${window.localStorage.getItem(
-        "oauth_provider_token",
+        "oauth_provider_token"
       )}`,
     },
   });
 export const getTask = async (
   taskListId: string,
-  id: string,
+  id: string
 ): Promise<Task> => {
   return await instance().get(
-    `/tasks/v1/users/@me/lists/${taskListId}/tasks/${id}`,
+    `/tasks/v1/users/@me/lists/${taskListId}/tasks/${id}`
   );
 };
 
 export const listTasks = async (taskListId: string): Promise<Task[]> => {
   return await instance()
     .get(`/tasks/v1/lists/${taskListId}/tasks`)
-    .then((res) => res.data.items);
+    .then(res => res.data.items);
 };
 
 export const deleteTask = async (taskListId: string, id: string) => {
@@ -56,11 +56,11 @@ export const deleteTask = async (taskListId: string, id: string) => {
 export const patchTask = async (
   taskListId: string,
   id: string,
-  attrs: Partial<Task>,
+  attrs: Partial<Task>
 ): Promise<AxiosResponse<Task>> => {
   return await instance().patch(
     `/tasks/v1/lists/${taskListId}/tasks/${id}`,
-    attrs,
+    attrs
   );
 };
 
@@ -68,7 +68,7 @@ export const reorderTaskAsChild = async (
   taskListId: string,
   id: string,
   parent: string,
-  sibling?: string,
+  sibling?: string
 ) => {
   return await instance().post(
     `/tasks/v1/lists/${taskListId}/tasks/${id}/move`,
@@ -78,13 +78,13 @@ export const reorderTaskAsChild = async (
         parent,
         sibling,
       },
-    },
+    }
   );
 };
 export const reorderTaskAsTopLevel = async (
   taskListId: string,
   id: string,
-  sibling?: string,
+  sibling?: string
 ) => {
   return await instance().post(
     `/tasks/v1/lists/${taskListId}/tasks/${id}/move`,
@@ -94,7 +94,7 @@ export const reorderTaskAsTopLevel = async (
         parent: null,
         sibling,
       },
-    },
+    }
   );
 };
 
@@ -102,7 +102,7 @@ export const insertTask = async (
   taskListId: string,
   attrs: Partial<Task>,
   parent?: string | null,
-  previous?: string | null,
+  previous?: string | null
 ) => {
   return await instance().post(`/tasks/v1/lists/${taskListId}/tasks`, attrs, {
     params: {

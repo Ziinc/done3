@@ -44,8 +44,7 @@ namespace Auth {
             width: "100%",
           }}
           startIcon={<Google />}
-          onClick={handleGoogleSignIn}
-        >
+          onClick={handleGoogleSignIn}>
           Sign in with Google
         </Button>
       </>
@@ -95,7 +94,7 @@ namespace Auth {
     const handleSubmit: FormProps["onSubmit"] = async (
       mode,
       attrs,
-      callbacks,
+      callbacks
     ) => {
       switch (mode) {
         case Mode.SIGN_IN:

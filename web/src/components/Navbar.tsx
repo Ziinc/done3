@@ -9,8 +9,7 @@ const Navbar: React.FC<Props> = ({ className = "" }) => (
     className={[
       className,
       "flex flex-row w-full justify-between h-12 p-2",
-    ].join(" ")}
-  >
+    ].join(" ")}>
     <Typography variant="h5" className="text-2xl">
       Done<sup>3</sup>
     </Typography>

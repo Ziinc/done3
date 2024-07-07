@@ -25,8 +25,7 @@ const CountDisplay: React.FC<{ value: number }> = ({ value }) => {
         enterFrom="opacity-50 translate-y-3"
         enterTo="opacity-100"
         leaveFrom="opacity-100"
-        leaveTo="opacity-0 -translate-y-3"
-      >
+        leaveTo="opacity-0 -translate-y-3">
         {prev}
       </Transition>
     </span>

@@ -14,7 +14,7 @@ const instance = () =>
     baseURL: "https://tasks.googleapis.com",
     headers: {
       Authorization: `Bearer ${window.localStorage.getItem(
-        "oauth_provider_token",
+        "oauth_provider_token"
       )}`,
     },
   });
@@ -29,7 +29,7 @@ export const listTaskLists = async (): Promise<TaskList[]> => {
           kind: string;
           items: TaskList[];
         };
-      }) => res.data.items,
+      }) => res.data.items
     );
 };
 export const getTaskList = async (id: string): Promise<TaskList> => {
@@ -41,7 +41,7 @@ export const deleteTaskList = async (id: string) => {
 
 export const patchTaskList = async (
   id: string,
-  attrs: Pick<TaskList, "title">,
+  attrs: Pick<TaskList, "title">
 ) => {
   return await instance().patch(`/tasks/v1/users/@me/lists/${id}`, attrs);
 };

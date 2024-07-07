@@ -40,13 +40,11 @@ const CounterForm: React.FC<CounterFormProps> = ({
         wrapperCol={{ span: 16 }}
         onFinish={handleSubmit}
         autoComplete="off"
-        initialValues={defaultValues}
-      >
+        initialValues={defaultValues}>
         <Form.Item
           label="Name"
           name="name"
-          rules={[{ required: true, message: "Counter name is required!" }]}
-        >
+          rules={[{ required: true, message: "Counter name is required!" }]}>
           <Input ref={nameInputRef} placeholder="Name" />
         </Form.Item>
         <Form.Item label="Notes" name="notes">
@@ -77,8 +75,7 @@ const CounterForm: React.FC<CounterFormProps> = ({
             variant="contained"
             color="primary"
             type="submit"
-            loading={loading}
-          >
+            loading={loading}>
             Submit
           </LoadingButton>
         </Form.Item>

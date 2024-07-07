@@ -70,8 +70,7 @@ const CounterItem: React.FC<Props> = ({
         },
       ],
     }}
-    trigger={["contextMenu"]}
-  >
+    trigger={["contextMenu"]}>
     <WrapperTag
       className={[
         className,
@@ -82,8 +81,7 @@ const CounterItem: React.FC<Props> = ({
       ].join(" ")}
       ref={ref}
       {...wrapperProps}
-      {...rest}
-    >
+      {...rest}>
       <div className="w-fit">
         <Button
           variant="contained"
@@ -96,8 +94,7 @@ const CounterItem: React.FC<Props> = ({
             count >= counter.target ? "!bg-green-700 hover:!bg-green-600" : "",
             count < counter.target ? "!bg-yellow-600 hover:!bg-yellow-500" : "",
             count > counter.target * 5 ? "!bg-sky-600 hover:!bg-sky-500" : "",
-          ].join(" ")}
-        >
+          ].join(" ")}>
           <CountDisplay value={count} />
         </Button>
       </div>
@@ -111,8 +108,7 @@ const CounterItem: React.FC<Props> = ({
               __html: DOMPurify.sanitize(marked.parse(counter.notes), {
                 USE_PROFILES: { html: true },
               }),
-            }}
-          ></div>
+            }}></div>
         )}
       </div>
       <Dropdown
@@ -129,13 +125,11 @@ const CounterItem: React.FC<Props> = ({
               onClick: onDelete,
             },
           ],
-        }}
-      >
+        }}>
         <Button
           variant="text"
           startIcon={<MoreVertical size={12} />}
-          title={`More options for '${counter.name}'`}
-        ></Button>
+          title={`More options for '${counter.name}'`}></Button>
       </Dropdown>
     </WrapperTag>
   </Dropdown>
