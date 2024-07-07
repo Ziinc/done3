@@ -12,7 +12,7 @@ export const useHashLocation = () => {
   const location = useSyncExternalStore(
     // first argument is a value subscriber: it gives us a callback that we should call
     // whenever the value is changed
-    (onChange) => {
+    onChange => {
       window.addEventListener("hashchange", onChange);
       return () => window.removeEventListener("hashchange", onChange);
     },

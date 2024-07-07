@@ -54,11 +54,11 @@ const TaskListComponent = ({
   });
 
   const completedTasks = useMemo(
-    () => tasks.filter((t) => t.status === "completed"),
+    () => tasks.filter(t => t.status === "completed"),
     [tasks]
   );
   const pendingTasks = useMemo(
-    () => tasks.filter((t) => t.status !== "completed"),
+    () => tasks.filter(t => t.status !== "completed"),
     [tasks]
   );
 
@@ -67,7 +67,7 @@ const TaskListComponent = ({
       patchTask(taskList.id, task.id, {
         status: "completed",
       });
-      const updated = tasks.map((t) =>
+      const updated = tasks.map(t =>
         t.id === task.id ? { ...t, status: "completed" as const } : t
       );
       mutateTasks(updated);
@@ -75,7 +75,7 @@ const TaskListComponent = ({
       patchTask(taskList.id, task.id, {
         status: "needsAction",
       });
-      const updated = tasks.map((t) =>
+      const updated = tasks.map(t =>
         t.id === task.id ? { ...t, status: "needsAction" as const } : t
       );
       mutateTasks(updated, { revalidate: false });
@@ -83,12 +83,12 @@ const TaskListComponent = ({
   };
   const handleDelete = async (task: Task) => {
     deleteTask(taskList.id, task.id);
-    const updated = tasks.filter((t) => t.id !== task.id);
+    const updated = tasks.filter(t => t.id !== task.id);
     mutateTasks(updated, { revalidate: false });
   };
   const handleUpdate = async (taskId: string, attrs: Partial<Task>) => {
     patchTask(taskList.id, taskId, attrs).then();
-    const updated = tasks.map((t) => {
+    const updated = tasks.map(t => {
       if (t.id == taskId) {
         return { ...t, ...attrs };
       } else {
@@ -101,18 +101,17 @@ const TaskListComponent = ({
   return (
     <Paper
       elevation={1}
-      sx={{ borderRadius: 3, p: 2, flexGrow: "inherit", height: "100%" }}
-    >
+      sx={{ borderRadius: 3, p: 2, flexGrow: "inherit", height: "100%" }}>
       <Stack direction="row" alignItems="center">
         {editingTitle ? (
           <>
             <>
-              <form onSubmit={(e) => e.preventDefault()}>
+              <form onSubmit={e => e.preventDefault()}>
                 <TextField
                   name="listTitle"
                   label="List title"
                   defaultValue={taskList.title}
-                  onBlur={(e) => {
+                  onBlur={e => {
                     const value = e.currentTarget.value;
                     setEditingTitle(false);
                     if (value !== taskList.title) {
@@ -145,7 +144,7 @@ const TaskListComponent = ({
       {showNewForm ? (
         <ClickAwayListener onClickAway={() => setShowNewForm(false)}>
           <form
-            onSubmit={async (e) => {
+            onSubmit={async e => {
               e.preventDefault();
               const title = e.currentTarget.taskTitle.value;
               await insertTask(taskList.id, { title });
@@ -153,8 +152,7 @@ const TaskListComponent = ({
                 { id: "new", title, status: "needsAction" } as Task,
                 ...tasks,
               ]);
-            }}
-          >
+            }}>
             <TextField name="taskTitle" label="Task title" variant="outlined" />
             <Button type="submit">Add</Button>
             <IconButton onClick={() => setShowNewForm(false)}>
@@ -174,7 +172,7 @@ const TaskListComponent = ({
       ) : (
         <>
           <List>
-            {pendingTasks.map((task) => (
+            {pendingTasks.map(task => (
               <TaskListItem
                 key={task.id}
                 task={task}
@@ -193,17 +191,16 @@ const TaskListComponent = ({
                     }}
                   />
                 }
-                onClick={() => setShowCompleted(!showCompleted)}
-              >
+                onClick={() => setShowCompleted(!showCompleted)}>
                 <Typography variant="subtitle1" className="text-gray-600">
                   Completed ({completedTasks.length})
                 </Typography>
               </Button>
             )}
             {showCompleted &&
-              completedTasks.map((task) => (
+              completedTasks.map(task => (
                 <TaskListItem
-                key={task.id}
+                  key={task.id}
                   task={task}
                   onDeleteTask={() => handleDelete(task)}
                   onToggleTask={onToggleTask}
