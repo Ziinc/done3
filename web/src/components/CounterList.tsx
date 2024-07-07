@@ -18,7 +18,6 @@ interface Props extends HTMLProps<HTMLUListElement> {
   countMapping: CountMapping;
   renderCounter: RenderCounter;
   className?: string;
-  noDataFallback: React.ReactNode;
 }
 
 const CounterList: React.FC<Props> = ({
@@ -26,7 +25,6 @@ const CounterList: React.FC<Props> = ({
   countMapping,
   renderCounter,
   className = "",
-  noDataFallback,
   onAddCounter,
   ...props
 }) => {

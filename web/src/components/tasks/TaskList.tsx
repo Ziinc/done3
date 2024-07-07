@@ -41,7 +41,7 @@ const TaskListComponent = ({
   const [showCompleted, setShowCompleted] = useState(false);
   const [editingTitle, setEditingTitle] = useState(false);
   const [showNewForm, setShowNewForm] = useState(false);
-  let {
+  const {
     data: tasks = [],
     isLoading: isLoadingTasks,
     mutate: mutateTasks,
@@ -150,7 +150,7 @@ const TaskListComponent = ({
               const title = e.currentTarget.taskTitle.value;
               await insertTask(taskList.id, { title });
               mutateTasks([
-                { id: "new", title, status: "needsAction" } as any,
+                { id: "new", title, status: "needsAction" } as Task,
                 ...tasks,
               ]);
             }}
@@ -203,6 +203,7 @@ const TaskListComponent = ({
             {showCompleted &&
               completedTasks.map((task) => (
                 <TaskListItem
+                key={task.id}
                   task={task}
                   onDeleteTask={() => handleDelete(task)}
                   onToggleTask={onToggleTask}

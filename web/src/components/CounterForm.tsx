@@ -2,7 +2,7 @@ import { Form, Input, InputRef, Select } from "antd";
 import { useEffect, useRef, useState } from "react";
 import { CounterAttrs } from "../api/counters";
 import { LoadingButton } from "@mui/lab";
-import { Box, IconButton } from "@mui/material";
+import { IconButton } from "@mui/material";
 import { Cancel } from "@mui/icons-material";
 interface Callbacks {
   cancelLoading: () => void;

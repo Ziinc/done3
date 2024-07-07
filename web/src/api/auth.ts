@@ -7,12 +7,12 @@ export const signOut = () => {
 };
 
 export const getUserId = async () => {
-  const { data, error } = await client.auth.getSession();
+  const { data } = await client.auth.getSession();
   return data.session?.user.id;
 };
 
 export const getSession = async () => {
-  const { data, error } = await client.auth.getSession();
+  const { data } = await client.auth.getSession();
   return data;
 };
 
@@ -78,23 +78,6 @@ export const signIntoGoogle = async () => {
         .join(" "),
     },
   });
-};
-const setOauthProviderAccessToken = (session: {
-  access_token: string;
-  refresh_token: string;
-  expires_at?: number;
-  expires_in: number;
-  token_type: string;
-}) => {
-  window.localStorage.setItem(
-    "oauth_provider_refresh_token",
-    session.refresh_token
-  );
-  window.localStorage.setItem(
-    "oauth_provider_expires_at",
-    String(session.expires_at)
-  );
-  window.localStorage.setItem("oauth_provider_token", session.access_token);
 };
 
 export const onAuthStateChange = (

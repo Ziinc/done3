@@ -88,7 +88,9 @@ export const rearrangeCounters = (
 export const getCounts = async (): Promise<CountMapping> => {
   const { data } = await client.from("view_counts").select();
   const mapping = data?.reduce((acc, count) => {
-    const { id: _id, ...values } = count;
+    /* eslint-disable @typescript-eslint/no-unused-vars */
+    const { id, ...values } = count;
+    /* eslint-enable @typescript-eslint/no-unused-vars */
     acc[count.id] = values;
     return acc;
   }, {});

@@ -8,7 +8,7 @@ import React from "react";
 import { Button } from "@mui/material";
 interface Props extends React.HTMLProps<HTMLDivElement & HTMLLIElement> {
   wrapperTag?: "li" | "div";
-  wrapperProps?: Object;
+  wrapperProps?: object;
   className?: string;
   counter: Counter;
   isDragging?: boolean;
@@ -17,7 +17,6 @@ interface Props extends React.HTMLProps<HTMLDivElement & HTMLLIElement> {
   onEdit?: () => void;
   onDelete?: () => void;
   onIncrease?: (value: number) => void;
-  onArchive?: () => void;
 }
 
 const CounterItem: React.FC<Props> = ({
@@ -30,7 +29,6 @@ const CounterItem: React.FC<Props> = ({
   counter,
   isHovering = false,
   isDragging = false,
-  onArchive,
   count,
   ref,
   ...rest

@@ -21,8 +21,7 @@ import {
 } from "react-beautiful-dnd";
 import CounterList from "../components/CounterList";
 import useSWR from "swr";
-import { Plus, X } from "lucide-react";
-import CounterOnboardingPrompt from "../components/CounterOnboardingPrompt";
+import { Plus } from "lucide-react";
 import {
   deleteTaskList,
   insertTaskList,
@@ -42,21 +41,21 @@ import { Cancel } from "@mui/icons-material";
 import Grid from "@mui/material/Unstable_Grid2/Grid2";
 
 const Home: React.FC = () => {
-  let {
-    data: counters = [],
-    isLoading,
-    mutate,
-  } = useSWR<Counter[]>("counters", () => listCounters(), {
-    revalidateOnFocus: false,
-  });
+  const { data: counters = [], mutate } = useSWR<Counter[]>(
+    "counters",
+    () => listCounters(),
+    {
+      revalidateOnFocus: false,
+    }
+  );
 
-  let {
-    data: taskLists = [],
-    isLoading: isLoadingTaskLists,
-    mutate: mutateTaskLists,
-  } = useSWR("tasklists", () => listTaskLists(), {
-    revalidateOnFocus: false,
-  });
+  const { data: taskLists = [], mutate: mutateTaskLists } = useSWR(
+    "tasklists",
+    () => listTaskLists(),
+    {
+      revalidateOnFocus: false,
+    }
+  );
 
   const { data: countMapping = {}, mutate: mutateCounts } =
     useSWR<CountMapping>("counts", () => getCounts(), {
@@ -72,7 +71,7 @@ const Home: React.FC = () => {
     mutateCounts();
   };
   const handleIncrease = async (counter: Counter, value: number) => {
-    let updated: CountTally = Object.assign({}, countMapping[counter.id]);
+    const updated: CountTally = Object.assign({}, countMapping[counter.id]);
     for (const [key, currValue] of Object.entries(updated)) {
       updated[key as keyof CountTally] = currValue + value;
     }
@@ -90,7 +89,7 @@ const Home: React.FC = () => {
     destination,
   }) => {
     if (destination?.index === undefined) return;
-    const [_resource, strId] = draggableId.split("-");
+    const strId = draggableId.split("-")[1];
     const id = Number(strId);
     const counterIndex = counters.findIndex(c => c.id === id);
 
@@ -149,7 +148,6 @@ const Home: React.FC = () => {
               tabIndex={0}
               counters={counters}
               countMapping={countMapping}
-              noDataFallback={<CounterOnboardingPrompt />}
               renderCounter={(counter, tally, state) => {
                 return (
                   <>
@@ -248,7 +246,7 @@ const Home: React.FC = () => {
         </Grid>
 
         {taskLists.map(list => (
-          <Grid minWidth={380} xs={12} md={4}>
+          <Grid minWidth={380} xs={12} md={4} key={list.id}>
             <TaskList
               key={list.id}
               taskList={list}

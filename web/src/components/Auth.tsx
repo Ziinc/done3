@@ -98,11 +98,11 @@ namespace Auth {
     ) => {
       switch (mode) {
         case Mode.SIGN_IN:
-          const signInData = await signInWithPassword(attrs);
+          await signInWithPassword(attrs);
           callbacks.cancelLoading();
           break;
         case Mode.SIGN_UP:
-          const signUpData = await signUp(attrs);
+          await signUp(attrs);
           callbacks.cancelLoading();
           break;
         case Mode.REQUEST_RESET:
