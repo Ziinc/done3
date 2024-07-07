@@ -12,7 +12,7 @@ export const Draggable = vi.fn().mockImplementation(({ children }) => {
     <>
       {children(
         { innerRef: ref, draggableProps: {}, dragHandleProps: {} },
-        vi.fn()
+        vi.fn(),
       )}
     </>
   );
@@ -24,7 +24,7 @@ export const Droppable = vi.fn().mockImplementation(({ children }) => {
     <>
       {children(
         { innerRef: ref, droppableProps: {} },
-        { isDraggingOver: false }
+        { isDraggingOver: false },
       )}
     </>
   );

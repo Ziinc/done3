@@ -17,7 +17,7 @@ function App() {
   const [loading, setLoading] = useState(true);
   const handleStartup = async () => {
     await checkAuthed();
-    
+
     setLoading(false);
   };
   useEffect(() => {
@@ -120,7 +120,9 @@ export const AuthWall = ({ showLoading }: { showLoading: boolean }) => {
               <Grid xs={12} md={6}>
                 <Paper sx={{ p: 2 }}>
                   <Typography variant="subtitle2">Tasks+</Typography>
-                  <Typography variant="body2">Extended Tasks features</Typography>
+                  <Typography variant="body2">
+                    Extended Tasks features
+                  </Typography>
                 </Paper>
               </Grid>
               <Grid xs={12} md={6}>

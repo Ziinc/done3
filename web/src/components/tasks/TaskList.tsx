@@ -33,7 +33,11 @@ interface Props {
   onUpdateTaskList: (attrs: Parameters<typeof patchTaskList>[1]) => void;
 }
 
-const TaskListComponent = ({ taskList, onDeleteTaskList, onUpdateTaskList }: Props) => {
+const TaskListComponent = ({
+  taskList,
+  onDeleteTaskList,
+  onUpdateTaskList,
+}: Props) => {
   const [showCompleted, setShowCompleted] = useState(false);
   const [editingTitle, setEditingTitle] = useState(false);
   const [showNewForm, setShowNewForm] = useState(false);
@@ -51,11 +55,11 @@ const TaskListComponent = ({ taskList, onDeleteTaskList, onUpdateTaskList }: Pro
 
   const completedTasks = useMemo(
     () => tasks.filter((t) => t.status === "completed"),
-    [tasks],
+    [tasks]
   );
   const pendingTasks = useMemo(
     () => tasks.filter((t) => t.status !== "completed"),
-    [tasks],
+    [tasks]
   );
 
   const onToggleTask = async (task: Task) => {
@@ -64,7 +68,7 @@ const TaskListComponent = ({ taskList, onDeleteTaskList, onUpdateTaskList }: Pro
         status: "completed",
       });
       const updated = tasks.map((t) =>
-        t.id === task.id ? { ...t, status: "completed" as const } : t,
+        t.id === task.id ? { ...t, status: "completed" as const } : t
       );
       mutateTasks(updated);
     } else {
@@ -72,7 +76,7 @@ const TaskListComponent = ({ taskList, onDeleteTaskList, onUpdateTaskList }: Pro
         status: "needsAction",
       });
       const updated = tasks.map((t) =>
-        t.id === task.id ? { ...t, status: "needsAction" as const } : t,
+        t.id === task.id ? { ...t, status: "needsAction" as const } : t
       );
       mutateTasks(updated, { revalidate: false });
     }
