@@ -2,7 +2,7 @@
 #
 # To get started with Gatsby see: https://www.gatsbyjs.com/docs/quick-start/
 #
-name: App Unit Tests
+name: App Checks
 
 on:
   # Runs on pushes targeting the default branch
@@ -21,6 +21,10 @@ defaults:
 jobs:
   test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        cmd: [test, check:formatting]
+
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -32,5 +36,5 @@ jobs:
           cache-dependency-path: '**/package-lock.json'
       - name: Install dependencies web
         run: npm ci
-      - name: Test app
-        run: npm run test
+      - name: Check - ${{ matrix.cmd }}
+        run: npm run ${{ matrix.cmd}}

@@ -51,11 +51,11 @@ const TaskList = ({ taskList, onDeleteTaskList, onUpdateTaskList }: Props) => {
 
   const completedTasks = useMemo(
     () => tasks.filter((t) => t.status === "completed"),
-    [tasks]
+    [tasks],
   );
   const pendingTasks = useMemo(
     () => tasks.filter((t) => t.status !== "completed"),
-    [tasks]
+    [tasks],
   );
 
   const onToggleTask = async (task: Task) => {
@@ -64,7 +64,7 @@ const TaskList = ({ taskList, onDeleteTaskList, onUpdateTaskList }: Props) => {
         status: "completed",
       });
       const updated = tasks.map((t) =>
-        t.id === task.id ? { ...t, status: "completed" as const } : t
+        t.id === task.id ? { ...t, status: "completed" as const } : t,
       );
       mutateTasks(updated);
     } else {
@@ -72,7 +72,7 @@ const TaskList = ({ taskList, onDeleteTaskList, onUpdateTaskList }: Props) => {
         status: "needsAction",
       });
       const updated = tasks.map((t) =>
-        t.id === task.id ? { ...t, status: "needsAction" as const } : t
+        t.id === task.id ? { ...t, status: "needsAction" as const } : t,
       );
       mutateTasks(updated, { revalidate: false });
     }

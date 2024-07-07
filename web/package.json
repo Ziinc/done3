@@ -9,7 +9,8 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "test": "vitest",
-    "format": "prettier --write src/**/*.{js,ts,tsx,jsx}"
+    "format": "prettier src/**/*.{tsx,ts} --write --log-level=warn",
+    "check:formatting": "prettier src/**/*.{tsx,ts} --check --log-level=warn"
   },
   "dependencies": {
     "@emotion/react": "^11.11.4",
