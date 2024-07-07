@@ -6,24 +6,25 @@ import { AuthedApp } from "../src/App";
 import {
   createCounter,
   deleteCounter,
-  rearrangeCounters,
   listCounters,
   updateCounter,
   getCounts,
 } from "../src/api/counters";
 import userEvent from "@testing-library/user-event";
 import { counterFixture, countsFixture } from "./helpers/fixtures";
-
 beforeEach(() => {
   (getCounts as Mock).mockResolvedValue(countsFixture());
 });
 describe("api & context", () => {
-  test("rearrangeCounters", () => {
-    (rearrangeCounters as Mock).mockRestore();
+  test("rearrangeCounters", async () => {
+    const { rearrangeCounters } = await vi.importActual<any>("../src/api/counters");
+    // (rearrangeCounters as Mock).mockRestore();
+    console.log(rearrangeCounters);
     let counters = [0, 1, 2, 3].map((v) =>
       counterFixture({ id: v, sort_index: v })
     );
     let newOrder = rearrangeCounters(counters, counters[2], 0);
+    console.log(newOrder);
     expect(newOrder[0]).toMatchObject({ id: 2, sort_index: 0 });
     expect(newOrder[1]).toMatchObject({ id: 0, sort_index: 1 });
     expect(newOrder[2]).toMatchObject({ id: 1, sort_index: 2 });
