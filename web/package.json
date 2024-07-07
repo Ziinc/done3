@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "test": "vitest",
     "format": "prettier src/**/*.{tsx,ts} --write --log-level=warn",
-    "check:formatting": "prettier src/**/*.{tsx,ts} --check --log-level=warn"
+    "check:formatting": "prettier src/**/*.{tsx,ts} --check --log-level=warn",
+    "check:typing": "tsc"
   },
   "dependencies": {
     "@emotion/react": "^11.11.4",

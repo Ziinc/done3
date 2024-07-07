@@ -33,7 +33,7 @@ interface Props {
   onUpdateTaskList: (attrs: Parameters<typeof patchTaskList>[1]) => void;
 }
 
-const TaskList = ({ taskList, onDeleteTaskList, onUpdateTaskList }: Props) => {
+const TaskListComponent = ({ taskList, onDeleteTaskList, onUpdateTaskList }: Props) => {
   const [showCompleted, setShowCompleted] = useState(false);
   const [editingTitle, setEditingTitle] = useState(false);
   const [showNewForm, setShowNewForm] = useState(false);
@@ -211,4 +211,4 @@ const TaskList = ({ taskList, onDeleteTaskList, onUpdateTaskList }: Props) => {
     </Paper>
   );
 };
-export default TaskList;
+export default TaskListComponent;
