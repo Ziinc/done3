@@ -1,18 +1,18 @@
 import MainLayout from "./layouts/MainLayout";
 import Home from "./pages/Home";
 import { useEffect, useState } from "react";
-import { checkAuthed, refreshAccessTokens } from "./api/auth";
+import { checkAuthed } from "./api/auth";
 import { Transition } from "@headlessui/react";
 import CenteredLayout from "./layouts/CenteredLayout";
 import LoadingSpinner from "./components/LoadingSpinner";
-import Auth from "./components/Auth";
+import {  AuthMode, AuthContainer, useAuth } from "./components/Auth";
 import { Route } from "wouter";
 import { HashRouter } from "./router";
 import { Container, Divider, Paper, Stack, Typography } from "@mui/material";
 import Grid from "@mui/material/Unstable_Grid2/Grid2";
 
 function App() {
-  const user = Auth.useAuth();
+  const user = useAuth();
   const [minLoadingWait, setMinLoadingWait] = useState(false);
   const [loading, setLoading] = useState(true);
   const handleStartup = async () => {
@@ -68,7 +68,7 @@ export const ResetPassword = () => {
         leaveFrom="opacity-100"
         leaveTo="opacity-0">
         <div className="bg-slate-50 p-4 rounded-xl border-solid border-b-2 border-t-0 border-l-0 border border-pink-500">
-          <Auth.AuthContainer mode={Auth.Mode.UPDATE_PASSWORD} />
+          <AuthContainer mode={AuthMode.UPDATE_PASSWORD} />
         </div>
       </Transition>
     </CenteredLayout>
@@ -76,7 +76,7 @@ export const ResetPassword = () => {
 };
 
 export const AuthWall = ({ showLoading }: { showLoading: boolean }) => {
-  const user = Auth.useAuth();
+  const user = useAuth();
 
   return (
     <CenteredLayout className="bg-violet-50">
@@ -130,7 +130,7 @@ export const AuthWall = ({ showLoading }: { showLoading: boolean }) => {
               </Grid>
             </Grid>
             <Divider />
-            <Auth.AuthContainer />
+            <AuthContainer />
           </Stack>
         </Transition>
       </div>

@@ -11,111 +11,109 @@ import {
   updatePassword,
 } from "../api/auth";
 import { Google } from "@mui/icons-material";
-namespace Auth {
-  export enum Mode {
-    SIGN_IN = "sign_in",
-    SIGN_UP = "sign_up",
-    REQUEST_RESET = "request_rest",
-    UPDATE_PASSWORD = "update_password",
-  }
-  interface Callbacks {
-    cancelLoading: () => void;
-  }
-  interface Attrs {
-    email: string;
-    password: string;
-  }
-  interface FormProps {
-    mode?: Mode;
-    onSubmit: (mode: Mode, attrs: Attrs, cbs: Callbacks) => void;
-  }
 
-  export const Form: React.FC<FormProps> = () => {
-    const handleGoogleSignIn = async () => {
-      await signIntoGoogle();
-    };
+export enum AuthMode {
+  SIGN_IN = "sign_in",
+  SIGN_UP = "sign_up",
+  REQUEST_RESET = "request_rest",
+  UPDATE_PASSWORD = "update_password",
+}
+interface Callbacks {
+  cancelLoading: () => void;
+}
+interface Attrs {
+  email: string;
+  password: string;
+}
+interface FormProps {
+  mode?: AuthMode;
+  onSubmit: (mode: AuthMode, attrs: Attrs, cbs: Callbacks) => void;
+}
 
-    return (
-      <>
-        <Button
-          variant="contained"
-          sx={{
-            mt: 1,
-            width: "100%",
-          }}
-          startIcon={<Google />}
-          onClick={handleGoogleSignIn}>
-          Sign in with Google
-        </Button>
-      </>
-    );
+export const AuthForm: React.FC<FormProps> = () => {
+  const handleGoogleSignIn = async () => {
+    await signIntoGoogle();
   };
 
-  //   State handling and API interface
-  type AuthState = {
-    session: Session | null;
-    user: Session["user"] | null;
-  };
-  const defaultState: AuthState = { user: null, session: null };
-  const AuthContext = React.createContext(defaultState);
-  export const useAuth = () => useContext(AuthContext);
-  export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
-    children,
-  }) => {
-    const [state, setState] = useState(defaultState);
+  return (
+    <>
+      <Button
+        variant="contained"
+        sx={{
+          mt: 1,
+          width: "100%",
+        }}
+        startIcon={<Google />}
+        onClick={handleGoogleSignIn}>
+        Sign in with Google
+      </Button>
+    </>
+  );
+};
 
-    async function getSupabaseSession() {
-      const { session } = await getSession();
+//   State handling and API interface
+type AuthState = {
+  session: Session | null;
+  user: Session["user"] | null;
+};
+const defaultState: AuthState = { user: null, session: null };
+const AuthContext = React.createContext(defaultState);
+export const useAuth = () => useContext(AuthContext);
+
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
+  const [state, setState] = useState(defaultState);
+
+  async function getSupabaseSession() {
+    const { session } = await getSession();
+    if (session) {
+      setState({ session, user: session.user ?? null });
+    }
+  }
+
+  useEffect(() => {
+    getSupabaseSession();
+
+    const { subscription } = onAuthStateChange(async (_event, session) => {
       if (session) {
         setState({ session, user: session.user ?? null });
+      } else {
+        setState(defaultState);
       }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  return <AuthContext.Provider value={state}>{children}</AuthContext.Provider>;
+};
+
+export const AuthContainer = ({ mode }: { mode?: AuthMode }) => {
+  const handleSubmit: FormProps["onSubmit"] = async (
+    mode,
+    attrs,
+    callbacks
+  ) => {
+    switch (mode) {
+      case AuthMode.SIGN_IN:
+        await signInWithPassword(attrs);
+        callbacks.cancelLoading();
+        break;
+      case AuthMode.SIGN_UP:
+        await signUp(attrs);
+        callbacks.cancelLoading();
+        break;
+      case AuthMode.REQUEST_RESET:
+        await requestPasswordReset(attrs.email);
+        callbacks.cancelLoading();
+        break;
+      case AuthMode.UPDATE_PASSWORD:
+        await updatePassword(attrs.password);
+        callbacks.cancelLoading();
+        break;
     }
-
-    useEffect(() => {
-      getSupabaseSession();
-
-      const { subscription } = onAuthStateChange(async (_event, session) => {
-        if (session) {
-          setState({ session, user: session.user ?? null });
-        } else {
-          setState(defaultState);
-        }
-      });
-
-      return () => subscription.unsubscribe();
-    }, []);
-
-    return (
-      <AuthContext.Provider value={state}>{children}</AuthContext.Provider>
-    );
   };
-
-  export const AuthContainer = ({ mode }: { mode?: Mode }) => {
-    const handleSubmit: FormProps["onSubmit"] = async (
-      mode,
-      attrs,
-      callbacks
-    ) => {
-      switch (mode) {
-        case Mode.SIGN_IN:
-          await signInWithPassword(attrs);
-          callbacks.cancelLoading();
-          break;
-        case Mode.SIGN_UP:
-          await signUp(attrs);
-          callbacks.cancelLoading();
-          break;
-        case Mode.REQUEST_RESET:
-          await requestPasswordReset(attrs.email);
-          callbacks.cancelLoading();
-          break;
-        case Mode.UPDATE_PASSWORD:
-          await updatePassword(attrs.password);
-          callbacks.cancelLoading();
-          break;
-      }
-    };
-    return <Auth.Form mode={mode} onSubmit={handleSubmit} />;
-  };
-}
-export default Auth;
+  return <AuthForm mode={mode} onSubmit={handleSubmit} />;
+};
+export default AuthContainer;
