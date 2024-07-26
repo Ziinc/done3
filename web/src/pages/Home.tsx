@@ -21,7 +21,6 @@ import {
 } from "react-beautiful-dnd";
 import CounterList from "../components/CounterList";
 import useSWR from "swr";
-import { Plus } from "lucide-react";
 import {
   deleteTaskList,
   insertTaskList,
@@ -37,7 +36,7 @@ import {
   Typography,
 } from "@mui/material";
 import Button from "@mui/material/Button";
-import { Cancel } from "@mui/icons-material";
+import { Add, Cancel } from "@mui/icons-material";
 import Grid from "@mui/material/Unstable_Grid2/Grid2";
 
 const Home: React.FC = () => {
@@ -193,7 +192,7 @@ const Home: React.FC = () => {
                                   className="flex flex-row justify-center items-center"
                                   variant="contained"
                                   color="primary"
-                                  startIcon={<Plus size={16} strokeWidth={3} />}
+                                  startIcon={<Add />}
                                   onClick={() =>
                                     handleIncrease(editingCounter, 1)
                                   }>
@@ -203,7 +202,7 @@ const Home: React.FC = () => {
                                   className="flex flex-row justify-center items-center"
                                   variant="contained"
                                   color="primary"
-                                  startIcon={<Plus size={16} strokeWidth={3} />}
+                                  startIcon={<Add />}
                                   onClick={() =>
                                     handleIncrease(editingCounter, 5)
                                   }>
@@ -217,9 +216,7 @@ const Home: React.FC = () => {
                                   onClick={() =>
                                     handleIncrease(editingCounter, 10)
                                   }
-                                  startIcon={
-                                    <Plus size={16} strokeWidth={3} />
-                                  }>
+                                  startIcon={<Add />}>
                                   10
                                 </Button>
                               </div>

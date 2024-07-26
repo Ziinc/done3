@@ -1,4 +1,4 @@
-import { Transition } from "@headlessui/react";
+import { Slide, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 
 const CountDisplay: React.FC<{ value: number }> = ({ value }) => {
@@ -18,16 +18,9 @@ const CountDisplay: React.FC<{ value: number }> = ({ value }) => {
   }, [value]);
   return (
     <span className="w-8">
-      <Transition
-        className="transition duration-75"
-        show={showOld}
-        enter=""
-        enterFrom="opacity-50 translate-y-3"
-        enterTo="opacity-100"
-        leaveFrom="opacity-100"
-        leaveTo="opacity-0 -translate-y-3">
-        {prev}
-      </Transition>
+      <Slide in={showOld} direction="up" mountOnEnter unmountOnExit>
+        <Typography>{prev}</Typography>
+      </Slide>
     </span>
   );
 };
