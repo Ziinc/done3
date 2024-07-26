@@ -18,7 +18,6 @@ interface Props extends HTMLProps<HTMLUListElement> {
   countMapping: CountMapping;
   renderCounter: RenderCounter;
   className?: string;
-  noDataFallback: React.ReactNode;
 }
 
 const CounterList: React.FC<Props> = ({
@@ -26,7 +25,6 @@ const CounterList: React.FC<Props> = ({
   countMapping,
   renderCounter,
   className = "",
-  noDataFallback,
   onAddCounter,
   ...props
 }) => {
@@ -36,28 +34,27 @@ const CounterList: React.FC<Props> = ({
     <Droppable droppableId="droppable-1" type="COUNTER">
       {(provided, snapshot) => (
         <Paper
+          sx={{ flexGrow: "inherit", height: "100%", borderRadius: 3 }}
+          elevation={1}
           className={[
             className,
             "list-none",
             "pt-5 px-4 rounded-lg",
             "transition-all duration-300",
             snapshot.isDraggingOver ? "bg-sky-200" : "",
-          ].join(" ")}
-        >
+          ].join(" ")}>
           <ul
             ref={provided.innerRef}
             {...provided.droppableProps}
             {...props}
             className={["list-none", "flex flex-col p-0 gap-1 rounded-lg"].join(
               " "
-            )}
-          >
+            )}>
             <div className="flex flex-col justify-start items-start gap-2">
               <Typography variant="h6">Counters</Typography>
               <Button
                 startIcon={<AddBoxOutlined />}
-                onClick={() => setShowAddForm(true)}
-              >
+                onClick={() => setShowAddForm(true)}>
                 Add a counter
               </Button>
             </div>
@@ -79,8 +76,7 @@ const CounterList: React.FC<Props> = ({
                 <Draggable
                   draggableId={`counter-${counter.id}`}
                   index={index}
-                  key={counter.id}
-                >
+                  key={counter.id}>
                   {(provided, snapshot) => (
                     <>
                       {renderCounter(counter, countMapping[counter.id], {

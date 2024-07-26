@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { Drawer, Statistic } from "antd";
 import {
   Counter,
   createCounter,
@@ -22,8 +21,7 @@ import {
 } from "react-beautiful-dnd";
 import CounterList from "../components/CounterList";
 import useSWR from "swr";
-import { Plus, X } from "lucide-react";
-import CounterOnboardingPrompt from "../components/CounterOnboardingPrompt";
+import { Plus } from "lucide-react";
 import {
   deleteTaskList,
   insertTaskList,
@@ -31,26 +29,33 @@ import {
   patchTaskList,
 } from "../api/task_lists";
 import TaskList from "../components/tasks/TaskList";
-import { IconButton, Stack, TextField } from "@mui/material";
+import {
+  ClickAwayListener,
+  Container,
+  IconButton,
+  TextField,
+  Typography,
+} from "@mui/material";
 import Button from "@mui/material/Button";
 import { Cancel } from "@mui/icons-material";
+import Grid from "@mui/material/Unstable_Grid2/Grid2";
 
 const Home: React.FC = () => {
-  let {
-    data: counters = [],
-    isLoading,
-    mutate,
-  } = useSWR<Counter[]>("counters", () => listCounters(), {
-    revalidateOnFocus: false,
-  });
+  const { data: counters = [], mutate } = useSWR<Counter[]>(
+    "counters",
+    () => listCounters(),
+    {
+      revalidateOnFocus: false,
+    }
+  );
 
-  let {
-    data: taskLists = [],
-    isLoading: isLoadingTaskLists,
-    mutate: mutateTaskLists,
-  } = useSWR("tasklists", () => listTaskLists(), {
-    revalidateOnFocus: false,
-  });
+  const { data: taskLists = [], mutate: mutateTaskLists } = useSWR(
+    "tasklists",
+    () => listTaskLists(),
+    {
+      revalidateOnFocus: false,
+    }
+  );
 
   const { data: countMapping = {}, mutate: mutateCounts } =
     useSWR<CountMapping>("counts", () => getCounts(), {
@@ -66,7 +71,7 @@ const Home: React.FC = () => {
     mutateCounts();
   };
   const handleIncrease = async (counter: Counter, value: number) => {
-    let updated: CountTally = Object.assign({}, countMapping[counter.id]);
+    const updated: CountTally = Object.assign({}, countMapping[counter.id]);
     for (const [key, currValue] of Object.entries(updated)) {
       updated[key as keyof CountTally] = currValue + value;
     }
@@ -84,9 +89,9 @@ const Home: React.FC = () => {
     destination,
   }) => {
     if (destination?.index === undefined) return;
-    const [_resource, strId] = draggableId.split("-");
+    const strId = draggableId.split("-")[1];
     const id = Number(strId);
-    const counterIndex = counters.findIndex((c) => c.id === id);
+    const counterIndex = counters.findIndex(c => c.id === id);
 
     // return early if no change in pos
     if (counterIndex === destination.index) return;
@@ -99,7 +104,7 @@ const Home: React.FC = () => {
     await upsertCounters(toUpsert);
     mutate(toUpsert);
   };
-  const editingCounter = (counters || []).find((c) => c.id === editingId);
+  const editingCounter = (counters || []).find(c => c.id === editingId);
 
   // hotkey management
   useEffect(() => {
@@ -120,146 +125,158 @@ const Home: React.FC = () => {
   }, []);
 
   return (
-    <div className="flex flex-col gap-4 p-4 h-100 flex-grow focus:border-none">
-      <Drawer
-        destroyOnClose
-        title="Edit Counter"
-        onClose={() => setEditingId(null)}
-        open={!!editingId}
-        closeIcon={<X strokeWidth={2} size={20} />}
-      >
-        {editingCounter && (
-          <div className="flex flex-col gap-4">
-            <div className="flex flex-col w-full items-center justify-center">
-              <Statistic
-                title="Count"
-                value={
-                  countMapping[editingCounter.id][editingCounter.tally_method]
-                }
-              />
-              <div className="flex flex-row gap-1">
-                <Button
-                  className="flex flex-row justify-center items-center"
-                  variant="contained"
-                  color="primary"
-                  startIcon={<Plus size={16} strokeWidth={3} />}
-                  onClick={() => handleIncrease(editingCounter, 1)}
-                >
-                  1
-                </Button>
-                <Button
-                  className="flex flex-row justify-center items-center"
-                  variant="contained"
-                  color="primary"
-                  startIcon={<Plus size={16} strokeWidth={3} />}
-                  onClick={() => handleIncrease(editingCounter, 5)}
-                >
-                  5
-                </Button>
-
-                <Button
-                  className="flex flex-row justify-center items-center"
-                  variant="contained"
-                  color="primary"
-                  onClick={() => handleIncrease(editingCounter, 10)}
-                  startIcon={<Plus size={16} strokeWidth={3} />}
-                >
-                  10
-                </Button>
-              </div>
-            </div>
-            <CounterForm
-              onCancel={() => null}
-              defaultValues={editingCounter}
-              onSubmit={async (data, { cancelLoading }) => {
-                await updateCounter(editingId!, data);
-                cancelLoading();
-                setEditingId(null);
-                reload();
-              }}
-            />
-          </div>
-        )}
-      </Drawer>
-
-      <Stack
+    <>
+      <Grid
+        container
+        spacing={1}
         direction="row"
+        sx={{ overflowX: "scroll" }}
+        wrap="nowrap"
         justifyContent={"start"}
         gap={1}
         overflow="scroll"
-        flexGrow="inherit"
-      >
-        <DragDropContext onDragUpdate={handleDrag} onDragEnd={handleDrag}>
-          <CounterList
-            onAddCounter={async (data, { cancelLoading }) => {
-              await createCounter(data);
-              cancelLoading();
-              setShowNewForm(false);
-              reload();
-            }}
-            tabIndex={0}
-            counters={counters}
-            countMapping={countMapping}
-            noDataFallback={<CounterOnboardingPrompt />}
-            renderCounter={(counter, tally, state) => {
-              return (
-                <CounterItem
-                  key={counter.id}
-                  count={tally ? tally[counter.tally_method] : 0}
-                  wrapperTag="li"
-                  counter={counter}
-                  onIncrease={(value) => handleIncrease(counter, value)}
-                  onDelete={async () => {
-                    const confirmation = window.confirm(
-                      "Delete cannot be undone. Consider archiving instead. Proceed with delete?"
-                    );
-                    if (!confirmation) return;
-                    await deleteCounter(counter.id);
-                    reload();
-                  }}
-                  wrapperProps={state.draggableProps}
-                  isDragging={state.isDragging}
-                  onEdit={() => setEditingId(counter.id)}
-                  isHovering={hoveringId === counter.id}
-                  onMouseEnter={() => setHoveringId(counter.id)}
-                  onMouseLeave={() => setHoveringId(null)}
-                />
-              );
-            }}
-          />
-        </DragDropContext>
+        flexGrow="inherit">
+        <Grid flexGrow="inherit" minWidth={380} xs={12} md={4}>
+          <DragDropContext onDragUpdate={handleDrag} onDragEnd={handleDrag}>
+            <CounterList
+              onAddCounter={async (data, { cancelLoading }) => {
+                await createCounter(data);
+                cancelLoading();
+                setShowNewForm(false);
+                reload();
+              }}
+              tabIndex={0}
+              counters={counters}
+              countMapping={countMapping}
+              renderCounter={(counter, tally, state) => {
+                return (
+                  <>
+                    <CounterItem
+                      key={counter.id}
+                      count={tally ? tally[counter.tally_method] : 0}
+                      wrapperTag="li"
+                      counter={counter}
+                      onIncrease={value => handleIncrease(counter, value)}
+                      onDelete={async () => {
+                        const confirmation = window.confirm(
+                          "Delete cannot be undone. Consider archiving instead. Proceed with delete?"
+                        );
+                        if (!confirmation) return;
+                        await deleteCounter(counter.id);
+                        reload();
+                      }}
+                      wrapperProps={state.draggableProps}
+                      isDragging={state.isDragging}
+                      onEdit={() => setEditingId(counter.id)}
+                      isHovering={hoveringId === counter.id}
+                      onMouseEnter={() => setHoveringId(counter.id)}
+                      onMouseLeave={() => setHoveringId(null)}
+                    />
+                    {counter.id === editingId && (
+                      <ClickAwayListener
+                        onClickAway={() => {
+                          // maybe submit
+                          setEditingId(null);
+                        }}>
+                        <div className="flex flex-col gap-4">
+                          {editingCounter && (
+                            <div className="flex flex-col w-full items-center justify-center">
+                              <Typography variant="h4">
+                                {
+                                  countMapping[editingCounter.id][
+                                    editingCounter.tally_method
+                                  ]
+                                }
+                              </Typography>
+                              <div className="flex flex-row gap-1">
+                                <Button
+                                  className="flex flex-row justify-center items-center"
+                                  variant="contained"
+                                  color="primary"
+                                  startIcon={<Plus size={16} strokeWidth={3} />}
+                                  onClick={() =>
+                                    handleIncrease(editingCounter, 1)
+                                  }>
+                                  1
+                                </Button>
+                                <Button
+                                  className="flex flex-row justify-center items-center"
+                                  variant="contained"
+                                  color="primary"
+                                  startIcon={<Plus size={16} strokeWidth={3} />}
+                                  onClick={() =>
+                                    handleIncrease(editingCounter, 5)
+                                  }>
+                                  5
+                                </Button>
 
-        {taskLists.map((list) => (
-          <TaskList
-            key={list.id}
-            taskList={list}
-            onDeleteTaskList={() => {
-              deleteTaskList(list.id);
-              const updated = taskLists.filter((tl) => tl.id !== list.id);
-              mutateTaskLists(updated, { revalidate: false });
-            }}
-            onUpdateTaskList={async (attrs) => {
-              patchTaskList(list.id, attrs);
-              const updated = taskLists.map((tl) =>
-                tl.id === list.id ? { ...tl, ...attrs } : tl
-              );
-              mutateTaskLists(updated, { revalidate: false });
-            }}
-          />
+                                <Button
+                                  className="flex flex-row justify-center items-center"
+                                  variant="contained"
+                                  color="primary"
+                                  onClick={() =>
+                                    handleIncrease(editingCounter, 10)
+                                  }
+                                  startIcon={
+                                    <Plus size={16} strokeWidth={3} />
+                                  }>
+                                  10
+                                </Button>
+                              </div>
+                            </div>
+                          )}
+                          <CounterForm
+                            onCancel={() => setEditingId(null)}
+                            defaultValues={editingCounter}
+                            onSubmit={async (data, { cancelLoading }) => {
+                              await updateCounter(editingId!, data);
+                              cancelLoading();
+                              setEditingId(null);
+                              reload();
+                            }}
+                          />
+                        </div>
+                      </ClickAwayListener>
+                    )}
+                  </>
+                );
+              }}
+            />
+          </DragDropContext>
+        </Grid>
+
+        {taskLists.map(list => (
+          <Grid minWidth={380} xs={12} md={4} key={list.id}>
+            <TaskList
+              key={list.id}
+              taskList={list}
+              onDeleteTaskList={() => {
+                deleteTaskList(list.id);
+                const updated = taskLists.filter(tl => tl.id !== list.id);
+                mutateTaskLists(updated, { revalidate: false });
+              }}
+              onUpdateTaskList={async attrs => {
+                patchTaskList(list.id, attrs);
+                const updated = taskLists.map(tl =>
+                  tl.id === list.id ? { ...tl, ...attrs } : tl
+                );
+                mutateTaskLists(updated, { revalidate: false });
+              }}
+            />
+          </Grid>
         ))}
         <div>
           {newList ? (
             <>
               <form
                 className="w-48"
-                onSubmit={async (e) => {
+                onSubmit={async e => {
                   e.preventDefault();
                   const { data } = await insertTaskList({
                     title: e.currentTarget.taskListTitle.value,
                   });
                   mutateTaskLists([...taskLists, data]);
-                }}
-              >
+                }}>
                 <TextField label="Title" name="taskListTitle" required />
                 <Button variant="outlined" color="secondary" type="submit">
                   Add list
@@ -270,13 +287,18 @@ const Home: React.FC = () => {
               </form>
             </>
           ) : (
-            <>
-              <Button onClick={() => setNewList(true)}>Add new list</Button>
-            </>
+            <Container sx={{ minWidth: 380, p: 1 }}>
+              <Button
+                variant="contained"
+                sx={{ width: 300 }}
+                onClick={() => setNewList(true)}>
+                Add new list
+              </Button>
+            </Container>
           )}
         </div>
-      </Stack>
-    </div>
+      </Grid>
+    </>
   );
 };
 

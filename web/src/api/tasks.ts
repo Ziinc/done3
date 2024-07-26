@@ -20,7 +20,7 @@ export interface Task {
       type: string;
       description: string;
       link: string;
-    }
+    },
   ];
   webViewLink: string;
 }
@@ -46,13 +46,11 @@ export const getTask = async (
 export const listTasks = async (taskListId: string): Promise<Task[]> => {
   return await instance()
     .get(`/tasks/v1/lists/${taskListId}/tasks`)
-    .then((res) => res.data.items);
+    .then(res => res.data.items);
 };
 
 export const deleteTask = async (taskListId: string, id: string) => {
-  return await instance().delete(
-    `/tasks/v1/lists/${taskListId}/tasks/${id}`
-  );
+  return await instance().delete(`/tasks/v1/lists/${taskListId}/tasks/${id}`);
 };
 
 export const patchTask = async (

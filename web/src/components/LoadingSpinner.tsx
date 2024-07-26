@@ -3,7 +3,7 @@ import { Loader2 } from "lucide-react";
 interface Props {
   className?: string;
 }
-const LoadingSpinner: React.FC<Props> = ({ className="" }) => {
+const LoadingSpinner: React.FC<Props> = ({ className = "" }) => {
   return (
     <div className={["animate-pulse w-fit", className].join(" ")}>
       <Loader2

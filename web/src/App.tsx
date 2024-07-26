@@ -17,7 +17,7 @@ function App() {
   const [loading, setLoading] = useState(true);
   const handleStartup = async () => {
     await checkAuthed();
-    
+
     setLoading(false);
   };
   useEffect(() => {
@@ -39,8 +39,7 @@ function App() {
           enterFrom="opacity-0"
           enterTo="opacity-100"
           leaveFrom="opacity-100"
-          leaveTo="opacity-0"
-        >
+          leaveTo="opacity-0">
           <AuthWall showLoading={showLoading} />
         </Transition>
         <Transition
@@ -49,8 +48,7 @@ function App() {
           enterFrom="opacity-0"
           enterTo="opacity-100"
           leaveFrom="opacity-100"
-          leaveTo="opacity-0"
-        >
+          leaveTo="opacity-0">
           <AuthedApp />
         </Transition>
       </Route>
@@ -68,8 +66,7 @@ export const ResetPassword = () => {
         enterFrom="opacity-0"
         enterTo="opacity-100"
         leaveFrom="opacity-100"
-        leaveTo="opacity-0"
-      >
+        leaveTo="opacity-0">
         <div className="bg-slate-50 p-4 rounded-xl border-solid border-b-2 border-t-0 border-l-0 border border-pink-500">
           <Auth.AuthContainer mode={Auth.Mode.UPDATE_PASSWORD} />
         </div>
@@ -90,8 +87,7 @@ export const AuthWall = ({ showLoading }: { showLoading: boolean }) => {
           enterFrom="opacity-0"
           enterTo="opacity-100"
           leaveFrom="opacity-100"
-          leaveTo="opacity-0"
-        >
+          leaveTo="opacity-0">
           <LoadingSpinner className="mx-auto my-auto" />
         </Transition>
         <Transition
@@ -100,8 +96,7 @@ export const AuthWall = ({ showLoading }: { showLoading: boolean }) => {
           enterFrom="opacity-0"
           enterTo="opacity-100"
           leaveFrom="opacity-100"
-          leaveTo="opacity-0"
-        >
+          leaveTo="opacity-0">
           <Stack direction="column" spacing={2}>
             <Container className="w-96">
               <Typography variant="h1" textAlign={"center"}>
@@ -120,7 +115,9 @@ export const AuthWall = ({ showLoading }: { showLoading: boolean }) => {
               <Grid xs={12} md={6}>
                 <Paper sx={{ p: 2 }}>
                   <Typography variant="subtitle2">Tasks+</Typography>
-                  <Typography variant="body2">Extended Tasks features</Typography>
+                  <Typography variant="body2">
+                    Extended Tasks features
+                  </Typography>
                 </Paper>
               </Grid>
               <Grid xs={12} md={6}>

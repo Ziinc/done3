@@ -42,7 +42,7 @@ const TaskListItem = ({
   const anchorRef = React.useRef<HTMLButtonElement>(null);
 
   const handleToggle = () => {
-    setOpen((prevOpen) => !prevOpen);
+    setOpen(prevOpen => !prevOpen);
   };
 
   const handleClose = (event: Event | React.SyntheticEvent) => {
@@ -67,7 +67,7 @@ const TaskListItem = ({
 
   const handleSubmit = async () => {
     // check if there are any changes
-    const changedKeys = Object.keys(editData).filter((key) => {
+    const changedKeys = Object.keys(editData).filter(key => {
       return (task as any)[key] !== (editData as any)[key];
     });
 
@@ -108,8 +108,7 @@ const TaskListItem = ({
         className="group  w-32 relative"
         onClick={() => {
           setEditing(true);
-        }}
-      >
+        }}>
         <IconButton
           title="More task options"
           sx={{ position: "absolute" }}
@@ -120,8 +119,7 @@ const TaskListItem = ({
           aria-controls={open ? "composition-menu" : undefined}
           aria-expanded={open ? "true" : undefined}
           aria-haspopup="true"
-          onClick={handleToggle}
-        >
+          onClick={handleToggle}>
           <MoreVert />
         </IconButton>
         <ClickAwayListener
@@ -130,20 +128,17 @@ const TaskListItem = ({
               setEditing(false);
               handleSubmit();
             }
-          }}
-        >
+          }}>
           <Stack
             direction="column"
             align-items="start"
-            justifyContent="space-between"
-          >
+            justifyContent="space-between">
             {editing ? (
               <>
                 <form
-                  onSubmit={(e) => {
+                  onSubmit={e => {
                     e.preventDefault();
-                  }}
-                >
+                  }}>
                   <TextField
                     name="taskTitle"
                     defaultValue={task.title}
@@ -152,8 +147,8 @@ const TaskListItem = ({
                     required
                     variant="standard"
                     size="small"
-                    onChange={(e) => {
-                      setEditData((prev) => ({
+                    onChange={e => {
+                      setEditData(prev => ({
                         ...prev,
                         title: e.target.value,
                       }));
@@ -166,8 +161,8 @@ const TaskListItem = ({
                     hiddenLabel
                     variant="standard"
                     size="small"
-                    onChange={(e) => {
-                      setEditData((prev) => ({
+                    onChange={e => {
+                      setEditData(prev => ({
                         ...prev,
                         notes: e.target.value,
                       }));
@@ -183,8 +178,7 @@ const TaskListItem = ({
                   sx={{
                     textDecoration:
                       task.status === "completed" ? "line-through" : null,
-                  }}
-                >
+                  }}>
                   {task.title}
                 </Typography>
                 <Typography variant="body2" className="text-gray-500">
@@ -200,30 +194,26 @@ const TaskListItem = ({
             anchorEl={anchorRef.current}
             role={undefined}
             placement="bottom-start"
-            transition
-          >
+            transition>
             {({ TransitionProps, placement }) => (
               <Grow
                 {...TransitionProps}
                 style={{
                   transformOrigin:
                     placement === "bottom-start" ? "left top" : "left bottom",
-                }}
-              >
+                }}>
                 <Paper>
                   <ClickAwayListener onClickAway={handleClose}>
                     <MenuList
                       autoFocusItem={open}
                       id="composition-menu"
                       aria-labelledby="composition-button"
-                      onKeyDown={handleListKeyDown}
-                    >
+                      onKeyDown={handleListKeyDown}>
                       <MenuItem
-                        onClick={(e) => {
+                        onClick={e => {
                           onDeleteTask();
                           handleClose(e);
-                        }}
-                      >
+                        }}>
                         <ListItemIcon>
                           <Delete />
                         </ListItemIcon>

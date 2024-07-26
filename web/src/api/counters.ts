@@ -65,7 +65,7 @@ export const increaseCounter = async (counter_id: number, value: number) => {
 
 export const upsertCounters = async (attrsArr: Partial<CounterAttrs>[]) => {
   const user_id = await getUserId();
-  const values = attrsArr.map((v) => ({ ...v, user_id }));
+  const values = attrsArr.map(v => ({ ...v, user_id }));
   await client.from("counters").upsert(values);
 };
 
@@ -75,7 +75,7 @@ export const rearrangeCounters = (
   newIndex: number
 ): Counter[] => {
   const filtered = orderedCounters.filter(
-    (counter) => counter.id !== movedCounter.id
+    counter => counter.id !== movedCounter.id
   );
   const part1 = filtered.slice(0, newIndex);
   const part2 = filtered.slice(newIndex);
@@ -88,7 +88,9 @@ export const rearrangeCounters = (
 export const getCounts = async (): Promise<CountMapping> => {
   const { data } = await client.from("view_counts").select();
   const mapping = data?.reduce((acc, count) => {
-    const { id: _id, ...values } = count;
+    /* eslint-disable @typescript-eslint/no-unused-vars */
+    const { id, ...values } = count;
+    /* eslint-enable @typescript-eslint/no-unused-vars */
     acc[count.id] = values;
     return acc;
   }, {});

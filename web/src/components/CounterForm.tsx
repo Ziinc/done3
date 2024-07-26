@@ -2,14 +2,14 @@ import { Form, Input, InputRef, Select } from "antd";
 import { useEffect, useRef, useState } from "react";
 import { CounterAttrs } from "../api/counters";
 import { LoadingButton } from "@mui/lab";
-import { Box, IconButton } from "@mui/material";
+import { IconButton } from "@mui/material";
 import { Cancel } from "@mui/icons-material";
 interface Callbacks {
   cancelLoading: () => void;
 }
 export interface CounterFormProps {
   onSubmit: (params: Partial<CounterAttrs>, callbacks: Callbacks) => void;
-  onCancel: ()=> void
+  onCancel: () => void;
   defaultValues?: Partial<CounterAttrs>;
 }
 const CounterForm: React.FC<CounterFormProps> = ({
@@ -40,13 +40,11 @@ const CounterForm: React.FC<CounterFormProps> = ({
         wrapperCol={{ span: 16 }}
         onFinish={handleSubmit}
         autoComplete="off"
-        initialValues={defaultValues}
-      >
+        initialValues={defaultValues}>
         <Form.Item
           label="Name"
           name="name"
-          rules={[{ required: true, message: "Counter name is required!" }]}
-        >
+          rules={[{ required: true, message: "Counter name is required!" }]}>
           <Input ref={nameInputRef} placeholder="Name" />
         </Form.Item>
         <Form.Item label="Notes" name="notes">
@@ -77,8 +75,7 @@ const CounterForm: React.FC<CounterFormProps> = ({
             variant="contained"
             color="primary"
             type="submit"
-            loading={loading}
-          >
+            loading={loading}>
             Submit
           </LoadingButton>
         </Form.Item>

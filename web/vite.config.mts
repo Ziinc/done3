@@ -8,10 +8,7 @@ export default defineConfig({
   test: {
     environment: "jsdom",
     clearMocks: true,
-    setupFiles: ["test/helpers/setup.ts", "global-jsdom/register"],
-    coverage: {
-      provider: "c8", // or 'c8'
-    },
+    setupFiles: ["test/helpers/setup.ts"],
   },
   build: {
     outDir: "dist",

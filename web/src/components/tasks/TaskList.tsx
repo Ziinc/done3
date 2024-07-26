@@ -33,11 +33,15 @@ interface Props {
   onUpdateTaskList: (attrs: Parameters<typeof patchTaskList>[1]) => void;
 }
 
-const TaskList = ({ taskList, onDeleteTaskList, onUpdateTaskList }: Props) => {
+const TaskListComponent = ({
+  taskList,
+  onDeleteTaskList,
+  onUpdateTaskList,
+}: Props) => {
   const [showCompleted, setShowCompleted] = useState(false);
   const [editingTitle, setEditingTitle] = useState(false);
   const [showNewForm, setShowNewForm] = useState(false);
-  let {
+  const {
     data: tasks = [],
     isLoading: isLoadingTasks,
     mutate: mutateTasks,
@@ -50,11 +54,11 @@ const TaskList = ({ taskList, onDeleteTaskList, onUpdateTaskList }: Props) => {
   });
 
   const completedTasks = useMemo(
-    () => tasks.filter((t) => t.status === "completed"),
+    () => tasks.filter(t => t.status === "completed"),
     [tasks]
   );
   const pendingTasks = useMemo(
-    () => tasks.filter((t) => t.status !== "completed"),
+    () => tasks.filter(t => t.status !== "completed"),
     [tasks]
   );
 
@@ -63,7 +67,7 @@ const TaskList = ({ taskList, onDeleteTaskList, onUpdateTaskList }: Props) => {
       patchTask(taskList.id, task.id, {
         status: "completed",
       });
-      const updated = tasks.map((t) =>
+      const updated = tasks.map(t =>
         t.id === task.id ? { ...t, status: "completed" as const } : t
       );
       mutateTasks(updated);
@@ -71,7 +75,7 @@ const TaskList = ({ taskList, onDeleteTaskList, onUpdateTaskList }: Props) => {
       patchTask(taskList.id, task.id, {
         status: "needsAction",
       });
-      const updated = tasks.map((t) =>
+      const updated = tasks.map(t =>
         t.id === task.id ? { ...t, status: "needsAction" as const } : t
       );
       mutateTasks(updated, { revalidate: false });
@@ -79,12 +83,12 @@ const TaskList = ({ taskList, onDeleteTaskList, onUpdateTaskList }: Props) => {
   };
   const handleDelete = async (task: Task) => {
     deleteTask(taskList.id, task.id);
-    const updated = tasks.filter((t) => t.id !== task.id);
+    const updated = tasks.filter(t => t.id !== task.id);
     mutateTasks(updated, { revalidate: false });
   };
   const handleUpdate = async (taskId: string, attrs: Partial<Task>) => {
     patchTask(taskList.id, taskId, attrs).then();
-    const updated = tasks.map((t) => {
+    const updated = tasks.map(t => {
       if (t.id == taskId) {
         return { ...t, ...attrs };
       } else {
@@ -95,17 +99,19 @@ const TaskList = ({ taskList, onDeleteTaskList, onUpdateTaskList }: Props) => {
     mutateTasks(updated, { revalidate: false });
   };
   return (
-    <Paper elevation={1} sx={{ borderRadius: 3, p: 2, width: 350 }}>
+    <Paper
+      elevation={1}
+      sx={{ borderRadius: 3, p: 2, flexGrow: "inherit", height: "100%" }}>
       <Stack direction="row" alignItems="center">
         {editingTitle ? (
           <>
             <>
-              <form onSubmit={(e) => e.preventDefault()}>
+              <form onSubmit={e => e.preventDefault()}>
                 <TextField
                   name="listTitle"
                   label="List title"
                   defaultValue={taskList.title}
-                  onBlur={(e) => {
+                  onBlur={e => {
                     const value = e.currentTarget.value;
                     setEditingTitle(false);
                     if (value !== taskList.title) {
@@ -138,16 +144,15 @@ const TaskList = ({ taskList, onDeleteTaskList, onUpdateTaskList }: Props) => {
       {showNewForm ? (
         <ClickAwayListener onClickAway={() => setShowNewForm(false)}>
           <form
-            onSubmit={async (e) => {
+            onSubmit={async e => {
               e.preventDefault();
               const title = e.currentTarget.taskTitle.value;
               await insertTask(taskList.id, { title });
               mutateTasks([
-                { id: "new", title, status: "needsAction" } as any,
+                { id: "new", title, status: "needsAction" } as Task,
                 ...tasks,
               ]);
-            }}
-          >
+            }}>
             <TextField name="taskTitle" label="Task title" variant="outlined" />
             <Button type="submit">Add</Button>
             <IconButton onClick={() => setShowNewForm(false)}>
@@ -167,7 +172,7 @@ const TaskList = ({ taskList, onDeleteTaskList, onUpdateTaskList }: Props) => {
       ) : (
         <>
           <List>
-            {pendingTasks.map((task) => (
+            {pendingTasks.map(task => (
               <TaskListItem
                 key={task.id}
                 task={task}
@@ -186,16 +191,16 @@ const TaskList = ({ taskList, onDeleteTaskList, onUpdateTaskList }: Props) => {
                     }}
                   />
                 }
-                onClick={() => setShowCompleted(!showCompleted)}
-              >
+                onClick={() => setShowCompleted(!showCompleted)}>
                 <Typography variant="subtitle1" className="text-gray-600">
                   Completed ({completedTasks.length})
                 </Typography>
               </Button>
             )}
             {showCompleted &&
-              completedTasks.map((task) => (
+              completedTasks.map(task => (
                 <TaskListItem
+                  key={task.id}
                   task={task}
                   onDeleteTask={() => handleDelete(task)}
                   onToggleTask={onToggleTask}
@@ -208,4 +213,4 @@ const TaskList = ({ taskList, onDeleteTaskList, onUpdateTaskList }: Props) => {
     </Paper>
   );
 };
-export default TaskList;
+export default TaskListComponent;

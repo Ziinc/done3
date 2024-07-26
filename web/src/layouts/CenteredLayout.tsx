@@ -8,8 +8,7 @@ const CenteredLayout: React.FC<Props> = ({ children, className = "" }) => (
       className={[
         "h-screen w-screen flex flex-col justfiy-center",
         className,
-      ].join(" ")}
-    >
+      ].join(" ")}>
       <section className="mx-auto my-auto">{children}</section>
     </main>
   </>
