@@ -1,11 +1,11 @@
-import { Dropdown } from "antd";
 import { Counter } from "../api/counters";
 import { marked } from "marked";
 import DOMPurify from "dompurify";
 import CountDisplay from "./CountDisplay";
 import React from "react";
-import { Button } from "@mui/material";
+import { Button, MenuItem, Typography } from "@mui/material";
 import { Add, MoreVert } from "@mui/icons-material";
+import DropdownMenu from "./DropdownMenu";
 interface Props extends React.HTMLProps<HTMLDivElement & HTMLLIElement> {
   wrapperTag?: "li" | "div";
   wrapperProps?: object;
@@ -33,42 +33,7 @@ const CounterItem: React.FC<Props> = ({
   ref,
   ...rest
 }) => (
-  <Dropdown
-    menu={{
-      items: [
-        {
-          label: "Increase by 1",
-          key: "inc-1",
-          onClick: () => onIncrease?.(1),
-        },
-        {
-          label: "Increase by 5",
-          key: "inc-5",
-          onClick: () => onIncrease?.(5),
-        },
-        {
-          label: "Increase by 10",
-          key: "inc-10",
-          onClick: () => onIncrease?.(10),
-        },
-
-        {
-          type: "divider",
-          className: "!bg-slate-200",
-        },
-        {
-          label: "Edit counter",
-          key: "edit",
-          onClick: onEdit,
-        },
-        {
-          label: "Delete counter",
-          key: "delete",
-          onClick: onDelete,
-        },
-      ],
-    }}
-    trigger={["contextMenu"]}>
+  <>
     <WrapperTag
       className={[
         className,
@@ -97,39 +62,42 @@ const CounterItem: React.FC<Props> = ({
         </Button>
       </div>
       <div className="flex-grow" onClick={onEdit}>
-        <span className="text-lg">{counter.name}</span>
+        <Typography variant="subtitle1">{counter.name}</Typography>
 
         {counter.notes && (
-          <div
+          <Typography
+            variant="body1"
             className="text-xs text-slate-700 max-h-12 overflow-hidden"
             dangerouslySetInnerHTML={{
               __html: DOMPurify.sanitize(marked.parse(counter.notes), {
                 USE_PROFILES: { html: true },
               }),
-            }}></div>
+            }}></Typography>
         )}
       </div>
-      <Dropdown
-        menu={{
-          items: [
-            {
-              key: "1",
-              label: "Edit counter",
-              onClick: onEdit,
-            },
-            {
-              key: "3",
-              label: "Delete counter",
-              onClick: onDelete,
-            },
-          ],
-        }}>
-        <Button
-          variant="text"
-          startIcon={<MoreVert />}
-          title={`More options for '${counter.name}'`}></Button>
-      </Dropdown>
+
+      <DropdownMenu
+        renderTrigger={({ ref, onClick }) => (
+          <Button
+            ref={ref}
+            onClick={onClick}
+            variant="text"
+            startIcon={<MoreVert />}
+            title={`More options for '${counter.name}'`}></Button>
+        )}>
+        {[
+          {
+            label: "Delete counter",
+            key: "delete",
+            onClick: onDelete,
+          },
+        ].map(item => (
+          <MenuItem onClick={item.onClick} key={item.label}>
+            {item.label}
+          </MenuItem>
+        ))}
+      </DropdownMenu>
     </WrapperTag>
-  </Dropdown>
+  </>
 );
 export default CounterItem;

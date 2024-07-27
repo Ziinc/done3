@@ -23,17 +23,3 @@ test("increase counter", async () => {
   await screen.findByText(/2/);
   expect(increaseCounter).toBeCalled();
 });
-
-test("context menu - increase", async () => {
-  const counter = counterFixture();
-  (listCounters as Mock).mockResolvedValue([counter]);
-  (getCounts as Mock).mockResolvedValue(countsFixture());
-  render(<AuthedApp />);
-  expect(increaseCounter).not.toBeCalled();
-  await userEvent.pointer({
-    target: await screen.findByText(/my counter/),
-    keys: "[MouseRight]",
-  });
-  await userEvent.click(await screen.findByText(/Increase by 5/));
-  expect(increaseCounter).toBeCalled();
-});
