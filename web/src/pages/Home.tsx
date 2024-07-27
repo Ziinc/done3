@@ -173,7 +173,8 @@ const Home: React.FC = () => {
                     />
                     {counter.id === editingId && (
                       <ClickAwayListener
-                        onClickAway={() => {
+                        onClickAway={(e) => {
+                          console.log(e)
                           // maybe submit
                           setEditingId(null);
                         }}>
