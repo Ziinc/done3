@@ -84,7 +84,7 @@ const CounterForm: React.FC<CounterFormProps> = ({
           </Grid>
           <Grid xs={12}>
             <Stack direction={"row"}>
-              <Button variant="text"  onClick={onCancel} >
+              <Button variant="text" onClick={onCancel}>
                 Cancel
               </Button>
               <LoadingButton
