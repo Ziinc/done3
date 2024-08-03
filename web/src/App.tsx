@@ -9,6 +9,8 @@ import { Route } from "wouter";
 import { HashRouter } from "./router";
 import { Container, Divider, Paper, Stack, Typography } from "@mui/material";
 import Grid from "@mui/material/Unstable_Grid2/Grid2";
+import { LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 
 function App() {
   const user = useAuth();
@@ -30,14 +32,16 @@ function App() {
   const showLoading = !minLoadingWait || loading;
 
   return (
-    <HashRouter base={import.meta.env.BASE_URL}>
-      <Route path="/">
-        {(showLoading || !user.session) && (
-          <AuthWall showLoading={showLoading} />
-        )}
-        {!showLoading && Boolean(user.session) && <AuthedApp />}
-      </Route>
-    </HashRouter>
+    <LocalizationProvider dateAdapter={AdapterDayjs}>
+      <HashRouter base={import.meta.env.BASE_URL}>
+        <Route path="/">
+          {(showLoading || !user.session) && (
+            <AuthWall showLoading={showLoading} />
+          )}
+          {!showLoading && Boolean(user.session) && <AuthedApp />}
+        </Route>
+      </HashRouter>
+    </LocalizationProvider>
   );
 }
 
