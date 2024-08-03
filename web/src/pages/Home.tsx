@@ -39,7 +39,7 @@ import Button from "@mui/material/Button";
 import { Add, Cancel } from "@mui/icons-material";
 import Grid from "@mui/material/Unstable_Grid2/Grid2";
 import { useSWRConfig } from "swr";
-import { moveTask } from "../api/tasks";
+import { Task, moveTask } from "../api/tasks";
 import sortBy from "lodash/sortBy";
 const Home: React.FC = () => {
   const { cache, mutate } = useSWRConfig();
@@ -137,8 +137,8 @@ const Home: React.FC = () => {
     if (sourceTaskListId === destinationTaskListId) {
       await mutate(
         ["taskslist", sourceTaskListId],
-        async tasks => {
-          const filtered = tasks.filter(t => t.id !== taskId);
+        async (tasks: Task[] | undefined) => {
+          const filtered = (tasks || []).filter(t => t.id !== taskId);
           filtered.push(task);
           return filtered;
         },
@@ -147,8 +147,8 @@ const Home: React.FC = () => {
     } else {
       await mutate(
         ["taskslist", sourceTaskListId],
-        async tasks => {
-          return tasks.filter(t => t.id !== taskId);
+        async (tasks: Task[] | undefined) => {
+          return (tasks || []).filter((t: Task) => t.id !== taskId);
         },
         { revalidate: true }
       );

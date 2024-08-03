@@ -45,9 +45,12 @@ export const getTask = async (
 
 export const listTasks = async (taskListId: string): Promise<Task[]> => {
   return await instance()
-    .get(`/tasks/v1/lists/${taskListId}/tasks`, {params: {
-      showAssigned: true, maxResults: 100,
-    }})
+    .get(`/tasks/v1/lists/${taskListId}/tasks`, {
+      params: {
+        showAssigned: true,
+        maxResults: 100,
+      },
+    })
     .then(res => res.data.items);
 };
 
