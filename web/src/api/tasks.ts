@@ -45,7 +45,9 @@ export const getTask = async (
 
 export const listTasks = async (taskListId: string): Promise<Task[]> => {
   return await instance()
-    .get(`/tasks/v1/lists/${taskListId}/tasks`)
+    .get(`/tasks/v1/lists/${taskListId}/tasks`, {params: {
+      showAssigned: true, maxResults: 100,
+    }})
     .then(res => res.data.items);
 };
 
@@ -61,6 +63,25 @@ export const patchTask = async (
   return await instance().patch(
     `/tasks/v1/lists/${taskListId}/tasks/${id}`,
     attrs
+  );
+};
+
+export const moveTask = async (
+  taskListId: string,
+  id: string,
+  opts: {
+    parent?: string;
+    previous?: string;
+    destinationTasklist?: string;
+  }
+) => {
+  return await instance().post(
+    `/tasks/v1/lists/${taskListId}/tasks/${id}/move`,
+    {
+      parent: opts.parent,
+      previous: opts.previous,
+      destinationTasklist: opts.destinationTasklist,
+    }
   );
 };
 

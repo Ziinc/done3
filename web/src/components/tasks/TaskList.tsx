@@ -1,4 +1,4 @@
-import useSWR from "swr";
+import useSWR, { unstable_serialize } from "swr";
 import { TaskList, patchTaskList } from "../../api/task_lists";
 import {
   Task,
@@ -27,6 +27,8 @@ import {
 } from "@mui/icons-material";
 import { useMemo, useState } from "react";
 import TaskListItem from "./Task";
+import { Draggable, Droppable } from "react-beautiful-dnd";
+import sortBy from "lodash/sortBy";
 interface Props {
   taskList: TaskList;
   onDeleteTaskList: () => void;
@@ -171,43 +173,88 @@ const TaskListComponent = ({
         </Stack>
       ) : (
         <>
-          <List>
-            {pendingTasks.map(task => (
-              <TaskListItem
-                key={task.id}
-                task={task}
-                onToggleTask={onToggleTask}
-                onDeleteTask={() => handleDelete(task)}
-                onUpdateTask={handleUpdate}
-              />
-            ))}
-            {completedTasks.length > 0 && (
-              <Button
-                variant="text"
-                startIcon={
-                  <ChevronRightSharp
-                    sx={{
-                      rotate: showCompleted ? "90deg" : 0,
-                    }}
-                  />
-                }
-                onClick={() => setShowCompleted(!showCompleted)}>
-                <Typography variant="subtitle1" className="text-gray-600">
-                  Completed ({completedTasks.length})
-                </Typography>
-              </Button>
+          <Droppable droppableId={`taskList-${taskList.id}`} type="TASK">
+            {(provided, snapshot) => (
+              <div ref={provided.innerRef} {...provided.droppableProps}>
+                <List>
+                  {sortBy(pendingTasks, 'position').map((task, index) => (
+                    <Draggable
+                      draggableId={`task-${taskList.id}-${task.id}`}
+                      index={index}
+                      key={task.id}>
+                      {(provided, snapshot) => (
+                        <div
+                          ref={provided.innerRef}
+                          key={task.id}
+                          {...provided.draggableProps}
+                          {...provided.dragHandleProps}>
+                          <TaskListItem
+                            task={task}
+                            onDeleteTask={() => handleDelete(task)}
+                            onToggleTask={onToggleTask}
+                            onUpdateTask={handleUpdate}
+                          />
+                        </div>
+                      )}
+                    </Draggable>
+                  ))}
+                  <div>
+                    {completedTasks.length > 0 && (
+                      <Button
+                        variant="text"
+                        startIcon={
+                          <ChevronRightSharp
+                            sx={{
+                              rotate: showCompleted ? "90deg" : 0,
+                            }}
+                          />
+                        }
+                        onClick={() => setShowCompleted(!showCompleted)}>
+                        <Typography
+                          variant="subtitle1"
+                          className="text-gray-600">
+                          Completed ({completedTasks.length})
+                        </Typography>
+                      </Button>
+                    )}
+                    {provided.placeholder}
+
+                    {showCompleted &&
+                      completedTasks.map((task, index) => (
+                        <TaskListItem
+                          key={task.id}
+                          task={task}
+                          onDeleteTask={() => handleDelete(task)}
+                          onToggleTask={onToggleTask}
+                          onUpdateTask={handleUpdate}
+                        />
+                      ))}
+                  </div>
+                </List>
+
+                {/* {counters.length > 0 &&
+            counters.map((counter, index) => (
+              <Draggable
+                draggableId={`counter-${counter.id}`}
+                index={index}
+                key={counter.id}>
+                {(provided, snapshot) => (
+                  <>
+                    {renderCounter(counter, countMapping[counter.id], {
+                      draggableProps: {
+                        ref: provided.innerRef,
+                        ...provided.draggableProps,
+                        ...provided.dragHandleProps,
+                      },
+                      isDragging: snapshot.isDragging,
+                    })}
+                  </>
+                )}
+              </Draggable>
+            ))} */}
+              </div>
             )}
-            {showCompleted &&
-              completedTasks.map(task => (
-                <TaskListItem
-                  key={task.id}
-                  task={task}
-                  onDeleteTask={() => handleDelete(task)}
-                  onToggleTask={onToggleTask}
-                  onUpdateTask={handleUpdate}
-                />
-              ))}
-          </List>
+          </Droppable>
         </>
       )}
     </Paper>

@@ -20,7 +20,7 @@ import {
   OnDragUpdateResponder,
 } from "react-beautiful-dnd";
 import CounterList from "../components/CounterList";
-import useSWR from "swr";
+import useSWR, { unstable_serialize } from "swr";
 import {
   deleteTaskList,
   insertTaskList,
@@ -38,9 +38,12 @@ import {
 import Button from "@mui/material/Button";
 import { Add, Cancel } from "@mui/icons-material";
 import Grid from "@mui/material/Unstable_Grid2/Grid2";
-
+import { useSWRConfig } from "swr";
+import { moveTask } from "../api/tasks";
+import sortBy from "lodash/sortBy";
 const Home: React.FC = () => {
-  const { data: counters = [], mutate } = useSWR<Counter[]>(
+  const { cache, mutate } = useSWRConfig();
+  const { data: counters = [], mutate: mutateCounters } = useSWR<Counter[]>(
     "counters",
     () => listCounters(),
     {
@@ -66,7 +69,7 @@ const Home: React.FC = () => {
   const [hoveringId, setHoveringId] = useState<null | number>(null);
   const [keydown, setKeydown] = useState<string | null>(null);
   const reload = () => {
-    mutate();
+    mutateCounters();
     mutateCounts();
   };
   const handleIncrease = async (counter: Counter, value: number) => {
@@ -83,7 +86,86 @@ const Home: React.FC = () => {
     mutateCounts();
   };
 
-  const handleDrag: OnDragEndResponder & OnDragUpdateResponder = async ({
+  const handleTaskDrag: OnDragEndResponder &
+    OnDragUpdateResponder = async args => {
+    const { draggableId, destination } = args;
+    if (destination?.index === undefined) return;
+    const destinationTaskListId = destination.droppableId.split("-")[1];
+    const taskId = draggableId.split("-")[2];
+    const sourceTaskListId = draggableId.split("-")[1];
+    const destinationIndex = destination.index;
+
+    const destinationTaskListIdSerialized = unstable_serialize([
+      "taskslist",
+      destinationTaskListId,
+    ]);
+    const destinationTaskList = cache.get(destinationTaskListIdSerialized);
+    const destinationTasks = sortBy(
+      destinationTaskList?.data || [],
+      "position"
+    );
+
+    const sourceTaskListIdSerialized = unstable_serialize([
+      "taskslist",
+      sourceTaskListId,
+    ]);
+    const sourceTaskList = cache.get(sourceTaskListIdSerialized);
+    const sourceTasks = sourceTaskList?.data || [];
+    let prev;
+    if (
+      destination?.index !== 0 &&
+      destinationTaskListId !== sourceTaskListId
+    ) {
+      prev = destinationTasks.at(destination?.index - 1);
+    } else if (
+      destination?.index !== 0 &&
+      destinationTaskListId === sourceTaskListId
+    ) {
+      // moving within the same list
+      prev = destinationTasks.at(destination?.index);
+    }
+    // do api call to move the task
+    const { data: task } = await moveTask(sourceTaskListId, taskId, {
+      parent: undefined,
+      previous: prev ? prev.id : null,
+      destinationTasklist:
+        sourceTaskListId === destinationTaskListId
+          ? undefined
+          : destinationTaskListId,
+    });
+
+    if (sourceTaskListId === destinationTaskListId) {
+      await mutate(
+        ["taskslist", sourceTaskListId],
+        async tasks => {
+          const filtered = tasks.filter(t => t.id !== taskId);
+          filtered.push(task);
+          return filtered;
+        },
+        { revalidate: true }
+      );
+    } else {
+      await mutate(
+        ["taskslist", sourceTaskListId],
+        async tasks => {
+          return tasks.filter(t => t.id !== taskId);
+        },
+        { revalidate: true }
+      );
+      await mutate(
+        ["taskslist", destinationTaskListId],
+        async tasks => {
+          const head = tasks.slice(0, destination?.index);
+          const tail = tasks.slice(destination?.index, tasks.length);
+          tasks.push(task);
+          return tasks;
+        },
+        { revalidate: true }
+      );
+    }
+  };
+
+  const handleCounterDrag: OnDragEndResponder & OnDragUpdateResponder = async ({
     draggableId,
     destination,
   }) => {
@@ -101,8 +183,9 @@ const Home: React.FC = () => {
       destination.index
     );
     await upsertCounters(toUpsert);
-    mutate(toUpsert);
+    mutateCounters(toUpsert, { revalidate: false });
   };
+
   const editingCounter = (counters || []).find(c => c.id === editingId);
 
   // hotkey management
@@ -136,7 +219,7 @@ const Home: React.FC = () => {
         overflow="scroll"
         flexGrow="inherit">
         <Grid flexGrow="inherit" minWidth={380} xs={12} md={4}>
-          <DragDropContext onDragUpdate={handleDrag} onDragEnd={handleDrag}>
+          <DragDropContext onDragEnd={handleCounterDrag}>
             <CounterList
               onAddCounter={async (data, { cancelLoading }) => {
                 await createCounter(data);
@@ -243,26 +326,28 @@ const Home: React.FC = () => {
           </DragDropContext>
         </Grid>
 
-        {taskLists.map(list => (
-          <Grid minWidth={380} xs={12} md={4} key={list.id}>
-            <TaskList
-              key={list.id}
-              taskList={list}
-              onDeleteTaskList={() => {
-                deleteTaskList(list.id);
-                const updated = taskLists.filter(tl => tl.id !== list.id);
-                mutateTaskLists(updated, { revalidate: false });
-              }}
-              onUpdateTaskList={async attrs => {
-                patchTaskList(list.id, attrs);
-                const updated = taskLists.map(tl =>
-                  tl.id === list.id ? { ...tl, ...attrs } : tl
-                );
-                mutateTaskLists(updated, { revalidate: false });
-              }}
-            />
-          </Grid>
-        ))}
+        <DragDropContext onDragEnd={handleTaskDrag}>
+          {taskLists.map(list => (
+            <Grid minWidth={380} xs={12} md={4} key={list.id}>
+              <TaskList
+                key={list.id}
+                taskList={list}
+                onDeleteTaskList={() => {
+                  deleteTaskList(list.id);
+                  const updated = taskLists.filter(tl => tl.id !== list.id);
+                  mutateTaskLists(updated, { revalidate: false });
+                }}
+                onUpdateTaskList={async attrs => {
+                  patchTaskList(list.id, attrs);
+                  const updated = taskLists.map(tl =>
+                    tl.id === list.id ? { ...tl, ...attrs } : tl
+                  );
+                  mutateTaskLists(updated, { revalidate: false });
+                }}
+              />
+            </Grid>
+          ))}
+        </DragDropContext>
         <div>
           {newList ? (
             <>
