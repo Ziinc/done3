@@ -184,6 +184,11 @@ const TaskListItem = ({
                 <Typography variant="body2" className="text-gray-500">
                   {task.notes}
                 </Typography>
+                {import.meta.env.DEV && (
+                  <Typography variant="body2" sx={{fontSize: "0.7rem"}} className="text-gray-500">
+                    id: {task.id}
+                  </Typography>
+                )}
               </>
             )}
           </Stack>
