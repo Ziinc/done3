@@ -23,7 +23,7 @@ function App() {
     handleStartup();
     const timeout = setTimeout(() => {
       setMinLoadingWait(true);
-    }, 100);
+    }, 80);
     return () => clearTimeout(timeout);
   }, []);
 
