@@ -177,7 +177,7 @@ const TaskListComponent = ({
             {(provided, snapshot) => (
               <div ref={provided.innerRef} {...provided.droppableProps}>
                 <List>
-                  {sortBy(pendingTasks, 'position').map((task, index) => (
+                  {sortBy(pendingTasks, "position").map((task, index) => (
                     <Draggable
                       draggableId={`task-${taskList.id}-${task.id}`}
                       index={index}

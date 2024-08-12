@@ -1,5 +1,6 @@
 import { Task } from "../../api/tasks";
 import {
+  Chip,
   ClickAwayListener,
   Grow,
   IconButton,
@@ -19,7 +20,8 @@ import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
 import CheckIcon from "@mui/icons-material/Check";
 import { Delete, MoreVert } from "@mui/icons-material";
 import React, { useEffect } from "react";
-
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import dayjs from "dayjs";
 interface TaskProps {
   task: Task;
   onToggleTask: (task: Task) => void;
@@ -168,6 +170,28 @@ const TaskListItem = ({
                       }));
                     }}
                   />
+                  <DatePicker
+                    label="Due date"
+                    defaultValue={task.due ? dayjs(task.due) : undefined}
+                    slotProps={{
+                      field: {
+                        clearable: true,
+                        onClear: () => {
+                          setEditData(prev => ({
+                            ...prev,
+                            due: null,
+                          }));
+                        },
+                      },
+                    }}
+                    name="due"
+                    onChange={value => {
+                      setEditData(prev => ({
+                        ...prev,
+                        due: value?.toISOString(),
+                      }));
+                    }}
+                  />
                 </form>
               </>
             ) : (
@@ -184,8 +208,17 @@ const TaskListItem = ({
                 <Typography variant="body2" className="text-gray-500">
                   {task.notes}
                 </Typography>
+                {task.due && (
+                  <Chip
+                    label={dayjs(task.due).format("D MMM")}
+                    variant="outlined"
+                  />
+                )}
                 {import.meta.env.DEV && (
-                  <Typography variant="body2" sx={{fontSize: "0.7rem"}} className="text-gray-500">
+                  <Typography
+                    variant="body2"
+                    sx={{ fontSize: "0.7rem" }}
+                    className="text-gray-500">
                     id: {task.id}
                   </Typography>
                 )}
