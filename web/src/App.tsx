@@ -7,7 +7,15 @@ import LoadingSpinner from "./components/LoadingSpinner";
 import { AuthContainer, useAuth } from "./components/Auth";
 import { Route } from "wouter";
 import { HashRouter } from "./router";
-import { Container, Divider, Paper, Stack, Typography } from "@mui/material";
+import {
+  Container,
+  Divider,
+  ListItem,
+  ListItemText,
+  Paper,
+  Stack,
+  Typography,
+} from "@mui/material";
 import Grid from "@mui/material/Unstable_Grid2/Grid2";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -59,29 +67,40 @@ export const AuthWall = ({ showLoading }: { showLoading: boolean }) => {
                 Done<sup>3</sup>
               </Typography>
               <Typography variant="subtitle1" textAlign={"left"}>
-                Your integrated dashboard for getting things done with Google
-                Tasks
+                The integrated dashboard for getting things done with Google
+                Workspace.
+              </Typography>
+              <Typography variant="subtitle1" textAlign={"left"}>
+                Alternative client for Google Tasks and Google Keep.
               </Typography>
             </Container>
             <Divider />
-            <Typography variant="h6" textAlign={"center"}>
+            <Typography variant="h5" textAlign={"center"}>
               Features
             </Typography>
             <Grid container spacing={2}>
               <Grid xs={12} md={6}>
                 <Paper sx={{ p: 2 }}>
-                  <Typography variant="subtitle2">Tasks+</Typography>
-                  <Typography variant="body2">
-                    Extended Tasks features
-                  </Typography>
+                  <Typography variant="h6">Tasks Extended</Typography>
+                  <ListItem>
+                    <ListItemText primary="Kanvan view" />
+                  </ListItem>
                 </Paper>
               </Grid>
               <Grid xs={12} md={6}>
                 <Paper sx={{ p: 2 }}>
-                  <Typography variant="subtitle2">Counters</Typography>
-                  <Typography variant="body2">
-                    Count-based metrics for Tasks and behaviours
-                  </Typography>
+                  <Typography variant="h6">Keep Extended</Typography>
+                  <ListItem>
+                    <ListItemText primary="Markdown editor" />
+                  </ListItem>
+                </Paper>
+              </Grid>
+              <Grid xs={12} md={6}>
+                <Paper sx={{ p: 2 }}>
+                  <Typography variant="h6">Counters</Typography>{" "}
+                  <ListItem>
+                    <ListItemText primary="Action counter" />
+                  </ListItem>
                 </Paper>
               </Grid>
             </Grid>
