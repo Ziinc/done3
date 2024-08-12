@@ -1,10 +1,4 @@
-import {
-  Box,
-  Button,
-  ListItemText,
-  Modal,
-  TextField,
-} from "@mui/material";
+import { Box, Button, ListItemText, Modal, TextField } from "@mui/material";
 import { ChangeEvent, useMemo, useState } from "react";
 import { Note, deleteNote, updateNote } from "../api/notes";
 
