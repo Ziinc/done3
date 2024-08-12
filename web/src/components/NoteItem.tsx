@@ -4,9 +4,8 @@ import {
   ListItemText,
   Modal,
   TextField,
-  Typography,
 } from "@mui/material";
-import { ChangeEvent, ChangeEventHandler, useMemo, useState } from "react";
+import { ChangeEvent, useMemo, useState } from "react";
 import { Note, deleteNote, updateNote } from "../api/notes";
 
 import ListItem from "@mui/material/ListItem";
