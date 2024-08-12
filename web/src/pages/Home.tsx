@@ -32,6 +32,8 @@ import {
   ClickAwayListener,
   Container,
   IconButton,
+  List,
+  Paper,
   TextField,
   Typography,
 } from "@mui/material";
@@ -41,6 +43,8 @@ import Grid from "@mui/material/Unstable_Grid2/Grid2";
 import { useSWRConfig } from "swr";
 import { Task, moveTask } from "../api/tasks";
 import sortBy from "lodash/sortBy";
+import { Note, insertNote, listNotes } from "../api/notes";
+import NoteItem from "../components/NoteItem";
 const Home: React.FC = () => {
   const { cache, mutate } = useSWRConfig();
   const { data: counters = [], mutate: mutateCounters } = useSWR<Counter[]>(
@@ -59,10 +63,19 @@ const Home: React.FC = () => {
     }
   );
 
+  const {
+    data: notes,
+    mutate: mutateNotes,
+    isLoading: isNotesLoading,
+  } = useSWR("notes", () => listNotes(), {
+    revalidateOnFocus: false,
+  });
+
   const { data: countMapping = {}, mutate: mutateCounts } =
     useSWR<CountMapping>("counts", () => getCounts(), {
       revalidateOnFocus: false,
     });
+  const [showNewNoteForm, setShowNewNoteForm] = useState(false);
   const [showNewForm, setShowNewForm] = useState(false);
   const [newList, setNewList] = useState(false);
   const [editingId, setEditingId] = useState<null | number>(null);
@@ -71,7 +84,10 @@ const Home: React.FC = () => {
   const reload = () => {
     mutateCounters();
     mutateCounts();
+    mutateTaskLists();
+    mutateNotes();
   };
+
   const handleIncrease = async (counter: Counter, value: number) => {
     const updated: CountTally = Object.assign({}, countMapping[counter.id]);
     for (const [key, currValue] of Object.entries(updated)) {
@@ -326,6 +342,66 @@ const Home: React.FC = () => {
           </DragDropContext>
         </Grid>
 
+        <Grid flexGrow="inherit" minWidth={380} xs={12} md={4}>
+          <Button onClick={() => setShowNewNoteForm(true)}>Add a note</Button>
+
+          {showNewNoteForm && (
+            <form
+              onSubmit={async e => {
+                e.preventDefault();
+                const { data } = await insertNote({
+                  title: e.currentTarget.noteTitle.value,
+                  text: e.currentTarget.noteText.value,
+                });
+
+                mutateNotes((notes: any) => [...(notes || []), data], {
+                  revalidate: false,
+                });
+              }}>
+              <TextField
+                label="Title"
+                id="noteTitle"
+                name="noteTitle"
+                type="text"
+              />
+              <TextField
+                label="Text"
+                id="noteText"
+                name="noteText"
+                type="text"
+              />
+              <Button type="submit">Submit</Button>
+            </form>
+          )}
+
+          <List sx={{ p: 2 }}>
+            {notes &&
+              notes.map((note: Note) => (
+                <NoteItem
+                  key={note.id}
+                  note={note}
+                  onUpdate={(newNote: Note) => {
+                    console.log(newNote);
+                    mutateNotes(notes =>
+                      (notes || []).map(
+                        n => (n.id === newNote.id ? newNote : n),
+                        { revalidate: false }
+                      )
+                    );
+                  }}
+                  onDelete={() => {
+                    mutateNotes(notes =>
+                      notes?.filter(n => n.raw.name !== note.raw.name)
+                    );
+                  }}
+                />
+              ))}
+            {!notes && isNotesLoading === false && (
+              <div>You need to enable the Keep integration</div>
+            )}
+          </List>
+        </Grid>
+
         <DragDropContext onDragEnd={handleTaskDrag}>
           {taskLists.map(list => (
             <Grid minWidth={380} xs={12} md={4} key={list.id}>
@@ -348,6 +424,7 @@ const Home: React.FC = () => {
             </Grid>
           ))}
         </DragDropContext>
+
         <div>
           {newList ? (
             <>

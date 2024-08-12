@@ -4,3 +4,4 @@ _current_branch
 supabase/.temp/
 supabase/.env
 .env
+gcloud.*.json
