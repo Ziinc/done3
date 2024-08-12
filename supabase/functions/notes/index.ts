@@ -35,25 +35,53 @@ app.get("/notes", async (req, res) => {
     return res.status(400).json({ error: "Must be authenticated" });
   }
   const client = makeGoogleClient(user.email);
-  const qp = new URLSearchParams({
-    filter: "NOT trashed",
-  });
-  const result = await client.request({
-    url: "https://keep.googleapis.com/v1/notes?" + qp.toString(),
-    method: "GET",
-  });
+
+  let rawNotes = [];
+  let emptyPageReceived = false;
+  let nextPageToken = undefined;
+  let attempts = 0;
+  while (
+    (attempts == 0 && !nextPageToken && !emptyPageReceived) ||
+    (attempts < 50 && nextPageToken && !emptyPageReceived) 
+  ) {
+    console.log({
+      attempts,
+      nextPageToken,
+      emptyPageReceived,
+    });
+    attempts += 1
+    const qp = new URLSearchParams({
+      filter: "NOT trashed",
+      pageSize: 200,
+      pageToken: nextPageToken || "",
+    });
+    const result = await client.request({
+      url: "https://keep.googleapis.com/v1/notes?" + qp.toString(),
+      method: "GET",
+    });
+    console.log('received length', result.data.notes.length)
+    if (result.data.nextPageToken) {
+      nextPageToken = result.data.nextPageToken;
+    } else {
+      nextPageToken = undefined;
+    }
+    if (result.data.notes.length === 0) {
+      emptyPageReceived = true;
+    } else {
+      rawNotes = rawNotes.concat(result.data.notes);
+    }
+  }
 
   const { data: names } = await sbClient
     .from("notes")
     .select("raw->name")
     .eq("user_id", user.id)
-  console.log(names);
+    .limit(1000);
 
   const knownNames = names.map((n) => n.name);
-  console.log('knownNames', knownNames)
-  console.log('notes', result.data.notes)
-  const toCreate = result.data.notes.filter((note) => !knownNames.includes(note.name));
-  console.log('toCreate', toCreate)
+  const toCreate = rawNotes.filter(
+    (note) => !knownNames.includes(note.name)
+  );
   const upsertResult = await sbClient
     .from("notes")
     .upsert(
@@ -66,7 +94,7 @@ app.get("/notes", async (req, res) => {
   const { data: notes } = await sbClient
     .from("notes")
     .select("*")
-    .eq("user_id", user.id)
+    .eq("user_id", user.id);
 
   res.status(200).json(notes);
 });
@@ -103,13 +131,14 @@ app.put("/notes/:id", async (req, res) => {
     method: "POST",
     body: JSON.stringify(req.body),
   });
-  console.log('created', created)
+  console.log("created", created);
 
   const { data: updatedNote } = await sbClient
     .from("notes")
     .update({ raw: created.data })
     .eq("id", id)
-    .select().single();
+    .select()
+    .single();
 
   res.status(201).json(updatedNote);
 });
