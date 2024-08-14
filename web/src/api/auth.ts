@@ -1,4 +1,4 @@
-import { GoTrueClient } from "@supabase/gotrue-js";
+import { GoTrueClient } from "@supabase/supabase-js";
 import { client } from "../utils";
 
 export const signOut = () => {
@@ -72,7 +72,6 @@ export const signIntoGoogle = async () => {
         "...auth/userinfo.profile",
         "...auth/userinfo.email",
         "...auth/tasks",
-        // "...auth/tasks.readonly",
       ]
         .map(str => str.replace("...", "https://www.googleapis.com/"))
         .join(" "),

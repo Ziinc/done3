@@ -1,4 +1,3 @@
-import { Session } from "@supabase/gotrue-js";
 import Button from "@mui/material/Button";
 import React, { useContext, useEffect, useState } from "react";
 import {
@@ -11,6 +10,7 @@ import {
   updatePassword,
 } from "../api/auth";
 import { Google } from "@mui/icons-material";
+import { AuthChangeEvent, AuthSession, Session } from "@supabase/supabase-js";
 
 export enum AuthMode {
   SIGN_IN = "sign_in",
@@ -53,8 +53,8 @@ export const AuthForm: React.FC<FormProps> = () => {
 
 //   State handling and API interface
 type AuthState = {
-  session: Session | null;
-  user: Session["user"] | null;
+  session: AuthSession | null;
+  user: AuthSession["user"] | null;
 };
 const defaultState: AuthState = { user: null, session: null };
 const AuthContext = React.createContext(defaultState);
@@ -75,13 +75,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   useEffect(() => {
     getSupabaseSession();
 
-    const { subscription } = onAuthStateChange(async (_event, session) => {
-      if (session) {
-        setState({ session, user: session.user ?? null });
-      } else {
-        setState(defaultState);
+    const { subscription } = onAuthStateChange(
+      async (_event: AuthChangeEvent, session: Session | null) => {
+        if (session) {
+          setState({ session, user: session.user ?? null });
+        } else {
+          setState(defaultState);
+        }
       }
-    });
+    );
 
     return () => subscription.unsubscribe();
   }, []);
