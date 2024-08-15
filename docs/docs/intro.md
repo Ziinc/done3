@@ -4,12 +4,12 @@ sidebar_position: 1
 
 # Introduction
 
-**Counters** is a web application for logging behavioural events, to encourage habit consistency and enforce behavioural change on the individual level.
-
-Common use cases include personal habit tracking, however, it can also be used for professional contexts, such as observing the behaviour of a team or organization. [Targets](basics/counters#setting-targets) can be set and customized for each behaviour, helping users to identify and carry out behaviours that are falling below a desired execution frequency.
+**Done3** is a Google Workspace client for Google Tasks and Google Keep, with many improvements and additional features.
 
 ## Getting Started
 
-1. Create a free account at [counters.tznc.net](https://counters.tznc.net/app).
-2. Create a new counter.
+1. Create a free account at [done3.tznc.net](https://done3.tznc.net/).
+2. Create a new counter or task.
 3. Press the **+** button to increase the counter's tally.
+
+Using the Google Keep integration requires Domain Wide Delegation and is only available for Workspace accounts. See documentation [here](basics/notes#requirements) to get started.
