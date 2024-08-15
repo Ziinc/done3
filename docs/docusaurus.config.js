@@ -1,8 +1,8 @@
 // @ts-check
 // Note: type annotations allow type checking and IDEs autocompletion
-
-const lightCodeTheme = require("prism-react-renderer/themes/github");
-const darkCodeTheme = require("prism-react-renderer/themes/dracula");
+import { themes } from "prism-react-renderer";
+const lightCodeTheme = themes.github;
+const darkCodeTheme = themes.dracula;
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
@@ -29,6 +29,7 @@ const config = {
       ({
         docs: {
           sidebarPath: require.resolve("./sidebars.js"),
+          routeBasePath: '/', // Set this value to '/'.
         },
         blog: false,
         theme: {
@@ -75,6 +76,7 @@ const config = {
               {
                 label: "User Docs",
                 to: "/docs/intro",
+                
               },
             ],
           },
@@ -84,6 +86,8 @@ const config = {
       prism: {
         theme: lightCodeTheme,
         darkTheme: darkCodeTheme,
+
+        additionalLanguages: ["bash", "diff", "json"],
       },
     }),
 };
