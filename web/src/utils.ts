@@ -11,7 +11,7 @@ client.auth.onAuthStateChange((event, session) => {
     upsertGoogleAuth({
       access_token: session.provider_token,
       refresh_token: session.provider_refresh_token,
-      expires_at: new Date(session.expires_at!).toISOString(),
+      expires_at: new Date(session.expires_at! * 1000).toISOString(),
     });
   }
 
