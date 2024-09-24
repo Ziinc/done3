@@ -8,17 +8,21 @@ import { AuthContainer, useAuth } from "./components/Auth";
 import { Route } from "wouter";
 import { HashRouter } from "./router";
 import {
+  Button,
   Container,
+  CssBaseline,
   Divider,
   ListItem,
   ListItemText,
   Paper,
   Stack,
+  ThemeProvider,
   Typography,
 } from "@mui/material";
 import Grid from "@mui/material/Unstable_Grid2/Grid2";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import theme from "./theme";
 
 function App() {
   const user = useAuth();
@@ -40,16 +44,20 @@ function App() {
   const showLoading = !minLoadingWait || loading;
 
   return (
-    <LocalizationProvider dateAdapter={AdapterDayjs}>
-      <HashRouter base={import.meta.env.BASE_URL}>
-        <Route path="/">
-          {(showLoading || !user.session) && (
-            <AuthWall showLoading={showLoading} />
-          )}
-          {!showLoading && Boolean(user.session) && <AuthedApp />}
-        </Route>
-      </HashRouter>
-    </LocalizationProvider>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+
+      <LocalizationProvider dateAdapter={AdapterDayjs}>
+        <HashRouter base={import.meta.env.BASE_URL}>
+          <Route path="/">
+            {(showLoading || !user.session) && (
+              <AuthWall showLoading={showLoading} />
+            )}
+            {!showLoading && Boolean(user.session) && <AuthedApp />}
+          </Route>
+        </HashRouter>
+      </LocalizationProvider>
+    </ThemeProvider>
   );
 }
 
@@ -69,6 +77,7 @@ export const AuthWall = ({ showLoading }: { showLoading: boolean }) => {
               <Typography variant="subtitle1" textAlign={"left"}>
                 The integrated dashboard for getting things done with Google
                 Workspace.
+                <br />
               </Typography>
               <Typography variant="subtitle1" textAlign={"left"}>
                 Alternative client for Google Tasks and Google Keep.
@@ -104,6 +113,16 @@ export const AuthWall = ({ showLoading }: { showLoading: boolean }) => {
                 </Paper>
               </Grid>
             </Grid>
+            <Stack direction={"row"}>
+              <a target="_blank" href="https://docs.done3.tznc.net">
+                <Button>Docs</Button>
+              </a>
+              <a
+                target="_blank"
+                href="mailto:ty@tzeyiing.com?subject=I'm interested in the private alpha of Done3!">
+                <Button variant="text">Request access to Private Alpha</Button>
+              </a>
+            </Stack>
             <Divider />
             <AuthContainer />
           </Stack>

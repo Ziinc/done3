@@ -25,7 +25,8 @@ import {
   deleteTaskList,
   insertTaskList,
   listTaskLists,
-  patchTaskList,
+  putTaskList,
+  syncTaskLists,
 } from "../api/task_lists";
 import TaskList from "../components/tasks/TaskList";
 import {
@@ -33,7 +34,6 @@ import {
   Container,
   IconButton,
   List,
-  Paper,
   TextField,
   Typography,
 } from "@mui/material";
@@ -45,8 +45,14 @@ import { Task, moveTask } from "../api/tasks";
 import sortBy from "lodash/sortBy";
 import { Note, insertNote, listNotes } from "../api/notes";
 import NoteItem from "../components/NoteItem";
+import Navbar from "../components/Navbar";
+import { client } from "../utils";
 const Home: React.FC = () => {
   const { cache, mutate } = useSWRConfig();
+  const { mutate: refreshLists } = useSWR("lists/sync", () => syncTaskLists(), {
+    revalidateOnFocus: false,
+    refreshInterval: 60 * 1000 * 5,
+  });
   const { data: counters = [], mutate: mutateCounters } = useSWR<Counter[]>(
     "counters",
     () => listCounters(),
@@ -57,7 +63,7 @@ const Home: React.FC = () => {
 
   const { data: taskLists = [], mutate: mutateTaskLists } = useSWR(
     "tasklists",
-    () => listTaskLists(),
+    () => listTaskLists().then(result => result.data),
     {
       revalidateOnFocus: false,
     }
@@ -81,6 +87,11 @@ const Home: React.FC = () => {
   const [editingId, setEditingId] = useState<null | number>(null);
   const [hoveringId, setHoveringId] = useState<null | number>(null);
   const [keydown, setKeydown] = useState<string | null>(null);
+
+  useEffect(() => {
+    realtimeSub();
+  }, []);
+
   const reload = () => {
     mutateCounters();
     mutateCounts();
@@ -141,7 +152,7 @@ const Home: React.FC = () => {
       prev = destinationTasks.at(destination?.index);
     }
     // do api call to move the task
-    const { data: task } = await moveTask(sourceTaskListId, taskId, {
+    const { data: task } = await moveTask(taskId, {
       parent: undefined,
       previous: prev ? prev.id : null,
       destinationTasklist:
@@ -155,7 +166,9 @@ const Home: React.FC = () => {
         ["taskslist", sourceTaskListId],
         async (tasks: Task[] | undefined) => {
           const filtered = (tasks || []).filter(t => t.id !== taskId);
-          filtered.push(task);
+          if (task) {
+            filtered.push(task);
+          }
           return filtered;
         },
         { revalidate: true }
@@ -170,10 +183,13 @@ const Home: React.FC = () => {
       );
       await mutate(
         ["taskslist", destinationTaskListId],
-        async tasks => {
+        async (tasks: Task[] | undefined) => {
+          if (!tasks) return;
           const head = tasks.slice(0, destination?.index);
           const tail = tasks.slice(destination?.index, tasks.length);
-          tasks.push(task);
+          if (task) {
+            tasks.push(task);
+          }
           return tasks;
         },
         { revalidate: true }
@@ -204,6 +220,29 @@ const Home: React.FC = () => {
 
   const editingCounter = (counters || []).find(c => c.id === editingId);
 
+  // realtime
+  const realtimeSub = async () => {
+    client
+      .channel("dashboard")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "lists" },
+        event => {
+          mutateTaskLists(prev => [...(prev || []), event.new]);
+        }
+      )
+      .on(
+        "postgres_changes",
+        { event: "DELETE", schema: "public", table: "lists" },
+        event => {
+          mutateTaskLists(prev =>
+            (prev || [])?.filter(t => t.id != event.old.id)
+          );
+        }
+      )
+      .subscribe();
+  };
+
   // hotkey management
   useEffect(() => {
     if (!keydown) return;
@@ -224,6 +263,14 @@ const Home: React.FC = () => {
 
   return (
     <>
+      <Navbar
+        refresh={() => {
+          refreshLists();
+          mutateCounters();
+          mutateCounts();
+        }}
+      />
+
       <Grid
         container
         spacing={1}
@@ -403,26 +450,29 @@ const Home: React.FC = () => {
         </Grid>
 
         <DragDropContext onDragEnd={handleTaskDrag}>
-          {taskLists.map(list => (
-            <Grid minWidth={380} xs={12} md={4} key={list.id}>
-              <TaskList
-                key={list.id}
-                taskList={list}
-                onDeleteTaskList={() => {
-                  deleteTaskList(list.id);
-                  const updated = taskLists.filter(tl => tl.id !== list.id);
-                  mutateTaskLists(updated, { revalidate: false });
-                }}
-                onUpdateTaskList={async attrs => {
-                  patchTaskList(list.id, attrs);
-                  const updated = taskLists.map(tl =>
-                    tl.id === list.id ? { ...tl, ...attrs } : tl
-                  );
-                  mutateTaskLists(updated, { revalidate: false });
-                }}
-              />
-            </Grid>
-          ))}
+          {taskLists &&
+            taskLists.map(list => (
+              <Grid minWidth={380} xs={12} md={4} key={list.id}>
+                <TaskList
+                  key={list.id}
+                  taskList={list}
+                  onDeleteTaskList={() => {
+                    deleteTaskList(list.id);
+                    const updated = taskLists.filter(tl => tl.id !== list.id);
+                    mutateTaskLists(updated, { revalidate: false });
+                  }}
+                  onUpdateTaskList={async attrs => {
+                    const { data: updated } = await putTaskList(list.id, attrs);
+                    if (updated) {
+                      const updatedLists = taskLists.map(tl =>
+                        tl.id === list.id ? updated : tl
+                      );
+                      mutateTaskLists(updatedLists, { revalidate: false });
+                    }
+                  }}
+                />
+              </Grid>
+            ))}
         </DragDropContext>
 
         <div>
@@ -435,7 +485,9 @@ const Home: React.FC = () => {
                   const { data } = await insertTaskList({
                     title: e.currentTarget.taskListTitle.value,
                   });
-                  mutateTaskLists([...taskLists, data]);
+                  if (data && taskLists) {
+                    mutateTaskLists([...taskLists, data]);
+                  }
                 }}>
                 <TextField label="Title" name="taskListTitle" required />
                 <Button variant="outlined" color="secondary" type="submit">

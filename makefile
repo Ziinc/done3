@@ -1,3 +1,8 @@
+
+start:
+	npm run sb:start --prefix=web
+	npm run dev --prefix=web
+
 diff:
 	supabase db diff -f $(f) -s public,extensions --local
 
@@ -6,4 +11,4 @@ build.app:
 build.docs:
 	npm run build --prefix=docs
 
-.PHONY: build.app
+.PHONY: build.app start

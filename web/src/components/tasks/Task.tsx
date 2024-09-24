@@ -37,8 +37,8 @@ const TaskListItem = ({
 }: TaskProps) => {
   const [open, setOpen] = React.useState(false);
   const [editData, setEditData] = React.useState({
-    title: task.title,
-    notes: task.notes,
+    title: task.raw.title,
+    notes: task.raw.notes,
   });
   const [editing, setEditing] = React.useState(false);
   const anchorRef = React.useRef<HTMLButtonElement>(null);
@@ -99,7 +99,7 @@ const TaskListItem = ({
     <ListItem key={task.id} sx={{ p: 0 }} alignItems="center">
       <ListItemAvatar>
         <IconButton color={"primary"} onClick={() => onToggleTask(task)}>
-          {task.status == "needsAction" ? (
+          {task.raw.status == "needsAction" ? (
             <RadioButtonUncheckedIcon />
           ) : (
             <CheckIcon />
@@ -143,7 +143,7 @@ const TaskListItem = ({
                   }}>
                   <TextField
                     name="taskTitle"
-                    defaultValue={task.title}
+                    defaultValue={task.raw.title}
                     hiddenLabel
                     label="Title"
                     required
@@ -158,7 +158,7 @@ const TaskListItem = ({
                   />
                   <TextField
                     name="notes"
-                    defaultValue={task.notes}
+                    defaultValue={task.raw.notes}
                     label="Notes"
                     hiddenLabel
                     variant="standard"
@@ -172,7 +172,7 @@ const TaskListItem = ({
                   />
                   <DatePicker
                     label="Due date"
-                    defaultValue={task.due ? dayjs(task.due) : undefined}
+                    defaultValue={task.raw.due ? dayjs(task.raw.due) : undefined}
                     slotProps={{
                       field: {
                         clearable: true,
@@ -198,19 +198,19 @@ const TaskListItem = ({
               <>
                 <Typography
                   variant="body1"
-                  className={task.status === "completed" ? "text-gray-600" : ""}
+                  className={task.raw.status === "completed" ? "text-gray-600" : ""}
                   sx={{
                     textDecoration:
-                      task.status === "completed" ? "line-through" : null,
+                      task.raw.status === "completed" ? "line-through" : null,
                   }}>
-                  {task.title}
+                  {task.raw.title}
                 </Typography>
                 <Typography variant="body2" className="text-gray-500">
-                  {task.notes}
+                  {task.raw.notes}
                 </Typography>
-                {task.due && (
+                {task.raw.due && (
                   <Chip
-                    label={dayjs(task.due).format("D MMM")}
+                    label={dayjs(task.raw.due).format("D MMM")}
                     variant="outlined"
                   />
                 )}

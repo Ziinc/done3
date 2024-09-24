@@ -1,5 +1,5 @@
 import useSWR, { unstable_serialize } from "swr";
-import { TaskList, patchTaskList } from "../../api/task_lists";
+import { List, TaskList, putTaskList } from "../../api/task_lists";
 import {
   Task,
   deleteTask,
@@ -10,7 +10,7 @@ import {
 import {
   ClickAwayListener,
   IconButton,
-  List,
+  List as MaterialList,
   Paper,
   Skeleton,
   Stack,
@@ -25,14 +25,15 @@ import {
   Delete,
   Refresh,
 } from "@mui/icons-material";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import TaskListItem from "./Task";
 import { Draggable, Droppable } from "react-beautiful-dnd";
 import sortBy from "lodash/sortBy";
+import { client } from "../../utils";
 interface Props {
-  taskList: TaskList;
+  taskList: List;
   onDeleteTaskList: () => void;
-  onUpdateTaskList: (attrs: Parameters<typeof patchTaskList>[1]) => void;
+  onUpdateTaskList: (attrs: Parameters<typeof putTaskList>[1]) => void;
 }
 
 const TaskListComponent = ({
@@ -47,7 +48,7 @@ const TaskListComponent = ({
     data: tasks = [],
     isLoading: isLoadingTasks,
     mutate: mutateTasks,
-  } = useSWR(["taskslist", taskList.id], () => listTasks(taskList.id), {
+  } = useSWR<Task[]>(["taskslist", taskList.id], () => listTasks(taskList.id).then(res=> res.data as Task[]), {
     revalidateOnFocus: false,
     refreshInterval: 60 * 1000 * 10,
     revalidateIfStale: true,
@@ -55,18 +56,44 @@ const TaskListComponent = ({
     revalidateOnReconnect: true,
   });
 
+  useEffect(()=>{
+    realtimeSub()
+  }, [])
   const completedTasks = useMemo(
-    () => tasks.filter(t => t.status === "completed"),
+    () => (tasks).filter(t => t.raw.status === "completed"),
     [tasks]
   );
   const pendingTasks = useMemo(
-    () => tasks.filter(t => t.status !== "completed"),
+    () => tasks.filter(t => t.raw.status !== "completed"),
     [tasks]
   );
 
+  // realtime
+  const realtimeSub = async () => {
+    client
+      .channel("dashboard")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "tasks", filter: `list_id=eq.${taskList.id}` },
+        event => {
+          mutateTasks(prev => [...(prev || []), event.new as Task]);
+        }
+      )
+      .on(
+        "postgres_changes",
+        { event: "DELETE", schema: "public", table: "tasks", filter: `list_id=eq.${taskList.id}` },
+        event => {
+          mutateTasks(prev =>
+            (prev || [])?.filter(t => t.id != event.old.id)
+          );
+        }
+      )
+      .subscribe();
+  };
+
   const onToggleTask = async (task: Task) => {
-    if (task.status === "needsAction") {
-      patchTask(taskList.id, task.id, {
+    if (task.raw.status === "needsAction") {
+      patchTask(task.id, {
         status: "completed",
       });
       const updated = tasks.map(t =>
@@ -74,7 +101,7 @@ const TaskListComponent = ({
       );
       mutateTasks(updated);
     } else {
-      patchTask(taskList.id, task.id, {
+      patchTask(task.id, {
         status: "needsAction",
       });
       const updated = tasks.map(t =>
@@ -84,15 +111,15 @@ const TaskListComponent = ({
     }
   };
   const handleDelete = async (task: Task) => {
-    deleteTask(taskList.id, task.id);
+    deleteTask(task.id);
     const updated = tasks.filter(t => t.id !== task.id);
     mutateTasks(updated, { revalidate: false });
   };
   const handleUpdate = async (taskId: string, attrs: Partial<Task>) => {
-    patchTask(taskList.id, taskId, attrs).then();
+    patchTask(taskId, attrs).then();
     const updated = tasks.map(t => {
       if (t.id == taskId) {
-        return { ...t, ...attrs };
+        return { ...t, raw: {...t.raw, ...attrs} };
       } else {
         return t;
       }
@@ -112,11 +139,11 @@ const TaskListComponent = ({
                 <TextField
                   name="listTitle"
                   label="List title"
-                  defaultValue={taskList.title}
+                  defaultValue={taskList.raw.title}
                   onBlur={e => {
                     const value = e.currentTarget.value;
                     setEditingTitle(false);
-                    if (value !== taskList.title) {
+                    if (value !== taskList.raw.title) {
                       // save the value
                       onUpdateTaskList({ title: value });
                     }
@@ -130,7 +157,7 @@ const TaskListComponent = ({
           </>
         ) : (
           <Button onClick={() => setEditingTitle(true)}>
-            <h3>{taskList.title}</h3>
+            <h3>{taskList.raw.title}</h3>
           </Button>
         )}
         <IconButton onClick={() => mutateTasks()}>
@@ -149,11 +176,12 @@ const TaskListComponent = ({
             onSubmit={async e => {
               e.preventDefault();
               const title = e.currentTarget.taskTitle.value;
-              await insertTask(taskList.id, { title });
+              const {data: returned} = await insertTask(taskList.id, { title });
               mutateTasks([
-                { id: "new", title, status: "needsAction" } as Task,
+                returned,
                 ...tasks,
               ]);
+              setShowNewForm(false)
             }}>
             <TextField name="taskTitle" label="Task title" variant="outlined" />
             <Button type="submit">Add</Button>
@@ -176,7 +204,7 @@ const TaskListComponent = ({
           <Droppable droppableId={`taskList-${taskList.id}`} type="TASK">
             {(provided, snapshot) => (
               <div ref={provided.innerRef} {...provided.droppableProps}>
-                <List>
+                <MaterialList>
                   {sortBy(pendingTasks, "position").map((task, index) => (
                     <Draggable
                       draggableId={`task-${taskList.id}-${task.id}`}
@@ -230,7 +258,7 @@ const TaskListComponent = ({
                         />
                       ))}
                   </div>
-                </List>
+                </MaterialList>
 
                 {/* {counters.length > 0 &&
             counters.map((counter, index) => (
