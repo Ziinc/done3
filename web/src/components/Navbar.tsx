@@ -1,5 +1,6 @@
+import { Refresh } from "@mui/icons-material";
 import { signOut } from "../api/auth";
-import { Button, Stack, Typography } from "@mui/material";
+import { Button, IconButton, Stack, Typography } from "@mui/material";
 
 interface Props {
   className?: string;
@@ -15,9 +16,9 @@ const Navbar: React.FC<Props> = ({ refresh, className = "" }) => (
       Done<sup>3</sup>
     </Typography>
     <Stack direction="row">
-      <Button variant="contained" size="small" onClick={refresh}>
-        Refresh
-      </Button>
+      <IconButton size="small" onClick={refresh} title="Refresh">
+        <Refresh />
+      </IconButton>
       <Button variant="contained" size="small" onClick={signOut}>
         Sign out
       </Button>

@@ -23,7 +23,6 @@ import {
   CancelOutlined,
   ChevronRightSharp,
   Delete,
-  Refresh,
 } from "@mui/icons-material";
 import { useEffect, useMemo, useState } from "react";
 import TaskListItem from "./Task";
@@ -48,19 +47,24 @@ const TaskListComponent = ({
     data: tasks = [],
     isLoading: isLoadingTasks,
     mutate: mutateTasks,
-  } = useSWR<Task[]>(["taskslist", taskList.id], () => listTasks(taskList.id).then(res=> res.data as Task[]), {
-    revalidateOnFocus: false,
-    refreshInterval: 60 * 1000 * 10,
-    revalidateIfStale: true,
-    revalidateOnMount: true,
-    revalidateOnReconnect: true,
-  });
+  } = useSWR<Task[]>(
+    ["taskslist", taskList.id],
+    () => listTasks(taskList.id).then(res => res.data as Task[]),
+    {
+      revalidateOnFocus: true,
+      // 2 minute
+      refreshInterval: 2 * 60 * 1000,
+      revalidateIfStale: true,
+      revalidateOnMount: true,
+      revalidateOnReconnect: true,
+    }
+  );
 
-  useEffect(()=>{
-    realtimeSub()
-  }, [])
+  useEffect(() => {
+    realtimeSub();
+  }, []);
   const completedTasks = useMemo(
-    () => (tasks).filter(t => t.raw.status === "completed"),
+    () => tasks.filter(t => t.raw.status === "completed"),
     [tasks]
   );
   const pendingTasks = useMemo(
@@ -74,18 +78,26 @@ const TaskListComponent = ({
       .channel("dashboard")
       .on(
         "postgres_changes",
-        { event: "INSERT", schema: "public", table: "tasks", filter: `list_id=eq.${taskList.id}` },
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "tasks",
+          filter: `list_id=eq.${taskList.id}`,
+        },
         event => {
           mutateTasks(prev => [...(prev || []), event.new as Task]);
         }
       )
       .on(
         "postgres_changes",
-        { event: "DELETE", schema: "public", table: "tasks", filter: `list_id=eq.${taskList.id}` },
+        {
+          event: "DELETE",
+          schema: "public",
+          table: "tasks",
+          filter: `list_id=eq.${taskList.id}`,
+        },
         event => {
-          mutateTasks(prev =>
-            (prev || [])?.filter(t => t.id != event.old.id)
-          );
+          mutateTasks(prev => (prev || [])?.filter(t => t.id != event.old.id));
         }
       )
       .subscribe();
@@ -119,7 +131,7 @@ const TaskListComponent = ({
     patchTask(taskId, attrs).then();
     const updated = tasks.map(t => {
       if (t.id == taskId) {
-        return { ...t, raw: {...t.raw, ...attrs} };
+        return { ...t, raw: { ...t.raw, ...attrs } };
       } else {
         return t;
       }
@@ -160,9 +172,6 @@ const TaskListComponent = ({
             <h3>{taskList.raw.title}</h3>
           </Button>
         )}
-        <IconButton onClick={() => mutateTasks()}>
-          <Refresh />
-        </IconButton>
         <IconButton onClick={onDeleteTaskList}>
           <Delete />
         </IconButton>
@@ -176,12 +185,11 @@ const TaskListComponent = ({
             onSubmit={async e => {
               e.preventDefault();
               const title = e.currentTarget.taskTitle.value;
-              const {data: returned} = await insertTask(taskList.id, { title });
-              mutateTasks([
-                returned,
-                ...tasks,
-              ]);
-              setShowNewForm(false)
+              const { data: returned } = await insertTask(taskList.id, {
+                title,
+              });
+              mutateTasks([returned, ...tasks]);
+              setShowNewForm(false);
             }}>
             <TextField name="taskTitle" label="Task title" variant="outlined" />
             <Button type="submit">Add</Button>
