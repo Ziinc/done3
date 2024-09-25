@@ -47,9 +47,11 @@ import { Note, insertNote, listNotes } from "../api/notes";
 import NoteItem from "../components/NoteItem";
 import Navbar from "../components/Navbar";
 import { client } from "../utils";
+import { useAuth } from "../components/Auth";
 const Home: React.FC = () => {
+  const user = useAuth();
   const { cache, mutate } = useSWRConfig();
-  const { mutate: refreshLists } = useSWR("lists/sync", () => syncTaskLists(), {
+  const { mutate: syncLists } = useSWR("lists/sync", () => syncTaskLists(), {
     revalidateOnFocus: false,
     refreshInterval: 60 * 1000 * 5,
   });
@@ -87,10 +89,6 @@ const Home: React.FC = () => {
   const [editingId, setEditingId] = useState<null | number>(null);
   const [hoveringId, setHoveringId] = useState<null | number>(null);
   const [keydown, setKeydown] = useState<string | null>(null);
-
-  useEffect(() => {
-    realtimeSub();
-  }, []);
 
   const reload = () => {
     mutateCounters();
@@ -220,28 +218,6 @@ const Home: React.FC = () => {
 
   const editingCounter = (counters || []).find(c => c.id === editingId);
 
-  // realtime
-  const realtimeSub = async () => {
-    client
-      .channel("dashboard")
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "lists" },
-        event => {
-          mutateTaskLists(prev => [...(prev || []), event.new]);
-        }
-      )
-      .on(
-        "postgres_changes",
-        { event: "DELETE", schema: "public", table: "lists" },
-        event => {
-          mutateTaskLists(prev =>
-            (prev || [])?.filter(t => t.id != event.old.id)
-          );
-        }
-      )
-      .subscribe();
-  };
 
   // hotkey management
   useEffect(() => {
@@ -264,8 +240,12 @@ const Home: React.FC = () => {
   return (
     <>
       <Navbar
-        refresh={() => {
-          refreshLists();
+        refresh={async () => {
+          await syncLists();
+          const taskLists = await mutateTaskLists();
+          taskLists?.forEach(list => {
+            mutate(["taskslist", list.id]);
+          });
           mutateCounters();
           mutateCounts();
         }}

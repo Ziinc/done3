@@ -8,6 +8,7 @@ import {
   patchTask,
 } from "../../api/tasks";
 import {
+  Box,
   ClickAwayListener,
   IconButton,
   List as MaterialList,
@@ -29,6 +30,7 @@ import TaskListItem from "./Task";
 import { Draggable, Droppable } from "react-beautiful-dnd";
 import sortBy from "lodash/sortBy";
 import { client } from "../../utils";
+import { useAuth } from "../Auth";
 interface Props {
   taskList: List;
   onDeleteTaskList: () => void;
@@ -40,6 +42,7 @@ const TaskListComponent = ({
   onDeleteTaskList,
   onUpdateTaskList,
 }: Props) => {
+  const user = useAuth();
   const [showCompleted, setShowCompleted] = useState(false);
   const [editingTitle, setEditingTitle] = useState(false);
   const [showNewForm, setShowNewForm] = useState(false);
@@ -51,7 +54,7 @@ const TaskListComponent = ({
     ["taskslist", taskList.id],
     () => listTasks(taskList.id).then(res => res.data as Task[]),
     {
-      revalidateOnFocus: true,
+      revalidateOnFocus: false,
       // 2 minute
       refreshInterval: 2 * 60 * 1000,
       revalidateIfStale: true,
@@ -60,9 +63,6 @@ const TaskListComponent = ({
     }
   );
 
-  useEffect(() => {
-    realtimeSub();
-  }, []);
   const completedTasks = useMemo(
     () => tasks.filter(t => t.raw.status === "completed"),
     [tasks]
@@ -71,37 +71,6 @@ const TaskListComponent = ({
     () => tasks.filter(t => t.raw.status !== "completed"),
     [tasks]
   );
-
-  // realtime
-  const realtimeSub = async () => {
-    client
-      .channel("dashboard")
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "tasks",
-          filter: `list_id=eq.${taskList.id}`,
-        },
-        event => {
-          mutateTasks(prev => [...(prev || []), event.new as Task]);
-        }
-      )
-      .on(
-        "postgres_changes",
-        {
-          event: "DELETE",
-          schema: "public",
-          table: "tasks",
-          filter: `list_id=eq.${taskList.id}`,
-        },
-        event => {
-          mutateTasks(prev => (prev || [])?.filter(t => t.id != event.old.id));
-        }
-      )
-      .subscribe();
-  };
 
   const onToggleTask = async (task: Task) => {
     if (task.raw.status === "needsAction") {
@@ -172,10 +141,23 @@ const TaskListComponent = ({
             <h3>{taskList.raw.title}</h3>
           </Button>
         )}
+
         <IconButton onClick={onDeleteTaskList}>
           <Delete />
         </IconButton>
       </Stack>
+      {import.meta.env.DEV && import.meta.env.VITE_SHOW_IDS === "true" && (
+        <Box sx={{ pl: 1.5 }}>
+          <Typography
+            variant="body2"
+            sx={{ fontSize: "0.7rem" }}
+            className="text-gray-500">
+            id: {taskList.id}
+            <br />
+            raw: {taskList.raw.id}
+          </Typography>
+        </Box>
+      )}
       <Button startIcon={<AddTask />} onClick={() => setShowNewForm(true)}>
         Add a task
       </Button>

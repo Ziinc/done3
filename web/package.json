@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite --force",
     "start": "npm run dev",
-    "sb:start": "supabase start -x imgproxy,logflare,storage-api,inbucket",
+    "sb:start": "supabase start -x imgproxy,logflare,realtime,storage-api,inbucket",
     "sb:stop": "supabase stop",
     "build": "tsc && vite build",
     "preview": "vite preview",

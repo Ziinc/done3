@@ -214,12 +214,14 @@ const TaskListItem = ({
                     variant="outlined"
                   />
                 )}
-                {import.meta.env.DEV && (
+                {import.meta.env.DEV && import.meta.env.VITE_SHOW_IDS === "true" && (
                   <Typography
                     variant="body2"
                     sx={{ fontSize: "0.7rem" }}
                     className="text-gray-500">
                     id: {task.id}
+                    <br/>
+                    raw: {task.raw.id}
                   </Typography>
                 )}
               </>
