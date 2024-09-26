@@ -58,13 +58,20 @@ export interface NoteRaw {
 //       )}`,
 //     },
 //   });
-export const listNotes = async () => {
-  return client.functions
-    .invoke<Note[]>("notes", {
-      // body: JSON.stringify({ foo: 'bar' })
-      method: "GET",
-    })
-    .then(result => result.data);
+
+export const listNotes = async (
+  listId: string,
+  includeDefault: boolean = false
+) => {
+  return client
+    .from("notes")
+    .select("*")
+    .or(`list_id.eq.${listId}${includeDefault ? ",list_id.is.null" : ""}`);
+};
+export const syncNotes = async () => {
+  return client.functions.invoke<Note[]>("notes", {
+    method: "GET",
+  });
 };
 
 export const deleteNote = async (uuid: string) => {

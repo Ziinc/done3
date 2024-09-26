@@ -1,5 +1,5 @@
-import useSWR, { unstable_serialize } from "swr";
-import { List, TaskList, putTaskList } from "../../api/task_lists";
+import useSWR from "swr";
+import { List, putTaskList } from "../../api/task_lists";
 import {
   Task,
   deleteTask,
@@ -25,12 +25,13 @@ import {
   ChevronRightSharp,
   Delete,
 } from "@mui/icons-material";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import TaskListItem from "./Task";
 import { Draggable, Droppable } from "react-beautiful-dnd";
 import sortBy from "lodash/sortBy";
-import { client } from "../../utils";
 import { useAuth } from "../Auth";
+import { Note, insertNote, listNotes } from "../../api/notes";
+import NoteItem from "../NoteItem";
 interface Props {
   taskList: List;
   onDeleteTaskList: () => void;
@@ -42,10 +43,10 @@ const TaskListComponent = ({
   onDeleteTaskList,
   onUpdateTaskList,
 }: Props) => {
-  const user = useAuth();
   const [showCompleted, setShowCompleted] = useState(false);
   const [editingTitle, setEditingTitle] = useState(false);
   const [showNewForm, setShowNewForm] = useState(false);
+  const [showNewNoteForm, setShowNewNoteForm] = useState(false);
   const {
     data: tasks = [],
     isLoading: isLoadingTasks,
@@ -60,6 +61,23 @@ const TaskListComponent = ({
       revalidateIfStale: true,
       revalidateOnMount: true,
       revalidateOnReconnect: true,
+    }
+  );
+
+  const isDefaultList = useMemo(() => {
+    const decoded = atob(taskList.raw.id);
+    return decoded.split(":").length > 1;
+  }, [taskList.raw.id]);
+
+  const {
+    data: notes,
+    mutate: mutateNotes,
+    isLoading: isNotesLoading,
+  } = useSWR(
+    ["taskslist", taskList.id, "notes"],
+    () => listNotes(taskList.id, isDefaultList).then(result => result.data),
+    {
+      revalidateOnFocus: false,
     }
   );
 
@@ -161,6 +179,32 @@ const TaskListComponent = ({
       <Button startIcon={<AddTask />} onClick={() => setShowNewForm(true)}>
         Add a task
       </Button>
+      <Button onClick={() => setShowNewNoteForm(true)}>Add a note</Button>
+
+      {showNewNoteForm && (
+        <form
+          onSubmit={async e => {
+            e.preventDefault();
+            const { data } = await insertNote({
+              title: e.currentTarget.noteTitle.value,
+              text: e.currentTarget.noteText.value,
+            });
+
+            mutateNotes((notes: any) => [...(notes || []), data], {
+              revalidate: false,
+            });
+          }}>
+          <TextField
+            label="Title"
+            id="noteTitle"
+            name="noteTitle"
+            type="text"
+          />
+          <TextField label="Text" id="noteText" name="noteText" type="text" />
+          <Button type="submit">Submit</Button>
+        </form>
+      )}
+
       {showNewForm ? (
         <ClickAwayListener onClickAway={() => setShowNewForm(false)}>
           <form
@@ -249,7 +293,28 @@ const TaskListComponent = ({
                       ))}
                   </div>
                 </MaterialList>
-
+                {notes &&
+                  !isNotesLoading &&
+                  notes.map((note: Note) => (
+                    <NoteItem
+                      key={note.id}
+                      note={note}
+                      onUpdate={(newNote: Note) => {
+                        console.log(newNote);
+                        mutateNotes(notes =>
+                          (notes || []).map(
+                            n => (n.id === newNote.id ? newNote : n),
+                            { revalidate: false }
+                          )
+                        );
+                      }}
+                      onDelete={() => {
+                        mutateNotes(notes =>
+                          notes?.filter(n => n.raw.name !== note.raw.name)
+                        );
+                      }}
+                    />
+                  ))}
                 {/* {counters.length > 0 &&
             counters.map((counter, index) => (
               <Draggable
