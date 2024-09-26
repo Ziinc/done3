@@ -3,6 +3,7 @@ import { client } from "../utils";
 interface NoteParam {
   title?: string;
   text?: string;
+  list_id: string
 }
 
 export interface Note {
@@ -100,6 +101,7 @@ export const updateNote = async (uuid: string, attrs: NoteParam) => {
 export const insertNote = async (attrs: NoteParam) => {
   return client.functions.invoke<Note>(`notes`, {
     body: {
+      list_id: attrs?.list_id,
       title: attrs?.title,
       body: attrs.text
         ? {

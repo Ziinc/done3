@@ -155,15 +155,29 @@ app.post("/notes", async (req, res) => {
     return res.status(400).json({ error: "Must be authenticated" });
   }
 
-  console.log(req);
+  const {list_id, ...attrs} = req.body
   const client = makeGoogleClient(user.email);
   const result = await client.request({
-    url: `https://keep.googleapis.com/v1/notes/${name_id}`,
+    url: `https://keep.googleapis.com/v1/notes`,
     method: "POST",
-    body: JSON.stringify(req.body),
+    body: JSON.stringify(attrs),
   });
-  console.log("result", result);
-  res.status(201).json(result.data);
+
+  console.log('create note result', result)
+  console.log('create note list_id', list_id)
+  const cacheResult = await sbClient
+    .from("notes")
+    .insert({
+      raw: result.data,
+      user_id: user.id,
+      list_id,
+    }
+    )
+    .select()
+    .limit(1)
+    .single();
+
+  res.status(201).json(cacheResult);
 });
 
 app.delete("/notes/:name_id", async (req, res) => {

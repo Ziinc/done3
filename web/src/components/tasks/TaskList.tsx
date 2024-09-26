@@ -185,14 +185,24 @@ const TaskListComponent = ({
         <form
           onSubmit={async e => {
             e.preventDefault();
-            const { data } = await insertNote({
+            const result = await insertNote({
               title: e.currentTarget.noteTitle.value,
               text: e.currentTarget.noteText.value,
+              list_id: taskList.id,
             });
-
-            mutateNotes((notes: any) => [...(notes || []), data], {
-              revalidate: false,
-            });
+            if (result.data) {
+              console.log(result.data);
+              mutateNotes(
+                (notes: any) => {
+                  console.log("prev", notes);
+                  return [...(notes || []), result.data];
+                },
+                {
+                  revalidate: false,
+                }
+              );
+            }
+            setShowNewNoteForm(false);
           }}>
           <TextField
             label="Title"
