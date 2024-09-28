@@ -54,13 +54,6 @@ const Home: React.FC = () => {
     revalidateOnFocus: false,
     refreshInterval: 60 * 1000 * 5,
   });
-  const { data: counters = [], mutate: mutateCounters } = useSWR<Counter[]>(
-    "counters",
-    () => listCounters(),
-    {
-      revalidateOnFocus: false,
-    }
-  );
 
   const { data: taskLists = [], mutate: mutateTaskLists } = useSWR(
     "tasklists",
@@ -70,36 +63,9 @@ const Home: React.FC = () => {
     }
   );
 
-  const { data: countMapping = {}, mutate: mutateCounts } =
-    useSWR<CountMapping>("counts", () => getCounts(), {
-      revalidateOnFocus: false,
-    });
-  const [showNewForm, setShowNewForm] = useState(false);
   const [newList, setNewList] = useState(false);
-  const [editingId, setEditingId] = useState<null | number>(null);
-  const [hoveringId, setHoveringId] = useState<null | number>(null);
   const [keydown, setKeydown] = useState<string | null>(null);
 
-  const reload = () => {
-    mutateCounters();
-    mutateCounts();
-    mutateTaskLists();
-    refreshNotes();
-  };
-
-  const handleIncrease = async (counter: Counter, value: number) => {
-    const updated: CountTally = Object.assign({}, countMapping[counter.id]);
-    for (const [key, currValue] of Object.entries(updated)) {
-      updated[key as keyof CountTally] = currValue + value;
-    }
-
-    const newMapping = { ...countMapping, [counter.id]: updated };
-    await Promise.all([
-      increaseCounter(counter.id, value),
-      mutateCounts(newMapping, { revalidate: false }),
-    ]);
-    mutateCounts();
-  };
 
   const handleTaskDrag: OnDragEndResponder &
     OnDragUpdateResponder = async args => {
@@ -108,7 +74,6 @@ const Home: React.FC = () => {
     const destinationTaskListId = destination.droppableId.split("-")[1];
     const taskId = draggableId.split("-")[2];
     const sourceTaskListId = draggableId.split("-")[1];
-    const destinationIndex = destination.index;
 
     const destinationTaskListIdSerialized = unstable_serialize([
       "taskslist",
@@ -185,36 +150,10 @@ const Home: React.FC = () => {
     }
   };
 
-  const handleCounterDrag: OnDragEndResponder & OnDragUpdateResponder = async ({
-    draggableId,
-    destination,
-  }) => {
-    if (destination?.index === undefined) return;
-    const strId = draggableId.split("-")[1];
-    const id = Number(strId);
-    const counterIndex = counters.findIndex(c => c.id === id);
-
-    // return early if no change in pos
-    if (counterIndex === destination.index) return;
-
-    const toUpsert = rearrangeCounters(
-      counters,
-      counters[counterIndex],
-      destination.index
-    );
-    await upsertCounters(toUpsert);
-    mutateCounters(toUpsert, { revalidate: false });
-  };
-
-  const editingCounter = (counters || []).find(c => c.id === editingId);
 
   // hotkey management
   useEffect(() => {
     if (!keydown) return;
-    if (keydown === "n" && !showNewForm && !editingCounter) {
-    } else if (keydown === "e" && hoveringId !== null) {
-      setEditingId(hoveringId);
-    }
   }, [keydown]);
 
   const hotkeyHandler = (e: KeyboardEvent) => {
@@ -231,12 +170,14 @@ const Home: React.FC = () => {
       <Navbar
         refresh={async () => {
           await syncLists();
+          await refreshNotes();
           const taskLists = await mutateTaskLists();
           taskLists?.forEach(list => {
             mutate(["taskslist", list.id]);
+            mutate(["taskslist", list.id, "notes"]);
+            mutate(["taskslist", list.id, "counters"]);
+            mutate("counts");
           });
-          mutateCounters();
-          mutateCounts();
         }}
       />
 
@@ -250,114 +191,6 @@ const Home: React.FC = () => {
         gap={1}
         overflow="scroll"
         flexGrow="inherit">
-        <Grid flexGrow="inherit" minWidth={380} xs={12} md={4}>
-          <DragDropContext onDragEnd={handleCounterDrag}>
-            <CounterList
-              onAddCounter={async (data, { cancelLoading }) => {
-                await createCounter(data);
-                cancelLoading();
-                setShowNewForm(false);
-                reload();
-              }}
-              tabIndex={0}
-              counters={counters}
-              countMapping={countMapping}
-              renderCounter={(counter, tally, state) => {
-                return (
-                  <>
-                    <CounterItem
-                      key={counter.id}
-                      count={tally ? tally[counter.tally_method] : 0}
-                      wrapperTag="li"
-                      counter={counter}
-                      onIncrease={value => handleIncrease(counter, value)}
-                      onDelete={async () => {
-                        const confirmation = window.confirm(
-                          "Delete cannot be undone. Consider archiving instead. Proceed with delete?"
-                        );
-                        if (!confirmation) return;
-                        await deleteCounter(counter.id);
-                        reload();
-                      }}
-                      wrapperProps={state.draggableProps}
-                      isDragging={state.isDragging}
-                      onEdit={() => setEditingId(counter.id)}
-                      isHovering={hoveringId === counter.id}
-                      onMouseEnter={() => setHoveringId(counter.id)}
-                      onMouseLeave={() => setHoveringId(null)}
-                    />
-                    {counter.id === editingId && (
-                      <ClickAwayListener
-                        onClickAway={e => {
-                          console.log(e);
-                          // maybe submit
-                          setEditingId(null);
-                        }}>
-                        <div className="flex flex-col gap-4">
-                          {editingCounter && (
-                            <div className="flex flex-col w-full items-center justify-center">
-                              <Typography variant="h4">
-                                {
-                                  countMapping[editingCounter.id][
-                                    editingCounter.tally_method
-                                  ]
-                                }
-                              </Typography>
-                              <div className="flex flex-row gap-1">
-                                <Button
-                                  className="flex flex-row justify-center items-center"
-                                  variant="contained"
-                                  color="primary"
-                                  startIcon={<Add />}
-                                  onClick={() =>
-                                    handleIncrease(editingCounter, 1)
-                                  }>
-                                  1
-                                </Button>
-                                <Button
-                                  className="flex flex-row justify-center items-center"
-                                  variant="contained"
-                                  color="primary"
-                                  startIcon={<Add />}
-                                  onClick={() =>
-                                    handleIncrease(editingCounter, 5)
-                                  }>
-                                  5
-                                </Button>
-
-                                <Button
-                                  className="flex flex-row justify-center items-center"
-                                  variant="contained"
-                                  color="primary"
-                                  onClick={() =>
-                                    handleIncrease(editingCounter, 10)
-                                  }
-                                  startIcon={<Add />}>
-                                  10
-                                </Button>
-                              </div>
-                            </div>
-                          )}
-                          <CounterForm
-                            onCancel={() => setEditingId(null)}
-                            defaultValues={editingCounter}
-                            onSubmit={async (data, { cancelLoading }) => {
-                              await updateCounter(editingId!, data);
-                              cancelLoading();
-                              setEditingId(null);
-                              reload();
-                            }}
-                          />
-                        </div>
-                      </ClickAwayListener>
-                    )}
-                  </>
-                );
-              }}
-            />
-          </DragDropContext>
-        </Grid>
-
         <DragDropContext onDragEnd={handleTaskDrag}>
           {taskLists &&
             taskLists.map(list => (

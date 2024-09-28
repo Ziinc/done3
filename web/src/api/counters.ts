@@ -10,6 +10,7 @@ export interface CounterAttrs {
   target: number;
   notes: string;
   archived: boolean;
+  list_id: string
   tally_method: keyof CountTally;
 }
 
@@ -28,12 +29,12 @@ export interface Counter extends CounterAttrs {
   readonly id: number;
 }
 
-export const listCounters = async () => {
-  const { data } = await client
+export const listCounters = async (listId: string, includeDefault = false) => {
+  return client
     .from("counters")
     .select()
+    .or(`list_id.eq.${listId}${includeDefault ? ",list_id.is.null" : ""}`)
     .order("sort_index", { ascending: true });
-  return data as Counter[];
 };
 
 export const createCounter = async (attrs: Partial<Counter>) => {

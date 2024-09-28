@@ -32,6 +32,17 @@ import sortBy from "lodash/sortBy";
 import { useAuth } from "../Auth";
 import { Note, insertNote, listNotes } from "../../api/notes";
 import NoteItem from "../NoteItem";
+import CounterForm, { CounterFormProps } from "../CounterForm";
+import {
+  CountMapping,
+  CountTally,
+  Counter,
+  createCounter,
+  getCounts,
+  increaseCounter,
+  listCounters,
+} from "../../api/counters";
+import CounterItem from "../CounterItem";
 interface Props {
   taskList: List;
   onDeleteTaskList: () => void;
@@ -47,6 +58,12 @@ const TaskListComponent = ({
   const [editingTitle, setEditingTitle] = useState(false);
   const [showNewForm, setShowNewForm] = useState(false);
   const [showNewNoteForm, setShowNewNoteForm] = useState(false);
+  const [showNewCounterForm, setShowNewCounterForm] = useState(false);
+
+  const { data: countMapping = {}, mutate: mutateCounts } =
+    useSWR<CountMapping>("counts", () => getCounts(), {
+      revalidateOnFocus: false,
+    });
   const {
     data: tasks = [],
     isLoading: isLoadingTasks,
@@ -81,6 +98,17 @@ const TaskListComponent = ({
     }
   );
 
+  const {
+    data: counters,
+    mutate: mutateCounters,
+    isLoading: isCountersLoading,
+  } = useSWR(
+    ["taskslist", taskList.id, "counters"],
+    () => listCounters(taskList.id, isDefaultList).then(result => result.data),
+    {
+      revalidateOnFocus: false,
+    }
+  );
   const completedTasks = useMemo(
     () => tasks.filter(t => t.raw.status === "completed"),
     [tasks]
@@ -89,6 +117,20 @@ const TaskListComponent = ({
     () => tasks.filter(t => t.raw.status !== "completed"),
     [tasks]
   );
+
+  const handleIncrease = async (counter: Counter, value: number) => {
+    const updated: CountTally = Object.assign({}, countMapping[counter.id]);
+    for (const [key, currValue] of Object.entries(updated)) {
+      updated[key as keyof CountTally] = currValue + value;
+    }
+
+    const newMapping = { ...countMapping, [counter.id]: updated };
+    await Promise.all([
+      increaseCounter(counter.id, value),
+      mutateCounts(newMapping, { revalidate: false }),
+    ]);
+    mutateCounts();
+  };
 
   const onToggleTask = async (task: Task) => {
     if (task.raw.status === "needsAction") {
@@ -126,6 +168,15 @@ const TaskListComponent = ({
 
     mutateTasks(updated, { revalidate: false });
   };
+
+  const handleAddCounter: CounterFormProps["onSubmit"] = async (
+    data,
+    { cancelLoading }
+  ) => {
+    await createCounter({ ...data, list_id: taskList.id });
+    cancelLoading();
+  };
+
   return (
     <Paper
       elevation={1}
@@ -180,6 +231,22 @@ const TaskListComponent = ({
         Add a task
       </Button>
       <Button onClick={() => setShowNewNoteForm(true)}>Add a note</Button>
+      <Button onClick={() => setShowNewCounterForm(true)}>Add a counter</Button>
+
+      {showNewCounterForm && (
+        <ClickAwayListener onClickAway={() => setShowNewCounterForm(false)}>
+          <div>
+            <CounterForm
+              onSubmit={async (...args) => {
+                await handleAddCounter(...args);
+                setShowNewCounterForm(false);
+                await mutateCounters();
+              }}
+              onCancel={() => setShowNewCounterForm(false)}
+            />
+          </div>
+        </ClickAwayListener>
+      )}
 
       {showNewNoteForm && (
         <form
@@ -325,26 +392,31 @@ const TaskListComponent = ({
                       }}
                     />
                   ))}
-                {/* {counters.length > 0 &&
-            counters.map((counter, index) => (
-              <Draggable
-                draggableId={`counter-${counter.id}`}
-                index={index}
-                key={counter.id}>
-                {(provided, snapshot) => (
-                  <>
-                    {renderCounter(counter, countMapping[counter.id], {
-                      draggableProps: {
-                        ref: provided.innerRef,
-                        ...provided.draggableProps,
-                        ...provided.dragHandleProps,
-                      },
-                      isDragging: snapshot.isDragging,
-                    })}
-                  </>
-                )}
-              </Draggable>
-            ))} */}
+
+                {counters &&
+                  counters.length > 0 &&
+                  counters.map((counter, index) => (
+                    <CounterItem
+                      count={
+                        countMapping[counter.id]
+                          ? (countMapping[counter.id] as any)[
+                              counter.tally_method
+                            ]
+                          : 0
+                      }
+                      key={counter.id}
+                      wrapperTag="li"
+                      counter={counter}
+                      onIncrease={value => handleIncrease(counter, value)}
+                      onDelete={console.log}
+                      // wrapperProps={state.draggableProps}
+                      // isDragging={state.isDragging}
+                      onUpdate={console.log}
+                      // isHovering={hoveringId === counter.id}
+                      // onMouseEnter={() => setHoveringId(counter.id)}
+                      // onMouseLeave={() => setHoveringId(null)}
+                    />
+                  ))}
               </div>
             )}
           </Droppable>
