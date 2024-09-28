@@ -42,14 +42,9 @@ app.get("/notes", async (req, res) => {
   let attempts = 0;
   while (
     (attempts == 0 && !nextPageToken && !emptyPageReceived) ||
-    (attempts < 50 && nextPageToken && !emptyPageReceived) 
+    (attempts < 50 && nextPageToken && !emptyPageReceived)
   ) {
-    console.log({
-      attempts,
-      nextPageToken,
-      emptyPageReceived,
-    });
-    attempts += 1
+    attempts += 1;
     const qp = new URLSearchParams({
       filter: "NOT trashed",
       pageSize: 200,
@@ -59,7 +54,6 @@ app.get("/notes", async (req, res) => {
       url: "https://keep.googleapis.com/v1/notes?" + qp.toString(),
       method: "GET",
     });
-    console.log('received length', result.data.notes.length)
     if (result.data.nextPageToken) {
       nextPageToken = result.data.nextPageToken;
     } else {
@@ -72,31 +66,56 @@ app.get("/notes", async (req, res) => {
     }
   }
 
-  const { data: names } = await sbClient
+  const { data: cachedNotes } = await sbClient
     .from("notes")
-    .select("raw->name")
+    .select("id, raw")
     .eq("user_id", user.id)
     .limit(1000);
 
-  const knownNames = names.map((n) => n.name);
-  const toCreate = rawNotes.filter(
-    (note) => !knownNames.includes(note.name)
-  );
+  const knownNames = cachedNotes.map((n) => n.raw.name);
+  let nameMapping = {};
+  cachedNotes.forEach((note) => {
+    nameMapping[note.raw.name] = note;
+  });
+  const toCreate = rawNotes
+    .filter((note) => !knownNames.includes(note.name))
+    .map((raw) => ({
+      raw,
+      user_id: user.id,
+    }));
+  const toUpdate = rawNotes
+    .filter((raw) => {
+      const cached = nameMapping[raw.name];
+      if (cached) {
+        return raw !== cached.raw;
+      } else {
+        return false;
+      }
+    })
+    .map((raw) => ({
+      id: nameMapping[raw.name].id,
+      raw,
+      user_id: user.id,
+    }));
   const upsertResult = await sbClient
     .from("notes")
-    .upsert(
-      toCreate.map((raw) => ({
-        raw,
-        user_id: user.id,
-      }))
-    )
+    .upsert([...toCreate, ...toUpdate])
     .select();
-  const { data: notes } = await sbClient
-    .from("notes")
-    .select("*")
-    .eq("user_id", user.id);
 
-  res.status(200).json(notes);
+  // deletes notes not found in remote
+  const rawNames = rawNotes.map((r) => r.name);
+  const toDelete = cachedNotes.filter(
+    (note) => !rawNames.includes(note.raw.name)
+  );
+  await sbClient
+    .from("notes")
+    .delete()
+    .in(
+      "id",
+      toDelete.map((t) => t.id)
+    );
+
+  res.status(200).json({ result: "ok" });
 });
 
 app.put("/notes/:id", async (req, res) => {
@@ -131,7 +150,6 @@ app.put("/notes/:id", async (req, res) => {
     method: "POST",
     body: JSON.stringify(req.body),
   });
-  console.log("created", created);
 
   const { data: updatedNote } = await sbClient
     .from("notes")
@@ -155,7 +173,7 @@ app.post("/notes", async (req, res) => {
     return res.status(400).json({ error: "Must be authenticated" });
   }
 
-  const {list_id, ...attrs} = req.body
+  const { list_id, ...attrs } = req.body;
   const client = makeGoogleClient(user.email);
   const result = await client.request({
     url: `https://keep.googleapis.com/v1/notes`,
@@ -163,16 +181,13 @@ app.post("/notes", async (req, res) => {
     body: JSON.stringify(attrs),
   });
 
-  console.log('create note result', result)
-  console.log('create note list_id', list_id)
   const cacheResult = await sbClient
     .from("notes")
     .insert({
       raw: result.data,
       user_id: user.id,
       list_id,
-    }
-    )
+    })
     .select()
     .limit(1)
     .single();
@@ -193,7 +208,6 @@ app.delete("/notes/:name_id", async (req, res) => {
   }
 
   const name_id = req.params.name_id;
-  console.log("Deleting note name: " + name_id);
   const client = makeGoogleClient(user.email);
   const result = await client.request({
     url: `https://keep.googleapis.com/v1/notes/${name_id}`,
