@@ -19,6 +19,8 @@ import {
 import { listTasks, listAllTasks } from "../tasks/gapi.ts";
 import { setupServer } from "../_utils/server.ts";
 import { createSbClient, createGapiClient, getUser } from "../_utils/auth.ts";
+import isEqual from "npm:lodash/isEqual.js";
+
 
 const app = setupServer();
 
@@ -52,10 +54,6 @@ app.put("/lists/:id", async (req, res) => {
     .single();
 
   const client = createGapiClient(user.email);
-  console.log("email: ", user.email);
-  console.log("list: ", list);
-  console.log("list id: ", list.raw.id);
-  console.log("body: ", req.body);
   const { data: raw } = await patchTaskList(client, list.raw.id, req.body);
 
   const { data } = await supabase
@@ -64,8 +62,6 @@ app.put("/lists/:id", async (req, res) => {
     .eq("id", id)
     .select()
     .single();
-
-  console.log("data", data);
 
   res.status(200).json(data);
 });
@@ -113,7 +109,6 @@ app.post("/lists/sync", async (req, res) => {
 
   // fetch all lists
   const rawLists = await listAllTaskLists(client);
-  console.log("rawLists length: ", rawLists.length);
   // fetch all cached lists
   const { data: cachedLists } = await supabase
     .from("lists")
@@ -123,9 +118,7 @@ app.post("/lists/sync", async (req, res) => {
   let seenListIds = [];
   let seenTaskIds = [];
   for (const rawList of rawLists) {
-    console.log("cachedLists length", cachedLists.length);
     let cachedList = cachedLists.find((l) => l.raw.id == rawList.id);
-    console.log("rawList id, cached id: ", rawList.id, cachedList?.id);
 
     if (!cachedList) {
       // create a cached list
@@ -135,13 +128,19 @@ app.post("/lists/sync", async (req, res) => {
         .select()
         .limit(1)
         .single();
-      console.log("created new cached list:", result.data.id);
       cachedList = result.data;
     }
+
+    // update cache list if name is different
+    if (!isEqual(rawList, cachedList.raw)) {
+      await supabase.from("lists").update({raw: rawList}).eq("id", cachedList.id)
+    }
+
     seenListIds.push(cachedList.id);
     const rawTasks = await listAllTasks(client, rawList.id);
     const rawTaskIds = rawTasks.map((r) => r.id);
 
+    // update cached tasks
     const { data: cachedTasks } = await supabase
       .from("tasks")
       .select("*")
@@ -149,8 +148,30 @@ app.post("/lists/sync", async (req, res) => {
       .limit(1000);
 
     const cachedTaskRawIds = (cachedTasks || []).map((t) => t.raw.id);
-    console.log("cachedTaskRawIds", cachedTaskRawIds);
-    const toUpsert = rawTasks
+    let cachedTaskRawIdsMapping = {};
+    (cachedTasks || []).forEach(
+      (task) => (cachedTaskRawIdsMapping[task.raw.id] = task)
+    );
+
+    // to update
+    const toUpdateTasks = rawTasks
+      .filter((raw) => {
+        const cached = cachedTaskRawIdsMapping[raw.id];
+        if (cached) {
+          return !isEqual(raw, cached.raw);
+        } else {
+          return false;
+        }
+      })
+      .map((raw) => ({
+        raw,
+        id: cachedTaskRawIdsMapping[raw.id].id,
+        user_id: user.id,
+        list_id: cachedList.id,
+      }));
+
+    // to create
+    const toCreateTasks = rawTasks
       .filter((raw) => !cachedTaskRawIds.includes(raw.id))
       .map((raw) => ({
         raw,
@@ -159,14 +180,12 @@ app.post("/lists/sync", async (req, res) => {
       }));
 
     // create the tasks
-    console.log("toUpsert len", toUpsert.length);
-    if (toUpsert.length > 0) {
-      await supabase.from("tasks").upsert(toUpsert);
+    if (toCreateTasks.length > 0 || toUpdateTasks.length > 0) {
+      await supabase.from("tasks").upsert([...toCreateTasks, ...toUpdateTasks]);
     }
 
     // delete the tasks
     const toDelete = cachedTasks.filter((t) => !rawTaskIds.includes(t.raw.id));
-    console.log("toDelete len", toDelete.length);
     await supabase
       .from("tasks")
       .delete()
@@ -174,13 +193,14 @@ app.post("/lists/sync", async (req, res) => {
         "id",
         toDelete.map((t) => t.id)
       );
-    }
-  
-    // delete lists that are not on remote
-    const rawListIds = rawLists.map(r=> r.id)
-    const listsToDelete = cachedLists.filter(l=> !rawListIds.includes(l.raw.id))
-    console.log("listsToDelete len", listsToDelete.length);
-    await supabase
+  }
+
+  // delete lists that are not on remote
+  const rawListIds = rawLists.map((r) => r.id);
+  const listsToDelete = cachedLists.filter(
+    (l) => !rawListIds.includes(l.raw.id)
+  );
+  await supabase
     .from("lists")
     .delete()
     .in(
@@ -188,7 +208,7 @@ app.post("/lists/sync", async (req, res) => {
       listsToDelete.map((t) => t.id)
     );
 
-    res.status(201).json({
+  res.status(201).json({
     inserted,
     deleted,
     updated,
