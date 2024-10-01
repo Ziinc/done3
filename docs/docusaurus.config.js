@@ -21,7 +21,6 @@ const config = {
     defaultLocale: "en",
     locales: ["en"],
   },
-
   presets: [
     [
       "classic",
@@ -29,7 +28,7 @@ const config = {
       ({
         docs: {
           sidebarPath: require.resolve("./sidebars.js"),
-          routeBasePath: '/', // Set this value to '/'.
+          routeBasePath: "/", // Set this value to '/'.
         },
         blog: false,
         theme: {
@@ -51,7 +50,7 @@ const config = {
         items: [
           {
             type: "doc",
-            docId: "intro",
+            docId: "intro/index",
             position: "left",
             label: "User Docs",
           },
@@ -76,7 +75,6 @@ const config = {
               {
                 label: "User Docs",
                 to: "/docs/intro",
-                
               },
             ],
           },

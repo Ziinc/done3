@@ -6,49 +6,6 @@ sidebar_position: 3
 
 Notes are organized into lists.
 
-## Requirements
-
-Notes uses Google Keep API to manage the Keep notes.
-
-Using the Keep integration requires domain wide delegation. To enable this, do the following steps:
-
-#### 1. Navigate to API Controls in Google Workspace Admin
-
-In <https://admin.google.com>, navigate to Security > Access and Control Data > API Controls.
-
-![](sidebar-nav.png)
-
-#### 3. Add New Domain-wide Delegation
-
-Click on Manage Domain-wide Delegation.
-![](manage-dwd.png)
-
-Click on Add New to bring up the authorization form.
-![](add-new.png)
-
-#### 4. Fill in the authorization form
-
-![](add-new-client-id.png)
-
-Use these values for allowing the Done3 service account to access the APIs for your Google Workspace accounts
-
-Client ID:
-
-```
-117281858859794571953
-```
-
-Scopes are comma separated:
-
-```
-https://www.googleapis.com/auth/userinfo.email,
-https://www.googleapis.com/auth/userinfo.profile,
-https://www.googleapis.com/auth/tasks,
-https://www.googleapis.com/auth/keep
-```
-
-Then click "Authorize". Once authorized, Done3 will now be able to access the Keep API for your Workspace accounts.
-
 ## Improvements
 
 ### Markdown support
@@ -86,7 +43,10 @@ For example, the following features are not exposed by the Tasks API:
 - Trashing
 - Archiving
 - Optical Character Recognition
+- Reminders
+- Drawings
+- Labels
 
 Using this feature also requires Domain Wide Delegation, which is not accessible to non-Workspace accounts. Admins must add the OAuth ID and necessary roles in order for Done3 to work correctly.
 
-To use the drawing feature that Keep has, it is recommended to use the official mobile and web clients, as the necesssary APIs to perform image updating and creation are not exposed.
+To use the drawing feature that Keep has, it is recommended to use the official mobile client, as the necesssary APIs to perform image updating and creation are not exposed.
