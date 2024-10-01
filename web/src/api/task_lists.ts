@@ -21,13 +21,7 @@ export const listTaskLists = async () => {
   return await client.from("lists").select("*");
 };
 export const getTaskList = async (id: string) => {
-  return await client
-    .from("lists")
-    .select("*")
-    .eq("id", id)
-    .limit(1)
-    .single();
-
+  return await client.from("lists").select("*").eq("id", id).limit(1).single();
 };
 export const deleteTaskList = async (id: string) => {
   return await client.functions.invoke<List[]>(`lists/${id}`, {
@@ -39,11 +33,10 @@ export const putTaskList = async (
   id: string,
   attrs: Pick<TaskList, "title">
 ) => {
-  return await client.functions
-    .invoke<List[]>(`lists/${id}`, {
-      method: "PUT",
-      body: attrs,
-    })
+  return await client.functions.invoke<List[]>(`lists/${id}`, {
+    method: "PUT",
+    body: attrs,
+  });
 };
 
 export const insertTaskList = async (attrs: Partial<TaskList>) => {

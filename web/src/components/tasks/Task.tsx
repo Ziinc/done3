@@ -172,7 +172,9 @@ const TaskListItem = ({
                   />
                   <DatePicker
                     label="Due date"
-                    defaultValue={task.raw.due ? dayjs(task.raw.due) : undefined}
+                    defaultValue={
+                      task.raw.due ? dayjs(task.raw.due) : undefined
+                    }
                     slotProps={{
                       field: {
                         clearable: true,
@@ -198,7 +200,9 @@ const TaskListItem = ({
               <>
                 <Typography
                   variant="body1"
-                  className={task.raw.status === "completed" ? "text-gray-600" : ""}
+                  className={
+                    task.raw.status === "completed" ? "text-gray-600" : ""
+                  }
                   sx={{
                     textDecoration:
                       task.raw.status === "completed" ? "line-through" : null,
@@ -214,16 +218,17 @@ const TaskListItem = ({
                     variant="outlined"
                   />
                 )}
-                {import.meta.env.DEV && import.meta.env.VITE_SHOW_IDS === "true" && (
-                  <Typography
-                    variant="body2"
-                    sx={{ fontSize: "0.7rem" }}
-                    className="text-gray-500">
-                    id: {task.id}
-                    <br/>
-                    raw: {task.raw.id}
-                  </Typography>
-                )}
+                {import.meta.env.DEV &&
+                  import.meta.env.VITE_SHOW_IDS === "true" && (
+                    <Typography
+                      variant="body2"
+                      sx={{ fontSize: "0.7rem" }}
+                      className="text-gray-500">
+                      id: {task.id}
+                      <br />
+                      raw: {task.raw.id}
+                    </Typography>
+                  )}
               </>
             )}
           </Stack>

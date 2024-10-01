@@ -43,7 +43,7 @@ export const getTask = async (id: string) => {
     .single();
 };
 
-export const listTasks = async (listId : string) => {
+export const listTasks = async (listId: string) => {
   return await client
     .from("tasks")
     .select("*")
@@ -120,6 +120,6 @@ export const insertTask = async (
 ) => {
   return await client.functions.invoke(`tasks`, {
     method: "POST",
-    body: { list_id: listId,  task: attrs, parent, previous },
+    body: { list_id: listId, task: attrs, parent, previous },
   });
 };

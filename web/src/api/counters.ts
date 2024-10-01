@@ -10,7 +10,7 @@ export interface CounterAttrs {
   target: number;
   notes: string;
   archived: boolean;
-  list_id: string
+  list_id: string;
   tally_method: keyof CountTally;
 }
 

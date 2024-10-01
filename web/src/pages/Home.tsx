@@ -66,7 +66,6 @@ const Home: React.FC = () => {
   const [newList, setNewList] = useState(false);
   const [keydown, setKeydown] = useState<string | null>(null);
 
-
   const handleTaskDrag: OnDragEndResponder &
     OnDragUpdateResponder = async args => {
     const { draggableId, destination } = args;
@@ -149,7 +148,6 @@ const Home: React.FC = () => {
       );
     }
   };
-
 
   // hotkey management
   useEffect(() => {

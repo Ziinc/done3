@@ -3,7 +3,7 @@ import { client } from "../utils";
 interface NoteParam {
   title?: string;
   text?: string;
-  list_id: string
+  list_id: string;
 }
 
 export interface Note {
