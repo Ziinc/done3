@@ -1,4 +1,4 @@
-// import { expect, test, Mock } from "vitest";
+import { test } from "vitest";
 // import { render, screen } from "@testing-library/react";
 // import React from "react";
 // import { AuthedApp } from "../src/App";
@@ -23,3 +23,4 @@
 //   await screen.findByText(/2/);
 //   expect(increaseCounter).toBeCalled();
 // });
+test.todo("increase counter");
