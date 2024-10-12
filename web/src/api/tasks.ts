@@ -1,6 +1,15 @@
 import axios, { AxiosResponse } from "axios";
+import { client } from "../utils";
+import { ListOrdered } from "lucide-react";
 
 export interface Task {
+  raw: TaskRaw;
+  id: string;
+  created_at: string;
+  updated_at: string;
+  user_id: string;
+}
+export interface TaskRaw {
   readonly kind: string;
   readonly id: string;
   readonly etag: string;
@@ -25,52 +34,37 @@ export interface Task {
   webViewLink: string;
 }
 
-const instance = () =>
-  axios.create({
-    baseURL: "https://tasks.googleapis.com",
-    headers: {
-      Authorization: `Bearer ${window.localStorage.getItem(
-        "oauth_provider_token"
-      )}`,
-    },
+export const getTask = async (id: string) => {
+  return await client
+    .from<"tasks", Task>("tasks")
+    .select("*")
+    .eq("id", id)
+    .limit(1)
+    .single();
+};
+
+export const listTasks = async (listId: string) => {
+  return await client
+    .from("tasks")
+    .select("*")
+    .eq("list_id", listId)
+    .limit(1000);
+};
+
+export const deleteTask = async (id: string) => {
+  return await client.functions.invoke(`tasks/${id}`, {
+    method: "DELETE",
   });
-export const getTask = async (
-  taskListId: string,
-  id: string
-): Promise<Task> => {
-  return await instance().get(
-    `/tasks/v1/users/@me/lists/${taskListId}/tasks/${id}`
-  );
 };
 
-export const listTasks = async (taskListId: string): Promise<Task[]> => {
-  return await instance()
-    .get(`/tasks/v1/lists/${taskListId}/tasks`, {
-      params: {
-        showAssigned: true,
-        maxResults: 100,
-      },
-    })
-    .then(res => res.data.items);
-};
-
-export const deleteTask = async (taskListId: string, id: string) => {
-  return await instance().delete(`/tasks/v1/lists/${taskListId}/tasks/${id}`);
-};
-
-export const patchTask = async (
-  taskListId: string,
-  id: string,
-  attrs: Partial<Task>
-): Promise<AxiosResponse<Task>> => {
-  return await instance().patch(
-    `/tasks/v1/lists/${taskListId}/tasks/${id}`,
-    attrs
-  );
+export const patchTask = async (id: string, attrs: Partial<TaskRaw>) => {
+  return await client.functions.invoke<Task>(`tasks/${id}`, {
+    method: "PATCH",
+    body: attrs,
+  });
 };
 
 export const moveTask = async (
-  taskListId: string,
   id: string,
   opts: {
     parent?: string;
@@ -78,60 +72,54 @@ export const moveTask = async (
     destinationTasklist?: string;
   }
 ) => {
-  return await instance().post(
-    `/tasks/v1/lists/${taskListId}/tasks/${id}/move`,
-    {
-      parent: opts.parent,
-      previous: opts.previous,
-      destinationTasklist: opts.destinationTasklist,
-    }
-  );
+  return await client.functions.invoke<Task>(`tasks/${id}/move`, {
+    method: "POST",
+    body: opts,
+  });
 };
 
-export const reorderTaskAsChild = async (
-  taskListId: string,
-  id: string,
-  parent: string,
-  sibling?: string
-) => {
-  return await instance().post(
-    `/tasks/v1/lists/${taskListId}/tasks/${id}/move`,
-    null,
-    {
-      params: {
-        parent,
-        sibling,
-      },
-    }
-  );
-};
-export const reorderTaskAsTopLevel = async (
-  taskListId: string,
-  id: string,
-  sibling?: string
-) => {
-  return await instance().post(
-    `/tasks/v1/lists/${taskListId}/tasks/${id}/move`,
-    null,
-    {
-      params: {
-        parent: null,
-        sibling,
-      },
-    }
-  );
-};
+// export const reorderTaskAsChild = async (
+//   taskListId: string,
+//   id: string,
+//   parent: string,
+//   sibling?: string
+// ) => {
+//   return await instance().post(
+//     `/tasks/v1/lists/${taskListId}/tasks/${id}/move`,
+//     null,
+//     {
+//       params: {
+//         parent,
+//         sibling,
+//       },
+//     }
+//   );
+// };
+// export const reorderTaskAsTopLevel = async (
+//   taskListId: string,
+//   id: string,
+//   sibling?: string
+// ) => {
+//   return await instance().post(
+//     `/tasks/v1/lists/${taskListId}/tasks/${id}/move`,
+//     null,
+//     {
+//       params: {
+//         parent: null,
+//         sibling,
+//       },
+//     }
+//   );
+// };
 
 export const insertTask = async (
-  taskListId: string,
-  attrs: Partial<Task>,
+  listId: string,
+  attrs: Partial<TaskRaw>,
   parent?: string | null,
   previous?: string | null
 ) => {
-  return await instance().post(`/tasks/v1/lists/${taskListId}/tasks`, attrs, {
-    params: {
-      parent,
-      previous,
-    },
+  return await client.functions.invoke(`tasks`, {
+    method: "POST",
+    body: { list_id: listId, task: attrs, parent, previous },
   });
 };

@@ -71,7 +71,7 @@ export const signIntoGoogle = async () => {
       scopes: [
         "...auth/userinfo.profile",
         "...auth/userinfo.email",
-        "...auth/tasks",
+        // "...auth/tasks",
       ]
         .map(str => str.replace("...", "https://www.googleapis.com/"))
         .join(" "),

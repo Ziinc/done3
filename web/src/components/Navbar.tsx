@@ -1,10 +1,12 @@
+import { Refresh } from "@mui/icons-material";
 import { signOut } from "../api/auth";
-import { Button, Typography } from "@mui/material";
+import { Button, IconButton, Stack, Typography } from "@mui/material";
 
 interface Props {
   className?: string;
+  refresh: () => void;
 }
-const Navbar: React.FC<Props> = ({ className = "" }) => (
+const Navbar: React.FC<Props> = ({ refresh, className = "" }) => (
   <nav
     className={[
       className,
@@ -13,9 +15,14 @@ const Navbar: React.FC<Props> = ({ className = "" }) => (
     <Typography variant="h5" className="text-2xl">
       Done<sup>3</sup>
     </Typography>
-    <Button variant="contained" size="small" onClick={signOut}>
-      Sign out
-    </Button>
+    <Stack direction="row">
+      <IconButton size="small" onClick={refresh} title="Refresh">
+        <Refresh />
+      </IconButton>
+      <Button variant="contained" size="small" onClick={signOut}>
+        Sign out
+      </Button>
+    </Stack>
   </nav>
 );
 

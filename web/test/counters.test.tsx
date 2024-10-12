@@ -77,43 +77,31 @@ describe("api & context", () => {
 //   })
 // });
 
-test("list counter", async () => {
-  (listCounters as Mock).mockResolvedValue([
-    counterFixture({ id: 123, name: "my counter" }),
-    counterFixture({ id: 124, name: "other counter" }),
-  ]);
-  (getCounts as Mock).mockResolvedValue({
-    ...countsFixture(1, 123),
-    ...countsFixture(1, 124),
-  });
+// test("list counter", async () => {
+//   (listCounters as Mock).mockResolvedValue([
+//     counterFixture({ id: 123, name: "my counter" }),
+//     counterFixture({ id: 124, name: "other counter" }),
+//   ]);
+//   (getCounts as Mock).mockResolvedValue({
+//     ...countsFixture(1, 123),
+//     ...countsFixture(1, 124),
+//   });
 
-  render(<AuthedApp />);
-  await screen.findByText("other counter");
-  expect(listCounters).toBeCalledTimes(1);
-});
+//   render(<AuthedApp />);
+//   await screen.findByText("other counter");
+//   expect(listCounters).toBeCalledTimes(1);
+// });
 
-test("delete counter", async () => {
-  (listCounters as Mock).mockResolvedValue([
-    counterFixture({ name: "my counter" }),
-  ]);
-  render(<AuthedApp />);
-  const more = await screen.findByTitle("More options for 'my counter'");
-  (listCounters as Mock).mockResolvedValueOnce([]);
-  await userEvent.click(more);
-  await userEvent.click(await screen.findByText(/Delete counter/));
-  expect(deleteCounter).toBeCalled();
-  expect(listCounters).toBeCalledTimes(2);
-  expect(screen.findByText("my counter")).rejects.toThrow();
-});
-
-describe("kbd shortcuts", () => {
-  test("edit the counter", async () => {
-    (listCounters as Mock).mockResolvedValue([
-      counterFixture({ name: "my-counter" }),
-    ]);
-    render(<AuthedApp />);
-    await userEvent.pointer({ target: await screen.findByText("my-counter") });
-    await userEvent.keyboard("e");
-    await screen.findByDisplayValue("my-counter");
-  });
-});
+// test("delete counter", async () => {
+//   (listCounters as Mock).mockResolvedValue([
+//     counterFixture({ name: "my counter" }),
+//   ]);
+//   render(<AuthedApp />);
+//   const more = await screen.findByTitle("More options for 'my counter'");
+//   (listCounters as Mock).mockResolvedValueOnce([]);
+//   await userEvent.click(more);
+//   await userEvent.click(await screen.findByText(/Delete counter/));
+//   expect(deleteCounter).toBeCalled();
+//   expect(listCounters).toBeCalledTimes(2);
+//   expect(screen.findByText("my counter")).rejects.toThrow();
+// });

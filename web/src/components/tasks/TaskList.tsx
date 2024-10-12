@@ -1,5 +1,5 @@
-import useSWR, { unstable_serialize } from "swr";
-import { TaskList, patchTaskList } from "../../api/task_lists";
+import useSWR from "swr";
+import { List, putTaskList } from "../../api/task_lists";
 import {
   Task,
   deleteTask,
@@ -8,9 +8,10 @@ import {
   patchTask,
 } from "../../api/tasks";
 import {
+  Box,
   ClickAwayListener,
   IconButton,
-  List,
+  List as MaterialList,
   Paper,
   Skeleton,
   Stack,
@@ -23,16 +24,29 @@ import {
   CancelOutlined,
   ChevronRightSharp,
   Delete,
-  Refresh,
 } from "@mui/icons-material";
 import { useMemo, useState } from "react";
 import TaskListItem from "./Task";
 import { Draggable, Droppable } from "react-beautiful-dnd";
 import sortBy from "lodash/sortBy";
+import { useAuth } from "../Auth";
+import { Note, insertNote, listNotes } from "../../api/notes";
+import NoteItem from "../NoteItem";
+import CounterForm, { CounterFormProps } from "../CounterForm";
+import {
+  CountMapping,
+  CountTally,
+  Counter,
+  createCounter,
+  getCounts,
+  increaseCounter,
+  listCounters,
+} from "../../api/counters";
+import CounterItem from "../CounterItem";
 interface Props {
-  taskList: TaskList;
+  taskList: List;
   onDeleteTaskList: () => void;
-  onUpdateTaskList: (attrs: Parameters<typeof patchTaskList>[1]) => void;
+  onUpdateTaskList: (attrs: Parameters<typeof putTaskList>[1]) => void;
 }
 
 const TaskListComponent = ({
@@ -43,30 +57,84 @@ const TaskListComponent = ({
   const [showCompleted, setShowCompleted] = useState(false);
   const [editingTitle, setEditingTitle] = useState(false);
   const [showNewForm, setShowNewForm] = useState(false);
+  const [showNewNoteForm, setShowNewNoteForm] = useState(false);
+  const [showNewCounterForm, setShowNewCounterForm] = useState(false);
+
+  const { data: countMapping = {}, mutate: mutateCounts } =
+    useSWR<CountMapping>("counts", () => getCounts(), {
+      revalidateOnFocus: false,
+    });
   const {
     data: tasks = [],
     isLoading: isLoadingTasks,
     mutate: mutateTasks,
-  } = useSWR(["taskslist", taskList.id], () => listTasks(taskList.id), {
-    revalidateOnFocus: false,
-    refreshInterval: 60 * 1000 * 10,
-    revalidateIfStale: true,
-    revalidateOnMount: true,
-    revalidateOnReconnect: true,
-  });
+  } = useSWR<Task[]>(
+    ["taskslist", taskList.id],
+    () => listTasks(taskList.id).then(res => res.data as Task[]),
+    {
+      revalidateOnFocus: false,
+      // 2 minute
+      refreshInterval: 2 * 60 * 1000,
+      revalidateIfStale: true,
+      revalidateOnMount: true,
+      revalidateOnReconnect: true,
+    }
+  );
 
+  const isDefaultList = useMemo(() => {
+    const decoded = atob(taskList.raw.id);
+    return decoded.split(":").length > 1;
+  }, [taskList.raw.id]);
+
+  const {
+    data: notes,
+    mutate: mutateNotes,
+    isLoading: isNotesLoading,
+  } = useSWR(
+    ["taskslist", taskList.id, "notes"],
+    () => listNotes(taskList.id, isDefaultList).then(result => result.data),
+    {
+      revalidateOnFocus: false,
+    }
+  );
+
+  const {
+    data: counters,
+    mutate: mutateCounters,
+    isLoading: isCountersLoading,
+  } = useSWR(
+    ["taskslist", taskList.id, "counters"],
+    () => listCounters(taskList.id, isDefaultList).then(result => result.data),
+    {
+      revalidateOnFocus: false,
+    }
+  );
   const completedTasks = useMemo(
-    () => tasks.filter(t => t.status === "completed"),
+    () => tasks.filter(t => t.raw.status === "completed"),
     [tasks]
   );
   const pendingTasks = useMemo(
-    () => tasks.filter(t => t.status !== "completed"),
+    () => tasks.filter(t => t.raw.status !== "completed"),
     [tasks]
   );
 
+  const handleIncrease = async (counter: Counter, value: number) => {
+    const updated: CountTally = Object.assign({}, countMapping[counter.id]);
+    for (const [key, currValue] of Object.entries(updated)) {
+      updated[key as keyof CountTally] = currValue + value;
+    }
+
+    const newMapping = { ...countMapping, [counter.id]: updated };
+    await Promise.all([
+      increaseCounter(counter.id, value),
+      mutateCounts(newMapping, { revalidate: false }),
+    ]);
+    mutateCounts();
+  };
+
   const onToggleTask = async (task: Task) => {
-    if (task.status === "needsAction") {
-      patchTask(taskList.id, task.id, {
+    if (task.raw.status === "needsAction") {
+      patchTask(task.id, {
         status: "completed",
       });
       const updated = tasks.map(t =>
@@ -74,7 +142,7 @@ const TaskListComponent = ({
       );
       mutateTasks(updated);
     } else {
-      patchTask(taskList.id, task.id, {
+      patchTask(task.id, {
         status: "needsAction",
       });
       const updated = tasks.map(t =>
@@ -84,15 +152,15 @@ const TaskListComponent = ({
     }
   };
   const handleDelete = async (task: Task) => {
-    deleteTask(taskList.id, task.id);
+    deleteTask(task.id);
     const updated = tasks.filter(t => t.id !== task.id);
     mutateTasks(updated, { revalidate: false });
   };
   const handleUpdate = async (taskId: string, attrs: Partial<Task>) => {
-    patchTask(taskList.id, taskId, attrs).then();
+    patchTask(taskId, attrs).then();
     const updated = tasks.map(t => {
       if (t.id == taskId) {
-        return { ...t, ...attrs };
+        return { ...t, raw: { ...t.raw, ...attrs } };
       } else {
         return t;
       }
@@ -100,6 +168,15 @@ const TaskListComponent = ({
 
     mutateTasks(updated, { revalidate: false });
   };
+
+  const handleAddCounter: CounterFormProps["onSubmit"] = async (
+    data,
+    { cancelLoading }
+  ) => {
+    await createCounter({ ...data, list_id: taskList.id });
+    cancelLoading();
+  };
+
   return (
     <Paper
       elevation={1}
@@ -112,11 +189,11 @@ const TaskListComponent = ({
                 <TextField
                   name="listTitle"
                   label="List title"
-                  defaultValue={taskList.title}
+                  defaultValue={taskList.raw.title}
                   onBlur={e => {
                     const value = e.currentTarget.value;
                     setEditingTitle(false);
-                    if (value !== taskList.title) {
+                    if (value !== taskList.raw.title) {
                       // save the value
                       onUpdateTaskList({ title: value });
                     }
@@ -130,30 +207,92 @@ const TaskListComponent = ({
           </>
         ) : (
           <Button onClick={() => setEditingTitle(true)}>
-            <h3>{taskList.title}</h3>
+            <h3>{taskList.raw.title}</h3>
           </Button>
         )}
-        <IconButton onClick={() => mutateTasks()}>
-          <Refresh />
-        </IconButton>
+
         <IconButton onClick={onDeleteTaskList}>
           <Delete />
         </IconButton>
       </Stack>
+      {import.meta.env.DEV && import.meta.env.VITE_SHOW_IDS === "true" && (
+        <Box sx={{ pl: 1.5 }}>
+          <Typography
+            variant="body2"
+            sx={{ fontSize: "0.7rem" }}
+            className="text-gray-500">
+            id: {taskList.id}
+            <br />
+            raw: {taskList.raw.id}
+          </Typography>
+        </Box>
+      )}
       <Button startIcon={<AddTask />} onClick={() => setShowNewForm(true)}>
         Add a task
       </Button>
+      <Button onClick={() => setShowNewNoteForm(true)}>Add a note</Button>
+      <Button onClick={() => setShowNewCounterForm(true)}>Add a counter</Button>
+
+      {showNewCounterForm && (
+        <ClickAwayListener onClickAway={() => setShowNewCounterForm(false)}>
+          <div>
+            <CounterForm
+              onSubmit={async (...args) => {
+                await handleAddCounter(...args);
+                setShowNewCounterForm(false);
+                await mutateCounters();
+              }}
+              onCancel={() => setShowNewCounterForm(false)}
+            />
+          </div>
+        </ClickAwayListener>
+      )}
+
+      {showNewNoteForm && (
+        <form
+          onSubmit={async e => {
+            e.preventDefault();
+            const result = await insertNote({
+              title: e.currentTarget.noteTitle.value,
+              text: e.currentTarget.noteText.value,
+              list_id: taskList.id,
+            });
+            if (result.data) {
+              console.log(result.data);
+              mutateNotes(
+                (notes: any) => {
+                  console.log("prev", notes);
+                  return [...(notes || []), result.data];
+                },
+                {
+                  revalidate: false,
+                }
+              );
+            }
+            setShowNewNoteForm(false);
+          }}>
+          <TextField
+            label="Title"
+            id="noteTitle"
+            name="noteTitle"
+            type="text"
+          />
+          <TextField label="Text" id="noteText" name="noteText" type="text" />
+          <Button type="submit">Submit</Button>
+        </form>
+      )}
+
       {showNewForm ? (
         <ClickAwayListener onClickAway={() => setShowNewForm(false)}>
           <form
             onSubmit={async e => {
               e.preventDefault();
               const title = e.currentTarget.taskTitle.value;
-              await insertTask(taskList.id, { title });
-              mutateTasks([
-                { id: "new", title, status: "needsAction" } as Task,
-                ...tasks,
-              ]);
+              const { data: returned } = await insertTask(taskList.id, {
+                title,
+              });
+              mutateTasks([returned, ...tasks]);
+              setShowNewForm(false);
             }}>
             <TextField name="taskTitle" label="Task title" variant="outlined" />
             <Button type="submit">Add</Button>
@@ -176,7 +315,7 @@ const TaskListComponent = ({
           <Droppable droppableId={`taskList-${taskList.id}`} type="TASK">
             {(provided, snapshot) => (
               <div ref={provided.innerRef} {...provided.droppableProps}>
-                <List>
+                <MaterialList>
                   {sortBy(pendingTasks, "position").map((task, index) => (
                     <Draggable
                       draggableId={`task-${taskList.id}-${task.id}`}
@@ -230,28 +369,54 @@ const TaskListComponent = ({
                         />
                       ))}
                   </div>
-                </List>
+                </MaterialList>
+                {notes &&
+                  !isNotesLoading &&
+                  notes.map((note: Note) => (
+                    <NoteItem
+                      key={note.id}
+                      note={note}
+                      onUpdate={(newNote: Note) => {
+                        console.log(newNote);
+                        mutateNotes(notes =>
+                          (notes || []).map(
+                            n => (n.id === newNote.id ? newNote : n),
+                            { revalidate: false }
+                          )
+                        );
+                      }}
+                      onDelete={() => {
+                        mutateNotes(notes =>
+                          notes?.filter(n => n.raw.name !== note.raw.name)
+                        );
+                      }}
+                    />
+                  ))}
 
-                {/* {counters.length > 0 &&
-            counters.map((counter, index) => (
-              <Draggable
-                draggableId={`counter-${counter.id}`}
-                index={index}
-                key={counter.id}>
-                {(provided, snapshot) => (
-                  <>
-                    {renderCounter(counter, countMapping[counter.id], {
-                      draggableProps: {
-                        ref: provided.innerRef,
-                        ...provided.draggableProps,
-                        ...provided.dragHandleProps,
-                      },
-                      isDragging: snapshot.isDragging,
-                    })}
-                  </>
-                )}
-              </Draggable>
-            ))} */}
+                {counters &&
+                  counters.length > 0 &&
+                  counters.map((counter, index) => (
+                    <CounterItem
+                      count={
+                        countMapping[counter.id]
+                          ? (countMapping[counter.id] as any)[
+                              counter.tally_method
+                            ]
+                          : 0
+                      }
+                      key={counter.id}
+                      wrapperTag="li"
+                      counter={counter}
+                      onIncrease={value => handleIncrease(counter, value)}
+                      onDelete={console.log}
+                      // wrapperProps={state.draggableProps}
+                      // isDragging={state.isDragging}
+                      onUpdate={console.log}
+                      // isHovering={hoveringId === counter.id}
+                      // onMouseEnter={() => setHoveringId(counter.id)}
+                      // onMouseLeave={() => setHoveringId(null)}
+                    />
+                  ))}
               </div>
             )}
           </Droppable>

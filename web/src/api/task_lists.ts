@@ -1,4 +1,4 @@
-import axios from "axios";
+import { client } from "../utils";
 
 export interface TaskList {
   kind: string;
@@ -9,43 +9,45 @@ export interface TaskList {
   selfLink: string;
 }
 
-const instance = () =>
-  axios.create({
-    baseURL: "https://tasks.googleapis.com",
-    headers: {
-      Authorization: `Bearer ${window.localStorage.getItem(
-        "oauth_provider_token"
-      )}`,
-    },
-  });
+export interface List {
+  readonly id: string;
+  readonly created_at: string;
+  readonly updated_at: string;
+  readonly user_id: string;
+  readonly raw: TaskList;
+}
 
-export const listTaskLists = async (): Promise<TaskList[]> => {
-  return await instance()
-    .get(`/tasks/v1/users/@me/lists`)
-    .then(
-      (res: {
-        data: {
-          etag: string;
-          kind: string;
-          items: TaskList[];
-        };
-      }) => res.data.items
-    );
+export const listTaskLists = async () => {
+  return await client.from("lists").select("*");
 };
-export const getTaskList = async (id: string): Promise<TaskList> => {
-  return await instance().get(`/tasks/v1/users/@me/lists/${id}`);
+export const getTaskList = async (id: string) => {
+  return await client.from("lists").select("*").eq("id", id).limit(1).single();
 };
 export const deleteTaskList = async (id: string) => {
-  return await instance().delete(`/tasks/v1/users/@me/lists/${id}`);
+  return await client.functions.invoke<List[]>(`lists/${id}`, {
+    method: "DELETE",
+  });
 };
 
-export const patchTaskList = async (
+export const putTaskList = async (
   id: string,
   attrs: Pick<TaskList, "title">
 ) => {
-  return await instance().patch(`/tasks/v1/users/@me/lists/${id}`, attrs);
+  return await client.functions.invoke<List[]>(`lists/${id}`, {
+    method: "PUT",
+    body: attrs,
+  });
 };
 
 export const insertTaskList = async (attrs: Partial<TaskList>) => {
-  return await instance().post("/tasks/v1/users/@me/lists", attrs);
+  return await client.functions.invoke<List>(`lists`, {
+    method: "POST",
+    body: attrs,
+  });
+};
+
+export const syncTaskLists = async () => {
+  return await client.functions.invoke<null>(`lists/sync`, {
+    method: "POST",
+  });
 };
