@@ -6,9 +6,9 @@ const darkCodeTheme = themes.dracula;
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  title: "Counters",
+  title: "Done3",
   tagline: "Behavioural tracking for high performance habits",
-  url: "https://counters.tznc.net",
+  url: "https://docs.done3.tznc.net",
   baseUrl: "/",
   onBrokenLinks: "throw",
   onBrokenMarkdownLinks: "warn",
@@ -46,7 +46,7 @@ const config = {
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
       navbar: {
-        title: "Counters",
+        title: "Done3",
         items: [
           {
             type: "doc",
@@ -57,10 +57,10 @@ const config = {
           {
             position: "right",
             label: "App",
-            to: "https://counters.tznc.net/app",
+            to: "https://done3.tznc.net/app",
           },
           {
-            href: "https://github.com/ziinc/counters",
+            href: "https://github.com/ziinc/done3",
             label: "GitHub",
             position: "right",
           },
@@ -74,12 +74,12 @@ const config = {
             items: [
               {
                 label: "User Docs",
-                to: "/docs/intro",
+                to: "/",
               },
             ],
           },
         ],
-        copyright: `Copyright © ${new Date().getFullYear()} Counters. Built by Ziinc.`,
+        copyright: `Copyright © ${new Date().getFullYear()} Done3. Built by Ziinc.`,
       },
       prism: {
         theme: lightCodeTheme,
