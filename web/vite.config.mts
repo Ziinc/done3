@@ -13,6 +13,15 @@ export default defineConfig({
   build: {
     outDir: "dist",
     rollupOptions: {
+      output: {
+        manualChunks: id => {
+          if (id.includes("tiptap") || id.includes("dompurify") || id.includes("marked")) {
+            return "editor";
+          } else if (id.includes("x-date-pickers" )) {
+            return "ux"
+          }
+        }, 
+      },
       onwarn(warning, warn) {
         if (warning.code === "MODULE_LEVEL_DIRECTIVE") {
           return;
