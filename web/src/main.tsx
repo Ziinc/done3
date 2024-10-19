@@ -8,6 +8,14 @@ import "@fontsource/roboto/400.css";
 import "@fontsource/roboto/500.css";
 import "@fontsource/roboto/700.css";
 import "@fontsource/patua-one";
+import ReactGA from "react-ga4";
+
+ReactGA.initialize([
+  {
+    trackingId: "G-495C5KQ4Q9",
+    gaOptions: { anonymizeIp: true },
+  },
+]);
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <AuthProvider>

@@ -5,8 +5,7 @@ import { checkAuthed } from "./api/auth";
 import CenteredLayout from "./layouts/CenteredLayout";
 import LoadingSpinner from "./components/LoadingSpinner";
 import { AuthContainer, useAuth } from "./components/Auth";
-import { Route } from "wouter";
-import { HashRouter } from "./router";
+import { Route, RouteProps, Router, useLocation, useRoute } from "wouter";
 import {
   Button,
   Container,
@@ -23,6 +22,7 @@ import Grid from "@mui/material/Unstable_Grid2/Grid2";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import theme from "./theme";
+import ReactGA from "react-ga4";
 
 function App() {
   const user = useAuth();
@@ -48,18 +48,35 @@ function App() {
       <CssBaseline />
 
       <LocalizationProvider dateAdapter={AdapterDayjs}>
-        <HashRouter base={import.meta.env.BASE_URL}>
-          <Route path="/">
+        <Router base={import.meta.env.BASE_URL}>
+          <TrackedRoute path="/test/:testing">testing</TrackedRoute>
+          <TrackedRoute path="/">
             {(showLoading || !user.session) && (
               <AuthWall showLoading={showLoading} />
             )}
             {!showLoading && Boolean(user.session) && <AuthedApp />}
-          </Route>
-        </HashRouter>
+          </TrackedRoute>
+        </Router>
       </LocalizationProvider>
     </ThemeProvider>
   );
 }
+
+const TrackedRoute = (props: RouteProps) => {
+  const [location, _setLocation] = useLocation();
+  const [match] = useRoute(props.path as string);
+  useEffect(() => {
+    if (match) {
+      ReactGA.send({
+        hitType: "pageview",
+        page: props.path,
+        title: document.title,
+      });
+    }
+  }, [location]);
+
+  return <Route {...props} />;
+};
 
 export const AuthWall = ({ showLoading }: { showLoading: boolean }) => {
   const user = useAuth();
