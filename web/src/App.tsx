@@ -49,7 +49,6 @@ function App() {
 
       <LocalizationProvider dateAdapter={AdapterDayjs}>
         <Router base={import.meta.env.BASE_URL}>
-          <TrackedRoute path="/test/:testing">testing</TrackedRoute>
           <TrackedRoute path="/">
             {(showLoading || !user.session) && (
               <AuthWall showLoading={showLoading} />
