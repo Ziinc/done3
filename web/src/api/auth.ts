@@ -63,19 +63,6 @@ export const upsertGoogleAuth = async (attrs: {
 export const signIntoGoogle = async () => {
   await client.auth.signInWithOAuth({
     provider: "google",
-    options: {
-      queryParams: {
-        access_type: "offline",
-        prompt: "consent",
-      },
-      scopes: [
-        "...auth/userinfo.profile",
-        "...auth/userinfo.email",
-        // "...auth/tasks",
-      ]
-        .map(str => str.replace("...", "https://www.googleapis.com/"))
-        .join(" "),
-    },
   });
 };
 

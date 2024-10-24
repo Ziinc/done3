@@ -11,6 +11,7 @@ import {
   Container,
   CssBaseline,
   Divider,
+  Icon,
   ListItem,
   ListItemText,
   Paper,
@@ -86,7 +87,11 @@ export const AuthWall = ({ showLoading }: { showLoading: boolean }) => {
         {showLoading && <LoadingSpinner className="mx-auto my-auto" />}
         {!showLoading && !user.user && (
           <Stack direction="column" spacing={2}>
-            <Container className="w-96">
+            <Container className="w-96 ">
+              <img
+                src="/assets/icon-colored/icon@5x.png"
+                className="w-32 object-contain block mx-auto"
+              />
               <Typography variant="h1" textAlign={"center"}>
                 Done<sup>3</sup>
               </Typography>
