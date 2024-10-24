@@ -6,13 +6,13 @@ const darkCodeTheme = themes.dracula;
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  title: "done3",
+  title: "Done3",
   tagline: "Behavioural tracking for high performance habits",
   url: "https://docs.done3.tznc.net",
   baseUrl: "/",
   onBrokenLinks: "throw",
   onBrokenMarkdownLinks: "warn",
-  favicon: "img/favicon.ico",
+  favicon: "favicon.ico",
 
   // Even if you don't use internalization, you can use this field to set useful
   // metadata like html lang. For example, if your site is Chinese, you may want
@@ -21,6 +21,7 @@ const config = {
     defaultLocale: "en",
     locales: ["en"],
   },
+  staticDirectories: ["../web/public"],
   presets: [
     [
       "classic",
@@ -30,6 +31,7 @@ const config = {
           sidebarPath: require.resolve("./sidebars.js"),
           routeBasePath: "/", // Set this value to '/'.
         },
+
         blog: false,
         theme: {
           customCss: require.resolve("./src/css/custom.css"),
@@ -46,7 +48,7 @@ const config = {
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
       navbar: {
-        title: "done3",
+        title: "Done3",
         items: [
           {
             type: "doc",
@@ -65,8 +67,22 @@ const config = {
             position: "right",
           },
         ],
+
+        logo: {
+          alt: "Done3 Logo",
+          src: "assets/icon-colored/icon@5x.png",
+          href: "https://done3.tznc.net",
+          width: 34,
+          height: 30,
+        },
       },
       footer: {
+        logo: {
+          alt: "Done3 Logo",
+          src: "assets/icon-colored/icon@5x.png",
+          href: "https://done3.tznc.net",
+          width: 90,
+        },
         style: "dark",
         links: [
           {
@@ -79,7 +95,7 @@ const config = {
             ],
           },
         ],
-        copyright: `Copyright © ${new Date().getFullYear()} done3. Built by Ziinc.`,
+        copyright: `Copyright © ${new Date().getFullYear()} Done3. Built by Ziinc.`,
       },
       prism: {
         theme: lightCodeTheme,
