@@ -6,7 +6,7 @@ const darkCodeTheme = themes.dracula;
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  title: "Done3",
+  title: "done3",
   tagline: "Behavioural tracking for high performance habits",
   url: "https://docs.done3.tznc.net",
   baseUrl: "/",
@@ -46,7 +46,7 @@ const config = {
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
       navbar: {
-        title: "Done3",
+        title: "done3",
         items: [
           {
             type: "doc",
@@ -79,7 +79,7 @@ const config = {
             ],
           },
         ],
-        copyright: `Copyright © ${new Date().getFullYear()} Done3. Built by Ziinc.`,
+        copyright: `Copyright © ${new Date().getFullYear()} done3. Built by Ziinc.`,
       },
       prism: {
         theme: lightCodeTheme,
