@@ -76,6 +76,14 @@ const config = {
                 label: "User Docs",
                 to: "/",
               },
+              {
+                label: "Terms and Conditions",
+                to: "/terms",
+              },
+              {
+                label: "Privacy Policy",
+                to: "/privacy",
+              },
             ],
           },
         ],

@@ -133,10 +133,11 @@ export const AuthWall = ({ showLoading }: { showLoading: boolean }) => {
               <a target="_blank" href="https://docs.done3.tznc.net">
                 <Button>Docs</Button>
               </a>
-              <a
-                target="_blank"
-                href="mailto:ty@tzeyiing.com?subject=I'm interested in the private alpha of Done3!">
-                <Button variant="text">Request access to Private Alpha</Button>
+              <a target="_blank" href="https://docs.done3.tznc.net/terms">
+                <Button variant="text">Terms</Button>
+              </a>
+              <a target="_blank" href="https://docs.done3.tznc.net/privacy">
+                <Button variant="text">Privacy</Button>
               </a>
             </Stack>
             <Divider />
