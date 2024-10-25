@@ -197,6 +197,14 @@ const Home: React.FC = () => {
                   key={list.id}
                   taskList={list}
                   onDeleteTaskList={() => {
+                    if (
+                      confirm(
+                        "Are you sure? This will delete all data in the list and cannot be undone."
+                      ) != true
+                    ) {
+                      return;
+                    }
+
                     deleteTaskList(list.id);
                     const updated = taskLists.filter(tl => tl.id !== list.id);
                     mutateTaskLists(updated, { revalidate: false });
