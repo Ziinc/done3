@@ -27,6 +27,8 @@ import {
   ChevronRightSharp,
   Delete,
   MoreVert,
+  NoteAdd,
+  PlusOne,
 } from "@mui/icons-material";
 import { useMemo, useState } from "react";
 import TaskListItem from "./Task";
@@ -280,8 +282,14 @@ const TaskListComponent = ({
       <Button startIcon={<AddTask />} onClick={() => setShowNewForm(true)}>
         Add a task
       </Button>
-      <Button onClick={() => setShowNewNoteForm(true)}>Add a note</Button>
-      <Button onClick={() => setShowNewCounterForm(true)}>Add a counter</Button>
+      <Button startIcon={<NoteAdd />} onClick={() => setShowNewNoteForm(true)}>
+        Add a note
+      </Button>
+      <Button
+        startIcon={<PlusOne />}
+        onClick={() => setShowNewCounterForm(true)}>
+        Add a counter
+      </Button>
 
       {showNewCounterForm && (
         <ClickAwayListener onClickAway={() => setShowNewCounterForm(false)}>
