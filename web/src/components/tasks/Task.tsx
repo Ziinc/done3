@@ -1,5 +1,6 @@
 import { Task } from "../../api/tasks";
 import {
+  Button,
   Chip,
   ClickAwayListener,
   Grow,
@@ -22,6 +23,7 @@ import { Delete, MoreVert } from "@mui/icons-material";
 import React, { useEffect } from "react";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import dayjs from "dayjs";
+import DropdownMenu from "../DropdownMenu";
 interface TaskProps {
   task: Task;
   onToggleTask: (task: Task) => void;
@@ -111,19 +113,6 @@ const TaskListItem = ({
         onClick={() => {
           setEditing(true);
         }}>
-        <IconButton
-          title="More task options"
-          sx={{ position: "absolute" }}
-          className="group-hover:opacity-100 opacity-0 right-0 top-0"
-          size="small"
-          ref={anchorRef}
-          id="composition-button"
-          aria-controls={open ? "composition-menu" : undefined}
-          aria-expanded={open ? "true" : undefined}
-          aria-haspopup="true"
-          onClick={handleToggle}>
-          <MoreVert />
-        </IconButton>
         <ClickAwayListener
           onClickAway={() => {
             if (editing) {
@@ -234,42 +223,30 @@ const TaskListItem = ({
           </Stack>
         </ClickAwayListener>
         <div>
-          <Popper
-            open={open}
-            anchorEl={anchorRef.current}
-            role={undefined}
-            placement="bottom-start"
-            transition>
-            {({ TransitionProps, placement }) => (
-              <Grow
-                {...TransitionProps}
-                style={{
-                  transformOrigin:
-                    placement === "bottom-start" ? "left top" : "left bottom",
-                }}>
-                <Paper>
-                  <ClickAwayListener onClickAway={handleClose}>
-                    <MenuList
-                      autoFocusItem={open}
-                      id="composition-menu"
-                      aria-labelledby="composition-button"
-                      onKeyDown={handleListKeyDown}>
-                      <MenuItem
-                        onClick={e => {
-                          onDeleteTask();
-                          handleClose(e);
-                        }}>
-                        <ListItemIcon>
-                          <Delete />
-                        </ListItemIcon>
-                        <ListItemText>Delete</ListItemText>
-                      </MenuItem>
-                    </MenuList>
-                  </ClickAwayListener>
-                </Paper>
-              </Grow>
-            )}
-          </Popper>
+          <DropdownMenu
+            renderTrigger={({ ref, onClick }) => (
+              <IconButton
+                title="More task options"
+                sx={{ position: "absolute" }}
+                className="group-hover:opacity-100 opacity-0 right-0 top-0"
+                size="small"
+                ref={ref}
+                id="composition-button"
+                aria-controls={open ? "composition-menu" : undefined}
+                aria-expanded={open ? "true" : undefined}
+                aria-haspopup="true"
+                onClick={onClick}>
+                <MoreVert />
+              </IconButton>
+            )}>
+            <MenuItem
+              onClick={e => {
+                onDeleteTask();
+                handleClose(e);
+              }}>
+              Delete task
+            </MenuItem>
+          </DropdownMenu>
         </div>
       </ListItemText>
     </ListItem>

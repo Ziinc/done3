@@ -12,6 +12,8 @@ import {
   ClickAwayListener,
   IconButton,
   List as MaterialList,
+  MenuItem,
+  Modal,
   Paper,
   Skeleton,
   Stack,
@@ -24,6 +26,9 @@ import {
   CancelOutlined,
   ChevronRightSharp,
   Delete,
+  MoreVert,
+  NoteAdd,
+  PlusOne,
 } from "@mui/icons-material";
 import { useMemo, useState } from "react";
 import TaskListItem from "./Task";
@@ -43,6 +48,8 @@ import {
   listCounters,
 } from "../../api/counters";
 import CounterItem from "../CounterItem";
+import DropdownMenu from "../DropdownMenu";
+import { LoadingButton } from "@mui/lab";
 interface Props {
   taskList: List;
   onDeleteTaskList: () => void;
@@ -55,6 +62,7 @@ const TaskListComponent = ({
   onUpdateTaskList,
 }: Props) => {
   const [showCompleted, setShowCompleted] = useState(false);
+  const [isUpdatingList, setIsUpdatingList] = useState(false);
   const [editingTitle, setEditingTitle] = useState(false);
   const [showNewForm, setShowNewForm] = useState(false);
   const [showNewNoteForm, setShowNewNoteForm] = useState(false);
@@ -181,39 +189,83 @@ const TaskListComponent = ({
     <Paper
       elevation={1}
       sx={{ borderRadius: 3, p: 2, flexGrow: "inherit", height: "100%" }}>
-      <Stack direction="row" alignItems="center">
-        {editingTitle ? (
-          <>
-            <>
-              <form onSubmit={e => e.preventDefault()}>
-                <TextField
-                  name="listTitle"
-                  label="List title"
-                  defaultValue={taskList.raw.title}
-                  onBlur={e => {
-                    const value = e.currentTarget.value;
-                    setEditingTitle(false);
-                    if (value !== taskList.raw.title) {
-                      // save the value
-                      onUpdateTaskList({ title: value });
-                    }
-                  }}
-                />
-                <Button hidden type="submit">
-                  Submit
-                </Button>
-              </form>
-            </>
-          </>
-        ) : (
-          <Button onClick={() => setEditingTitle(true)}>
-            <h3>{taskList.raw.title}</h3>
-          </Button>
-        )}
+      <Stack direction="row" alignItems="center" justifyContent="space-between">
+        <Typography variant="h6">{taskList.raw.title}</Typography>
 
-        <IconButton onClick={onDeleteTaskList}>
-          <Delete />
-        </IconButton>
+        <DropdownMenu
+          renderTrigger={({ ref, onClick }) => (
+            <Button
+              ref={ref}
+              onClick={onClick}
+              variant="text"
+              startIcon={<MoreVert />}
+              title={`More options for list '${taskList.raw.title}'`}></Button>
+          )}>
+          {[
+            {
+              label: "Rename list",
+              key: "rename",
+              onClick: () => setEditingTitle(true),
+            },
+            {
+              label: "Delete list",
+              key: "delete",
+              onClick: onDeleteTaskList,
+            },
+          ].map(item => (
+            <MenuItem onClick={item.onClick} key={item.label}>
+              {item.label}
+            </MenuItem>
+          ))}
+        </DropdownMenu>
+        {editingTitle && (
+          <Modal
+            open={editingTitle}
+            onClose={() => setEditingTitle(false)}
+            aria-labelledby="modal-modal-title"
+            aria-describedby="modal-modal-description">
+            <Box
+              sx={{
+                position: "absolute",
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+                width: 600,
+                bgcolor: "background.paper",
+                boxShadow: 24,
+                p: 4,
+              }}>
+              <form
+                onSubmit={async e => {
+                  e.preventDefault();
+                  setIsUpdatingList(true);
+                  await onUpdateTaskList({
+                    title: (e.currentTarget as any).listTitle.value,
+                  });
+                  setEditingTitle(false);
+                  setIsUpdatingList(false);
+                }}>
+                <Stack
+                  direction="column"
+                  gap={4}
+                  justifyContent="start"
+                  alignItems="start">
+                  <TextField
+                    name="listTitle"
+                    label="List title"
+                    defaultValue={taskList.raw.title}
+                  />
+                  <LoadingButton
+                    variant="contained"
+                    loading={isUpdatingList}
+                    type="submit">
+                    Submit
+                  </LoadingButton>
+                </Stack>
+              </form>
+            </Box>
+          </Modal>
+        )}
       </Stack>
       {import.meta.env.DEV && import.meta.env.VITE_SHOW_IDS === "true" && (
         <Box sx={{ pl: 1.5 }}>
@@ -230,8 +282,14 @@ const TaskListComponent = ({
       <Button startIcon={<AddTask />} onClick={() => setShowNewForm(true)}>
         Add a task
       </Button>
-      <Button onClick={() => setShowNewNoteForm(true)}>Add a note</Button>
-      <Button onClick={() => setShowNewCounterForm(true)}>Add a counter</Button>
+      <Button startIcon={<NoteAdd />} onClick={() => setShowNewNoteForm(true)}>
+        Add a note
+      </Button>
+      <Button
+        startIcon={<PlusOne />}
+        onClick={() => setShowNewCounterForm(true)}>
+        Add a counter
+      </Button>
 
       {showNewCounterForm && (
         <ClickAwayListener onClickAway={() => setShowNewCounterForm(false)}>
