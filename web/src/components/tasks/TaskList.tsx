@@ -50,6 +50,7 @@ import {
 import CounterItem from "../CounterItem";
 import DropdownMenu from "../DropdownMenu";
 import { LoadingButton } from "@mui/lab";
+import theme from "../../theme";
 interface Props {
   taskList: List;
   onDeleteTaskList: () => void;
@@ -385,12 +386,14 @@ const TaskListComponent = ({
                           key={task.id}
                           {...provided.draggableProps}
                           {...provided.dragHandleProps}>
-                          <TaskListItem
-                            task={task}
-                            onDeleteTask={() => handleDelete(task)}
-                            onToggleTask={onToggleTask}
-                            onUpdateTask={handleUpdate}
-                          />
+                          <ItemWrapper>
+                            <TaskListItem
+                              task={task}
+                              onDeleteTask={() => handleDelete(task)}
+                              onToggleTask={onToggleTask}
+                              onUpdateTask={handleUpdate}
+                            />
+                          </ItemWrapper>
                         </div>
                       )}
                     </Draggable>
@@ -431,24 +434,26 @@ const TaskListComponent = ({
                 {notes &&
                   !isNotesLoading &&
                   notes.map((note: Note) => (
-                    <NoteItem
-                      key={note.id}
-                      note={note}
-                      onUpdate={(newNote: Note) => {
-                        console.log(newNote);
-                        mutateNotes(notes =>
-                          (notes || []).map(
-                            n => (n.id === newNote.id ? newNote : n),
-                            { revalidate: false }
-                          )
-                        );
-                      }}
-                      onDelete={() => {
-                        mutateNotes(notes =>
-                          notes?.filter(n => n.raw.name !== note.raw.name)
-                        );
-                      }}
-                    />
+                    <ItemWrapper>
+                      <NoteItem
+                        key={note.id}
+                        note={note}
+                        onUpdate={(newNote: Note) => {
+                          console.log(newNote);
+                          mutateNotes(notes =>
+                            (notes || []).map(
+                              n => (n.id === newNote.id ? newNote : n),
+                              { revalidate: false }
+                            )
+                          );
+                        }}
+                        onDelete={() => {
+                          mutateNotes(notes =>
+                            notes?.filter(n => n.raw.name !== note.raw.name)
+                          );
+                        }}
+                      />
+                    </ItemWrapper>
                   ))}
 
                 {counters &&
@@ -481,6 +486,34 @@ const TaskListComponent = ({
         </>
       )}
     </Paper>
+  );
+};
+
+const ItemWrapper = ({ children }: React.PropsWithChildren<{}>) => {
+  return (
+    <Box
+      className="flex justify-start items-stretch"
+      sx={{
+        "&:hover .handle": {
+          display: "flex",
+          background: theme.palette.secondary.main,
+        },
+      }}>
+      <Box
+        className="handle rounded-lg w-[2px] h-100 mr-[1px]"
+        sx={{
+          background: "transparent",
+        }}
+      />
+
+      <Box
+        className="handle rounded-lg w-[2px] h-100"
+        sx={{
+          background: "transparent",
+        }}
+      />
+      {children}
+    </Box>
   );
 };
 export default TaskListComponent;
