@@ -459,26 +459,28 @@ const TaskListComponent = ({
                 {counters &&
                   counters.length > 0 &&
                   counters.map((counter, index) => (
-                    <CounterItem
-                      count={
-                        countMapping[counter.id]
-                          ? (countMapping[counter.id] as any)[
-                              counter.tally_method
-                            ]
-                          : 0
-                      }
-                      key={counter.id}
-                      wrapperTag="li"
-                      counter={counter}
-                      onIncrease={value => handleIncrease(counter, value)}
-                      onDelete={console.log}
-                      // wrapperProps={state.draggableProps}
-                      // isDragging={state.isDragging}
-                      onUpdate={console.log}
-                      // isHovering={hoveringId === counter.id}
-                      // onMouseEnter={() => setHoveringId(counter.id)}
-                      // onMouseLeave={() => setHoveringId(null)}
-                    />
+                    <ItemWrapper>
+                      <CounterItem
+                        count={
+                          countMapping[counter.id]
+                            ? (countMapping[counter.id] as any)[
+                                counter.tally_method
+                              ]
+                            : 0
+                        }
+                        key={counter.id}
+                        wrapperTag="li"
+                        counter={counter}
+                        onIncrease={value => handleIncrease(counter, value)}
+                        onDelete={console.log}
+                        // wrapperProps={state.draggableProps}
+                        // isDragging={state.isDragging}
+                        onUpdate={console.log}
+                        // isHovering={hoveringId === counter.id}
+                        // onMouseEnter={() => setHoveringId(counter.id)}
+                        // onMouseLeave={() => setHoveringId(null)}
+                      />
+                    </ItemWrapper>
                   ))}
               </div>
             )}
