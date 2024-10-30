@@ -346,18 +346,30 @@ const TaskListComponent = ({
           <form
             onSubmit={async e => {
               e.preventDefault();
+              setIsUpdatingList(true);
               const title = e.currentTarget.taskTitle.value;
               const { data: returned } = await insertTask(taskList.id, {
                 title,
               });
               mutateTasks([returned, ...tasks]);
+              setIsUpdatingList(false);
               setShowNewForm(false);
             }}>
-            <TextField name="taskTitle" label="Task title" variant="outlined" />
-            <Button type="submit">Add</Button>
-            <IconButton onClick={() => setShowNewForm(false)}>
+            <TextField
+              disabled={isUpdatingList}
+              name="taskTitle"
+              label="Task title"
+              variant="outlined"
+            />
+            <IconButton
+              onClick={() => setShowNewForm(false)}
+              disabled={isUpdatingList}>
               <CancelOutlined />
             </IconButton>
+
+            <LoadingButton loading={isUpdatingList} type="submit">
+              Add
+            </LoadingButton>
           </form>
         </ClickAwayListener>
       ) : null}
