@@ -33,6 +33,7 @@ import {
   ClickAwayListener,
   Container,
   IconButton,
+  Stack,
   TextField,
   Typography,
 } from "@mui/material";
@@ -151,7 +152,10 @@ const Home: React.FC = () => {
 
   // hotkey management
   useEffect(() => {
-    if (!keydown) return;
+    console.log("esc is pressed");
+    if (keydown === "Escape" && newList) {
+      setNewList(false);
+    }
   }, [keydown]);
 
   const hotkeyHandler = (e: KeyboardEvent) => {
@@ -224,38 +228,54 @@ const Home: React.FC = () => {
         </DragDropContext>
 
         <div>
-          {newList ? (
-            <>
-              <form
-                className="w-48"
-                onSubmit={async e => {
-                  e.preventDefault();
-                  const { data } = await insertTaskList({
-                    title: e.currentTarget.taskListTitle.value,
-                  });
-                  if (data && taskLists) {
-                    mutateTaskLists([...taskLists, data]);
-                  }
-                }}>
-                <TextField label="Title" name="taskListTitle" required />
-                <Button variant="outlined" color="secondary" type="submit">
-                  Add list
-                </Button>
-                <IconButton type="button" onClick={() => setNewList(false)}>
-                  <Cancel />
-                </IconButton>
-              </form>
-            </>
-          ) : (
-            <Container sx={{ minWidth: 380, p: 1 }}>
+          <Container sx={{ minWidth: 380, py: 1 }}>
+            {newList ? (
+              <>
+                <form
+                  className="w-full"
+                  onSubmit={async e => {
+                    e.preventDefault();
+                    const { data } = await insertTaskList({
+                      title: e.currentTarget.taskListTitle.value,
+                    });
+                    if (data && taskLists) {
+                      mutateTaskLists([...taskLists, data]);
+                    }
+                  }}>
+                  <Stack direction="column">
+                    <TextField
+                      label="Title"
+                      name="taskListTitle"
+                      required
+                      variant="filled"
+                      autoFocus
+                    />
+                    <Stack direction="row-reverse" alignItems="center">
+                      <Button
+                        variant="contained"
+                        size="small"
+                        color="primary"
+                        type="submit">
+                        Add list
+                      </Button>
+                      <IconButton
+                        type="button"
+                        onClick={() => setNewList(false)}>
+                        <Cancel />
+                      </IconButton>
+                    </Stack>
+                  </Stack>
+                </form>
+              </>
+            ) : (
               <Button
                 variant="contained"
                 sx={{ width: 300 }}
                 onClick={() => setNewList(true)}>
                 Add new list
               </Button>
-            </Container>
-          )}
+            )}
+          </Container>
         </div>
       </Grid>
     </>
