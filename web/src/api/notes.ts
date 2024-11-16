@@ -1,5 +1,6 @@
 import axios, { AxiosResponse } from "axios";
 import { client } from "../utils";
+import { PostgrestResponse } from "@supabase/supabase-js";
 interface NoteParam {
   title?: string;
   text?: string;
@@ -99,7 +100,7 @@ export const updateNote = async (uuid: string, attrs: NoteParam) => {
 };
 
 export const insertNote = async (attrs: NoteParam) => {
-  return client.functions.invoke<Note>(`notes`, {
+  return client.functions.invoke<PostgrestResponse<Note>>(`notes`, {
     body: {
       list_id: attrs?.list_id,
       title: attrs?.title,

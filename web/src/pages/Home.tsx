@@ -1,25 +1,9 @@
 import { useEffect, useState } from "react";
 import {
-  Counter,
-  createCounter,
-  deleteCounter,
-  rearrangeCounters,
-  increaseCounter,
-  listCounters,
-  updateCounter,
-  upsertCounters,
-  getCounts,
-  CountMapping,
-  CountTally,
-} from "../api/counters";
-import CounterForm from "../components/CounterForm";
-import CounterItem from "../components/CounterItem";
-import {
   DragDropContext,
   OnDragEndResponder,
   OnDragUpdateResponder,
 } from "react-beautiful-dnd";
-import CounterList from "../components/CounterList";
 import useSWR, { unstable_serialize } from "swr";
 import {
   deleteTaskList,
@@ -29,16 +13,9 @@ import {
   syncTaskLists,
 } from "../api/task_lists";
 import TaskList from "../components/tasks/TaskList";
-import {
-  ClickAwayListener,
-  Container,
-  IconButton,
-  Stack,
-  TextField,
-  Typography,
-} from "@mui/material";
+import { Container, IconButton, Stack, TextField } from "@mui/material";
 import Button from "@mui/material/Button";
-import { Add, Cancel } from "@mui/icons-material";
+import { Cancel } from "@mui/icons-material";
 import Grid from "@mui/material/Unstable_Grid2/Grid2";
 import { useSWRConfig } from "swr";
 import { Task, moveTask } from "../api/tasks";
@@ -90,7 +67,6 @@ const Home: React.FC = () => {
       sourceTaskListId,
     ]);
     const sourceTaskList = cache.get(sourceTaskListIdSerialized);
-    const sourceTasks = sourceTaskList?.data || [];
     let prev;
     if (
       destination?.index !== 0 &&

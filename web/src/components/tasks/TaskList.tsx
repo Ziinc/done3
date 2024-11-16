@@ -311,17 +311,16 @@ const TaskListComponent = ({
         <form
           onSubmit={async e => {
             e.preventDefault();
-            const result = await insertNote({
+            const { data: result } = await insertNote({
               title: e.currentTarget.noteTitle.value,
               text: e.currentTarget.noteText.value,
               list_id: taskList.id,
             });
-            if (result.data) {
-              console.log(result.data);
-              mutateNotes(
+            if (result && result.data) {
+              await mutateNotes(
                 (notes: any) => {
-                  console.log("prev", notes);
-                  return [...(notes || []), result.data];
+                  const newNotes = [...(notes || []), result.data];
+                  return newNotes;
                 },
                 {
                   revalidate: false,
@@ -444,14 +443,11 @@ const TaskListComponent = ({
                   </div>
                 </MaterialList>
                 {notes &&
-                  !isNotesLoading &&
                   notes.map((note: Note) => (
-                    <ItemWrapper>
+                    <ItemWrapper key={note.id}>
                       <NoteItem
-                        key={note.id}
                         note={note}
                         onUpdate={(newNote: Note) => {
-                          console.log(newNote);
                           mutateNotes(notes =>
                             (notes || []).map(
                               n => (n.id === newNote.id ? newNote : n),
