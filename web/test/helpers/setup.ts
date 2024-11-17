@@ -2,6 +2,9 @@ import { vi, beforeAll, afterEach, beforeEach } from "vitest";
 import { cleanup } from "@testing-library/react";
 
 vi.mock("../../src/api/counters");
+vi.mock("../../src/api/task_lists");
+vi.mock("../../src/api/tasks");
+vi.mock("../../src/api/notes");
 
 vi.mock("react-beautiful-dnd");
 

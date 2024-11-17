@@ -51,6 +51,7 @@ import CounterItem from "../CounterItem";
 import DropdownMenu from "../DropdownMenu";
 import { LoadingButton } from "@mui/lab";
 import theme from "../../theme";
+import CenteredModal from "../CenteredModal";
 interface Props {
   taskList: List;
   onDeleteTaskList: () => void;
@@ -67,6 +68,10 @@ const TaskListComponent = ({
   const [editingTitle, setEditingTitle] = useState(false);
   const [showNewForm, setShowNewForm] = useState(false);
   const [showNewNoteForm, setShowNewNoteForm] = useState(false);
+  const [newNoteAttrs, setNewNoteAttrs] = useState({
+    title: "",
+    text: "",
+  });
   const [showNewCounterForm, setShowNewCounterForm] = useState(false);
 
   const { data: countMapping = {}, mutate: mutateCounts } =
@@ -286,12 +291,60 @@ const TaskListComponent = ({
       <Button startIcon={<NoteAdd />} onClick={() => setShowNewNoteForm(true)}>
         Add a note
       </Button>
+
       <Button
         startIcon={<PlusOne />}
         onClick={() => setShowNewCounterForm(true)}>
         Add a counter
       </Button>
 
+      {showNewNoteForm && (
+        <form
+          onSubmit={async e => {
+            e.preventDefault();
+            const { data: result } = await insertNote({
+              ...newNoteAttrs,
+              list_id: taskList.id,
+            });
+            if (result && result.data) {
+              await mutateNotes(
+                (notes: any) => {
+                  const newNotes = [...(notes || []), result.data];
+                  return newNotes;
+                },
+                {
+                  revalidate: false,
+                }
+              );
+            }
+            setShowNewNoteForm(false);
+            setNewNoteAttrs({ title: "", text: "" });
+          }}>
+          <TextField
+            label="Title"
+            id="noteTitle"
+            name="noteTitle"
+            type="text"
+            variant="standard"
+            onChange={e =>
+              setNewNoteAttrs(prev => ({ ...prev, title: e.target.value }))
+            }
+          />
+          <TextField
+            label="Text"
+            id="noteText"
+            name="noteText"
+            type="text"
+            variant="standard"
+            minRows={5}
+            maxRows={10}
+            onChange={e =>
+              setNewNoteAttrs(prev => ({ ...prev, text: e.target.value }))
+            }
+          />
+          <Button type="submit">Close</Button>
+        </form>
+      )}
       {showNewCounterForm && (
         <ClickAwayListener onClickAway={() => setShowNewCounterForm(false)}>
           <div>
@@ -305,40 +358,6 @@ const TaskListComponent = ({
             />
           </div>
         </ClickAwayListener>
-      )}
-
-      {showNewNoteForm && (
-        <form
-          onSubmit={async e => {
-            e.preventDefault();
-            const result = await insertNote({
-              title: e.currentTarget.noteTitle.value,
-              text: e.currentTarget.noteText.value,
-              list_id: taskList.id,
-            });
-            if (result.data) {
-              console.log(result.data);
-              mutateNotes(
-                (notes: any) => {
-                  console.log("prev", notes);
-                  return [...(notes || []), result.data];
-                },
-                {
-                  revalidate: false,
-                }
-              );
-            }
-            setShowNewNoteForm(false);
-          }}>
-          <TextField
-            label="Title"
-            id="noteTitle"
-            name="noteTitle"
-            type="text"
-          />
-          <TextField label="Text" id="noteText" name="noteText" type="text" />
-          <Button type="submit">Submit</Button>
-        </form>
       )}
 
       {showNewForm ? (
@@ -444,14 +463,11 @@ const TaskListComponent = ({
                   </div>
                 </MaterialList>
                 {notes &&
-                  !isNotesLoading &&
                   notes.map((note: Note) => (
-                    <ItemWrapper>
+                    <ItemWrapper key={note.id}>
                       <NoteItem
-                        key={note.id}
                         note={note}
                         onUpdate={(newNote: Note) => {
-                          console.log(newNote);
                           mutateNotes(notes =>
                             (notes || []).map(
                               n => (n.id === newNote.id ? newNote : n),
