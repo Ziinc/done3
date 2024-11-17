@@ -51,6 +51,7 @@ import CounterItem from "../CounterItem";
 import DropdownMenu from "../DropdownMenu";
 import { LoadingButton } from "@mui/lab";
 import theme from "../../theme";
+import CenteredModal from "../CenteredModal";
 interface Props {
   taskList: List;
   onDeleteTaskList: () => void;
@@ -67,6 +68,10 @@ const TaskListComponent = ({
   const [editingTitle, setEditingTitle] = useState(false);
   const [showNewForm, setShowNewForm] = useState(false);
   const [showNewNoteForm, setShowNewNoteForm] = useState(false);
+  const [newNoteAttrs, setNewNoteAttrs] = useState({
+    title: "",
+    text: "",
+  });
   const [showNewCounterForm, setShowNewCounterForm] = useState(false);
 
   const { data: countMapping = {}, mutate: mutateCounts } =
@@ -286,34 +291,19 @@ const TaskListComponent = ({
       <Button startIcon={<NoteAdd />} onClick={() => setShowNewNoteForm(true)}>
         Add a note
       </Button>
+
       <Button
         startIcon={<PlusOne />}
         onClick={() => setShowNewCounterForm(true)}>
         Add a counter
       </Button>
 
-      {showNewCounterForm && (
-        <ClickAwayListener onClickAway={() => setShowNewCounterForm(false)}>
-          <div>
-            <CounterForm
-              onSubmit={async (...args) => {
-                await handleAddCounter(...args);
-                setShowNewCounterForm(false);
-                await mutateCounters();
-              }}
-              onCancel={() => setShowNewCounterForm(false)}
-            />
-          </div>
-        </ClickAwayListener>
-      )}
-
       {showNewNoteForm && (
         <form
           onSubmit={async e => {
             e.preventDefault();
             const { data: result } = await insertNote({
-              title: e.currentTarget.noteTitle.value,
-              text: e.currentTarget.noteText.value,
+              ...newNoteAttrs,
               list_id: taskList.id,
             });
             if (result && result.data) {
@@ -328,16 +318,46 @@ const TaskListComponent = ({
               );
             }
             setShowNewNoteForm(false);
+            setNewNoteAttrs({ title: "", text: "" });
           }}>
           <TextField
             label="Title"
             id="noteTitle"
             name="noteTitle"
             type="text"
+            variant="standard"
+            onChange={e =>
+              setNewNoteAttrs(prev => ({ ...prev, title: e.target.value }))
+            }
           />
-          <TextField label="Text" id="noteText" name="noteText" type="text" />
-          <Button type="submit">Submit</Button>
+          <TextField
+            label="Text"
+            id="noteText"
+            name="noteText"
+            type="text"
+            variant="standard"
+            minRows={5}
+            maxRows={10}
+            onChange={e =>
+              setNewNoteAttrs(prev => ({ ...prev, text: e.target.value }))
+            }
+          />
+          <Button type="submit">Close</Button>
         </form>
+      )}
+      {showNewCounterForm && (
+        <ClickAwayListener onClickAway={() => setShowNewCounterForm(false)}>
+          <div>
+            <CounterForm
+              onSubmit={async (...args) => {
+                await handleAddCounter(...args);
+                setShowNewCounterForm(false);
+                await mutateCounters();
+              }}
+              onCancel={() => setShowNewCounterForm(false)}
+            />
+          </div>
+        </ClickAwayListener>
       )}
 
       {showNewForm ? (

@@ -7,18 +7,26 @@ import {
   insertNote
 } from "../src/api/notes";
 import userEvent from "@testing-library/user-event";
-import { counterFixture, countsFixture } from "./helpers/fixtures";
+import { counterFixture, countsFixture, listFixture, noteFixture } from "./helpers/fixtures";
+import { listTaskLists } from "../src/api/task_lists";
 beforeEach(() => {
   // (getCounts as Mock).mockResolvedValue(countsFixture());
+  (listTaskLists as Mock).mockResolvedValue({data: [
+    listFixture()
+  ]})
 });
 
 test("create note", async () => {
+  (insertNote as Mock).mockResolvedValue({
+    data: {
+      data:  noteFixture({title: "my note", text: "my text"})
+    }
+  })
   render(<AuthedApp />);
   const btn = await screen.findByText("Add a note", {selector: "button"});
   await userEvent.click(btn);
   await userEvent.type(await screen.getByLabelText("Title", {selector: "input"}), "my note",);
   await userEvent.type(await screen.getByLabelText("Text", {selector: "input"}), "my text",);
-
   await userEvent.click(await screen.findByText("Close"));
   await wait();
   expect(() => screen.getByLabelText("Title")).toThrow();

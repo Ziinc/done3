@@ -1,7 +1,7 @@
 import axios, { AxiosResponse } from "axios";
 import { client } from "../utils";
 import { PostgrestResponse } from "@supabase/supabase-js";
-interface NoteParam {
+export interface NoteParam {
   title?: string;
   text?: string;
   list_id: string;
@@ -18,12 +18,10 @@ export interface NoteRaw {
   updateTime: string;
   trashTime: string;
   trashed: boolean;
-  attachments: [
-    {
-      name: string;
-      mimeType: [string];
-    },
-  ];
+  attachments: {
+    name: string;
+    mimeType: [string];
+  }[];
   permissions: object[];
   title?: string;
   body: {
@@ -31,22 +29,18 @@ export interface NoteRaw {
       text: string;
     };
     list: {
-      listItems: [
-        {
-          childListItems: [
-            {
-              text: {
-                text: string;
-              };
-              checked: boolean;
-            },
-          ];
+      listItems: {
+        childListItems: {
           text: {
             text: string;
           };
           checked: boolean;
-        },
-      ];
+        }[];
+        text: {
+          text: string;
+        };
+        checked: boolean;
+      }[];
     };
   };
 }
