@@ -57,16 +57,19 @@ const CounterItem: React.FC<Props> = ({
         {...rest}>
         <Button
           variant="contained"
-          color="primary"
+          color={
+            count >= counter.target
+              ? "success"
+              : count < counter.target
+                ? "warning"
+                : count > counter.target * 5
+                  ? "info"
+                  : "primary"
+          }
           size="small"
           title={`Increase '${counter.name}' by 1`}
           onClick={() => onIncrease?.(1)}
-          startIcon={<Add />}
-          className={[
-            count >= counter.target ? "!bg-green-700 hover:!bg-green-600" : "",
-            count < counter.target ? "!bg-yellow-600 hover:!bg-yellow-500" : "",
-            count > counter.target * 5 ? "!bg-sky-600 hover:!bg-sky-500" : "",
-          ].join(" ")}>
+          startIcon={<Add />}>
           <CountDisplay value={count} />
         </Button>
         <div className="flex-grow" onClick={() => setEditing(true)}>
