@@ -73,61 +73,59 @@ const NoteItem = ({ note, onDelete, onUpdate }: Props) => {
   }
   return (
     <>
-      <CenteredModal
-        renderTrigger={({ open, setOpen }) => (
-          <ListItem
-            onClick={() => {
-              setOpen(true);
-            }}
-            className="group relative w-32">
+      <ListItem className="group relative w-32">
+        <CenteredModal
+          renderTrigger={({ open, setOpen }) => (
             <ListItemText
+              onClick={() => {
+                setOpen(true);
+              }}
               primary={note.raw?.title}
               secondary={
                 note.raw.body.text.text.slice(0, 100) +
                 (note.raw.body.text.text.length > 100 ? "..." : "")
               }
             />
-            <div>
-              <DropdownMenu
-                renderTrigger={({ ref, onClick }) => (
-                  <IconButton
-                    title="More note options"
-                    sx={{ position: "absolute" }}
-                    className="group-hover:opacity-100 opacity-0 right-0 top-3"
-                    size="small"
-                    ref={ref}
-                    id="composition-button"
-                    aria-controls={open ? "composition-menu" : undefined}
-                    aria-expanded={open ? "true" : undefined}
-                    aria-haspopup="true"
-                    onClick={onClick}>
-                    <MoreVert />
-                  </IconButton>
-                )}>
-                <MenuItem onClick={handleDelete}>Delete note</MenuItem>
-              </DropdownMenu>
-            </div>
-          </ListItem>
-        )}
-        renderContent={
-          <>
-            <TextField
-              label="Title"
-              name="title"
-              defaultValue={note.raw?.title}
-              onChange={handleTitleChange}
-              variant="standard"
-            />
-            {note.raw && note.raw.body.text?.text && (
-              <>
-                <Editor
-                  onChange={handleBodyChange}
-                  defaultValue={note.raw.body.text.text}
-                />
-              </>
-            )}
-          </>
-        }></CenteredModal>
+          )}
+          renderContent={
+            <>
+              <TextField
+                label="Title"
+                name="title"
+                defaultValue={note.raw?.title}
+                onChange={handleTitleChange}
+                variant="standard"
+              />
+              {note.raw && note.raw.body.text?.text && (
+                <>
+                  <Editor
+                    onChange={handleBodyChange}
+                    defaultValue={note.raw.body.text.text}
+                  />
+                </>
+              )}
+            </>
+          }
+        />
+        <div>
+          <DropdownMenu
+            renderTrigger={({ ref, onClick }) => (
+              <IconButton
+                title="More note options"
+                sx={{ position: "absolute" }}
+                className="group-hover:visible invisible"
+                size="small"
+                ref={ref}
+                id="composition-button"
+                aria-haspopup="true"
+                onClick={onClick}>
+                <MoreVert />
+              </IconButton>
+            )}>
+            <MenuItem onClick={handleDelete}>Delete note</MenuItem>
+          </DropdownMenu>
+        </div>
+      </ListItem>
     </>
   );
 };

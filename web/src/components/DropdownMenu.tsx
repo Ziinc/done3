@@ -9,7 +9,7 @@ import React from "react";
 
 interface RenderTriggerArgs {
   onClick: () => void;
-  ref: React.Ref<HTMLButtonElement>;
+  ref: any;
 }
 interface DropdownMenuProps {
   children: React.ReactNode;

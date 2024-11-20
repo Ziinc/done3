@@ -3,7 +3,14 @@ import { marked } from "marked";
 import DOMPurify from "dompurify";
 import CountDisplay from "./CountDisplay";
 import React, { useState } from "react";
-import { Button, ClickAwayListener, MenuItem, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  ClickAwayListener,
+  IconButton,
+  MenuItem,
+  Typography,
+} from "@mui/material";
 import { Add, MoreVert } from "@mui/icons-material";
 import DropdownMenu from "./DropdownMenu";
 import CounterForm from "./CounterForm";
@@ -36,38 +43,32 @@ const CounterItem: React.FC<Props> = ({
 }) => {
   const [editing, setEditing] = useState(false);
   return (
-    <>
-      <WrapperTag
+    <Box className="w-full">
+      <div
         className={[
+          "w-full group",
           className,
-          isDragging || isHovering ? "bg-stone-100" : "bg-slate-50",
           isDragging ? "shadow-lg ring-2 ring-violet-300" : "",
           "rounded-lg p-2 transition-all ",
           "flex flex-row gap-4 items-center justify-between",
         ].join(" ")}
-        ref={ref}
-        {...wrapperProps}
+        // ref={ref}
+        // {...wrapperProps}
         {...rest}>
-        <div className="w-fit">
-          <Button
-            variant="contained"
-            color="primary"
-            title={`Increase '${counter.name}' by 1`}
-            onClick={() => onIncrease?.(1)}
-            startIcon={<Add />}
-            className={[
-              "gap-1",
-              count >= counter.target
-                ? "!bg-green-700 hover:!bg-green-600"
-                : "",
-              count < counter.target
-                ? "!bg-yellow-600 hover:!bg-yellow-500"
-                : "",
-              count > counter.target * 5 ? "!bg-sky-600 hover:!bg-sky-500" : "",
-            ].join(" ")}>
-            <CountDisplay value={count} />
-          </Button>
-        </div>
+        <Button
+          variant="contained"
+          color="primary"
+          size="small"
+          title={`Increase '${counter.name}' by 1`}
+          onClick={() => onIncrease?.(1)}
+          startIcon={<Add />}
+          className={[
+            count >= counter.target ? "!bg-green-700 hover:!bg-green-600" : "",
+            count < counter.target ? "!bg-yellow-600 hover:!bg-yellow-500" : "",
+            count > counter.target * 5 ? "!bg-sky-600 hover:!bg-sky-500" : "",
+          ].join(" ")}>
+          <CountDisplay value={count} />
+        </Button>
         <div className="flex-grow" onClick={() => setEditing(true)}>
           <Typography variant="subtitle1">{counter.name}</Typography>
 
@@ -85,12 +86,13 @@ const CounterItem: React.FC<Props> = ({
 
         <DropdownMenu
           renderTrigger={({ ref, onClick }) => (
-            <Button
+            <IconButton
               ref={ref}
               onClick={onClick}
-              variant="text"
-              startIcon={<MoreVert />}
-              title={`More options for '${counter.name}'`}></Button>
+              className="group-hover:visible invisible"
+              title={`More options for '${counter.name}'`}>
+              <MoreVert />
+            </IconButton>
           )}>
           {[
             {
@@ -104,18 +106,15 @@ const CounterItem: React.FC<Props> = ({
             </MenuItem>
           ))}
         </DropdownMenu>
-      </WrapperTag>
+      </div>
       {editing && (
         <ClickAwayListener
           onClickAway={e => {
             setEditing(false);
           }}>
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-4 mt-4 px-2">
             {editing && (
               <div className="flex flex-col w-full items-center justify-center">
-                <Typography variant="h4">
-                  {/* {countMapping[editingCounter.id][editingCounter.tally_method]} */}
-                </Typography>
                 <div className="flex flex-row gap-1">
                   <Button
                     className="flex flex-row justify-center items-center"
@@ -159,7 +158,7 @@ const CounterItem: React.FC<Props> = ({
           </div>
         </ClickAwayListener>
       )}
-    </>
+    </Box>
   );
 };
 export default CounterItem;

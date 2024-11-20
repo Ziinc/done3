@@ -24,7 +24,6 @@ describe("api & context", () => {
       counterFixture({ id: v, sort_index: v })
     );
     let newOrder = rearrangeCounters(counters, counters[2], 0);
-    console.log(newOrder);
     expect(newOrder[0]).toMatchObject({ id: 2, sort_index: 0 });
     expect(newOrder[1]).toMatchObject({ id: 0, sort_index: 1 });
     expect(newOrder[2]).toMatchObject({ id: 1, sort_index: 2 });
