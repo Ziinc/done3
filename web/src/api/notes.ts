@@ -1,6 +1,9 @@
 import axios, { AxiosResponse } from "axios";
 import { client } from "../utils";
-import { PostgrestResponse } from "@supabase/supabase-js";
+import {
+  PostgrestResponse,
+  PostgrestSingleResponse,
+} from "@supabase/supabase-js";
 export interface NoteParam {
   title?: string;
   text?: string;
@@ -16,7 +19,7 @@ export interface NoteRaw {
   name: string;
   createTime: string;
   updateTime: string;
-  trashTime: string;
+  trashTime: string | null;
   trashed: boolean;
   attachments: {
     name: string;
@@ -94,7 +97,7 @@ export const updateNote = async (uuid: string, attrs: NoteParam) => {
 };
 
 export const insertNote = async (attrs: NoteParam) => {
-  return client.functions.invoke<PostgrestResponse<Note>>(`notes`, {
+  return client.functions.invoke<PostgrestSingleResponse<Note>>(`notes`, {
     body: {
       list_id: attrs?.list_id,
       title: attrs?.title,
