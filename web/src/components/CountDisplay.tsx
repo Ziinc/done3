@@ -17,11 +17,11 @@ const CountDisplay: React.FC<{ value: number }> = ({ value }) => {
     }
   }, [value]);
   return (
-    <span className="w-8">
-      <Slide in={showOld} direction="up" mountOnEnter unmountOnExit>
-        <Typography>{prev}</Typography>
-      </Slide>
-    </span>
+    <Slide in={showOld} direction="up" mountOnEnter unmountOnExit>
+      <Typography variant="subtitle1" fontSize={16}>
+        {prev}
+      </Typography>
+    </Slide>
   );
 };
 

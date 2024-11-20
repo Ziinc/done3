@@ -239,12 +239,12 @@ const TaskListComponent = ({
 
         <DropdownMenu
           renderTrigger={({ ref, onClick }) => (
-            <Button
+            <IconButton
               ref={ref}
               onClick={onClick}
-              variant="text"
-              startIcon={<MoreVert />}
-              title={`More options for list '${taskList.raw.title}'`}></Button>
+              title={`More options for list '${taskList.raw.title}'`}>
+              <MoreVert />
+            </IconButton>
           )}>
           {[
             {
