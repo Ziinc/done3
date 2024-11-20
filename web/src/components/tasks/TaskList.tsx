@@ -191,6 +191,45 @@ const TaskListComponent = ({
     cancelLoading();
   };
 
+  const handleNewNote = async (e: SubmitEvent) => {
+    e.preventDefault();
+    const tempId: string = String(self.crypto.randomUUID());
+    const tempNote: Note = {
+      raw: {
+        title: newNoteAttrs.title,
+        name: tempId,
+        permissions: [],
+        attachments: [],
+        body: { text: { text: newNoteAttrs.text }, list: { listItems: [] } },
+        createTime: new Date().toISOString(),
+        updateTime: new Date().toISOString(),
+        trashTime: null,
+        trashed: false,
+      },
+      id: tempId,
+      user_id: taskList.user_id,
+    };
+    mutateNotes([tempNote, ...(notes || [])], { revalidate: false });
+    setShowNewNoteForm(false);
+    const { data: result } = await insertNote({
+      ...newNoteAttrs,
+      list_id: taskList.id,
+    });
+    if (result && result.data) {
+      await mutateNotes(
+        (notes: Note[] | null | undefined) => {
+          const filtered = (notes || []).filter(n => n.id !== tempId);
+          const newNotes = [result.data, ...filtered];
+          return newNotes;
+        },
+        {
+          revalidate: false,
+        }
+      );
+    }
+    setNewNoteAttrs({ title: "", text: "" });
+  };
+
   return (
     <Paper
       elevation={1}
@@ -299,27 +338,7 @@ const TaskListComponent = ({
       </Button>
 
       {showNewNoteForm && (
-        <form
-          onSubmit={async e => {
-            e.preventDefault();
-            const { data: result } = await insertNote({
-              ...newNoteAttrs,
-              list_id: taskList.id,
-            });
-            if (result && result.data) {
-              await mutateNotes(
-                (notes: any) => {
-                  const newNotes = [...(notes || []), result.data];
-                  return newNotes;
-                },
-                {
-                  revalidate: false,
-                }
-              );
-            }
-            setShowNewNoteForm(false);
-            setNewNoteAttrs({ title: "", text: "" });
-          }}>
+        <form onSubmit={handleNewNote}>
           <TextField
             label="Title"
             id="noteTitle"
