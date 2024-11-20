@@ -30,7 +30,7 @@ import {
   NoteAdd,
   PlusOne,
 } from "@mui/icons-material";
-import { useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import TaskListItem from "./Task";
 import { Draggable, Droppable } from "react-beautiful-dnd";
 import sortBy from "lodash/sortBy";
@@ -191,7 +191,7 @@ const TaskListComponent = ({
     cancelLoading();
   };
 
-  const handleNewNote = async (e: SubmitEvent) => {
+  const handleNewNote = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const tempId: string = String(self.crypto.randomUUID());
     const tempNote: Note = {
