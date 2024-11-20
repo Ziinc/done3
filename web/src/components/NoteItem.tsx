@@ -71,6 +71,9 @@ const NoteItem = ({ note, onDelete, onUpdate }: Props) => {
   if (!note.raw) {
     return null;
   }
+  const truncatedText =
+    note.raw.body.text.text.slice(0, 100) +
+    (note.raw.body.text.text.length > 100 ? "..." : "");
   return (
     <>
       <ListItem className="group relative w-32">
@@ -80,11 +83,8 @@ const NoteItem = ({ note, onDelete, onUpdate }: Props) => {
               onClick={() => {
                 setOpen(true);
               }}
-              primary={note.raw?.title}
-              secondary={
-                note.raw.body.text.text.slice(0, 100) +
-                (note.raw.body.text.text.length > 100 ? "..." : "")
-              }
+              primary={note.raw?.title ? note.raw?.title : truncatedText}
+              secondary={note.raw?.title ? truncatedText : null}
             />
           )}
           renderContent={
