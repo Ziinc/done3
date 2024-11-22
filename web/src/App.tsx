@@ -5,7 +5,15 @@ import { checkAuthed } from "./api/auth";
 import CenteredLayout from "./layouts/CenteredLayout";
 import LoadingSpinner from "./components/LoadingSpinner";
 import { AuthContainer, useAuth } from "./components/Auth";
-import { Route, RouteProps, Router, useLocation, useRoute } from "wouter";
+import {
+  Redirect,
+  Route,
+  RouteProps,
+  Router,
+  Switch,
+  useLocation,
+  useRoute,
+} from "wouter";
 import {
   Button,
   Container,
@@ -50,12 +58,15 @@ function App() {
 
       <LocalizationProvider dateAdapter={AdapterDayjs}>
         <Router base={import.meta.env.BASE_URL}>
-          <TrackedRoute path="/">
-            {(showLoading || !user.session) && (
-              <AuthWall showLoading={showLoading} />
-            )}
-            {!showLoading && Boolean(user.session) && <AuthedApp />}
-          </TrackedRoute>
+          <Switch>
+            <TrackedRoute path="/dashboard">
+              {(showLoading || !user.session) && (
+                <AuthWall showLoading={showLoading} />
+              )}
+              {!showLoading && Boolean(user.session) && <AuthedApp />}
+            </TrackedRoute>
+            <Redirect to="/dashboard" />
+          </Switch>
         </Router>
       </LocalizationProvider>
     </ThemeProvider>
