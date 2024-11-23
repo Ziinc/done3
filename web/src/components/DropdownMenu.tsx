@@ -4,6 +4,8 @@ import {
   MenuList,
   Paper,
   Popper,
+  PopperProps,
+  SxProps,
 } from "@mui/material";
 import React from "react";
 
@@ -13,6 +15,8 @@ interface RenderTriggerArgs {
 }
 interface DropdownMenuProps {
   children: React.ReactNode;
+  sx?: SxProps;
+  placement?: PopperProps["placement"];
   onClose?: () => void;
   renderTrigger: (args: RenderTriggerArgs) => React.ReactNode;
 }
@@ -20,6 +24,8 @@ const DropdownMenu = ({
   children,
   onClose,
   renderTrigger,
+  sx,
+  placement = "bottom-start",
 }: DropdownMenuProps) => {
   const anchorRef = React.useRef<HTMLButtonElement>(null);
   const [open, setOpen] = React.useState(false);
@@ -52,7 +58,8 @@ const DropdownMenu = ({
         open={open}
         anchorEl={anchorRef.current}
         role={undefined}
-        placement="bottom-start"
+        placement={placement}
+        sx={sx}
         transition>
         {({ TransitionProps, placement }) => (
           <Grow

@@ -18,18 +18,16 @@ const style = {
   left: "50%",
   transform: "translate(-50%, -50%)",
   width: 750,
-  //   bgcolor: "background.paper",
-  //   border: "2px solid #000",
-  //   boxShadow: 24,
-  pt: 2,
-  px: 4,
-  pb: 3,
+  py: 1.6,
+  px: 3,
+  pb: 0.4,
 };
 
 interface Props {
   open?: boolean;
-  onClose?: () => boid;
+  onClose?: () => void;
   showClose?: boolean;
+  actions?: React.ReactNode[];
   renderContent:
     | React.ReactNode
     | ((args: RenderTriggerArgs) => React.ReactNode);
@@ -47,6 +45,7 @@ const CenteredModal = ({
   renderTrigger,
   open: controlledOpen,
   onClose,
+  actions,
 }: PropsWithChildren<Props>) => {
   const [uncontrolledOpen, setOpen] = useState(controlledOpen || false);
   const open = controlledOpen ?? uncontrolledOpen;
@@ -65,6 +64,7 @@ const CenteredModal = ({
               : renderContent}
             <CardActions
               sx={{ flexDirection: "row", justifyContent: "flex-end" }}>
+              {actions && actions.map(action => action)}
               {showClose && <Button onClick={handleClose}>Close</Button>}
             </CardActions>
           </Card>

@@ -14,7 +14,7 @@ import ListItem from "@mui/material/ListItem";
 import debounce from "lodash/debounce";
 import Editor from "./Editor";
 import DropdownMenu from "./DropdownMenu";
-import { MoreVert } from "@mui/icons-material";
+import { Delete, MoreVert } from "@mui/icons-material";
 import CenteredModal from "./CenteredModal";
 interface Props {
   note: Note;
@@ -78,6 +78,31 @@ const NoteItem = ({ note, onDelete, onUpdate }: Props) => {
     <>
       <ListItem className="group relative w-32">
         <CenteredModal
+          actions={[
+            <DropdownMenu
+              placement="bottom-end"
+              sx={{ zIndex: 99999 }}
+              renderTrigger={({ ref, onClick }) => (
+                <IconButton
+                  ref={ref}
+                  onClick={onClick}
+                  title={`More options for note`}>
+                  <MoreVert />
+                </IconButton>
+              )}>
+              {[
+                {
+                  label: "Delete note",
+                  key: "delete",
+                  onClick: handleDelete,
+                },
+              ].map(item => (
+                <MenuItem onClick={item.onClick} key={item.label}>
+                  {item.label}
+                </MenuItem>
+              ))}
+            </DropdownMenu>,
+          ]}
           renderTrigger={({ open, setOpen }) => (
             <ListItemText
               onClick={() => {

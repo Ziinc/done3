@@ -78,11 +78,11 @@ const Editor = ({ defaultValue, onChange }: Props) => {
       content={defaultValue}
       renderControls={() => (
         <MenuControlsContainer>
-          <MenuButtonUndo />
-          <MenuButtonRedo />
-          <MenuDivider />
-          <MenuSelectHeading />
-          <MenuDivider />
+          {/* <MenuButtonUndo />
+          <MenuButtonRedo /> */}
+          {/* <MenuDivider />
+          <MenuSelectHeading /> */}
+          {/* <MenuDivider /> */}
           <MenuButtonBold />
           <MenuButtonItalic />
           <MenuButtonUnderline />
@@ -90,7 +90,7 @@ const Editor = ({ defaultValue, onChange }: Props) => {
           <MenuDivider />
           <MenuButtonCodeBlock />
           <MenuButtonBlockquote />
-          <MenuButtonHorizontalRule />
+          {/* <MenuButtonHorizontalRule /> */}
           <MenuDivider />
           <MenuButtonBulletedList />
           <MenuButtonOrderedList />
