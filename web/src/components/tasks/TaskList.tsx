@@ -9,6 +9,7 @@ import {
 } from "../../api/tasks";
 import {
   Box,
+  Card,
   ClickAwayListener,
   IconButton,
   List as MaterialList,
@@ -440,7 +441,7 @@ const TaskListComponent = ({
           <Droppable droppableId={`taskList-${taskList.id}`} type="TASK">
             {(provided, snapshot) => (
               <div ref={provided.innerRef} {...provided.droppableProps}>
-                <MaterialList>
+                <MaterialList className="gap-1">
                   {sortBy(pendingTasks, "position").map((task, index) => (
                     <Draggable
                       draggableId={`task-${taskList.id}-${task.id}`}
@@ -470,103 +471,76 @@ const TaskListComponent = ({
                       )}
                     </Draggable>
                   ))}
-                  <div>
-                    {completedTasks.length > 0 && (
-                      <Button
-                        variant="text"
-                        startIcon={
-                          <ChevronRightSharp
-                            sx={{
-                              rotate: showCompleted ? "90deg" : 0,
-                            }}
-                          />
-                        }
-                        onClick={() => setShowCompleted(!showCompleted)}>
-                        <Typography
-                          variant="subtitle1"
-                          className="text-gray-600">
-                          Completed ({completedTasks.length})
-                        </Typography>
-                      </Button>
-                    )}
-                    {provided.placeholder}
-
-                    {showCompleted &&
-                      completedTasks.map((task, index) => (
-                        <TaskListItem
-                          key={task.id}
-                          task={task}
-                          onDeleteTask={() => handleDelete(task)}
-                          onToggleTask={onToggleTask}
-                          onUpdateTask={handleUpdate}
-                        />
-                      ))}
-                  </div>
-                </MaterialList>
-                {notes &&
-                  notes.map((note: Note) => (
-                    <ItemWrapper
-                      key={note.id}
-                      moreActions={[
-                        {
-                          label: "Delete note",
-                          onClick: () => handleDeleteNote(note),
-                        },
-                      ]}>
-                      <NoteItem
-                        note={note}
-                        onUpdate={(newNote: Note) => {
-                          mutateNotes(notes =>
-                            (notes || []).map(
-                              n => (n.id === newNote.id ? newNote : n),
-                              { revalidate: false }
-                            )
-                          );
+                  {notes &&
+                    notes.map((note: Note) => (
+                      <ItemWrapper
+                        wrapper={Card}
+                        wrapperProps={{
+                          variant: "outlined",
+                          sx: { mt: 0.7 },
+                          className: "hover:shadow-lg",
                         }}
-                        onDelete={() => handleDeleteNote(note)}
-                      />
-                    </ItemWrapper>
-                  ))}
-
-                {counters &&
-                  counters.length > 0 &&
-                  counters.map((counter, index) => (
-                    <ItemWrapper
-                      key={counter.id}
-                      moreActions={[
-                        {
-                          label: "Delete counter",
-                          onClick: () => {
-                            deleteCounter(counter.id);
-                            mutateCounters(
-                              prev => prev?.filter(c => c.id !== counter.id),
-                              { revalidate: false }
-                            );
+                        key={note.id}
+                        moreActions={[
+                          {
+                            label: "Delete note",
+                            onClick: () => handleDeleteNote(note),
                           },
-                        },
-                      ]}>
-                      <CounterItem
-                        count={
-                          countMapping[counter.id]
-                            ? (countMapping[counter.id] as any)[
-                                counter.tally_method
-                              ]
-                            : 0
-                        }
+                        ]}>
+                        <NoteItem
+                          note={note}
+                          onUpdate={(newNote: Note) => {
+                            mutateNotes(notes =>
+                              (notes || []).map(
+                                n => (n.id === newNote.id ? newNote : n),
+                                { revalidate: false }
+                              )
+                            );
+                          }}
+                          onDelete={() => handleDeleteNote(note)}
+                        />
+                      </ItemWrapper>
+                    ))}
+                  {counters &&
+                    counters.length > 0 &&
+                    counters.map((counter, index) => (
+                      <ItemWrapper
                         key={counter.id}
-                        wrapperTag="li"
-                        counter={counter}
-                        onIncrease={value => handleIncrease(counter, value)}
-                        onDelete={console.log}
-                        // wrapperProps={state.draggableProps}
-                        // isDragging={state.isDragging}
-                        onUpdate={console.log}
-                        // isHovering={hoveringId === counter.id}
-                        // onMouseEnter={() => setHoveringId(counter.id)}
-                        // onMouseLeave={() => setHoveringId(null)}
-                      />
-                    </ItemWrapper>
-                  ))}
+                        moreActions={[
+                          {
+                            label: "Delete counter",
+                            onClick: () => {
+                              deleteCounter(counter.id);
+                              mutateCounters(
+                                prev => prev?.filter(c => c.id !== counter.id),
+                                { revalidate: false }
+                              );
+                            },
+                          },
+                        ]}>
+                        <CounterItem
+                          count={
+                            countMapping[counter.id]
+                              ? (countMapping[counter.id] as any)[
+                                  counter.tally_method
+                                ]
+                              : 0
+                          }
+                          key={counter.id}
+                          wrapperTag="li"
+                          counter={counter}
+                          onIncrease={value => handleIncrease(counter, value)}
+                          onDelete={console.log}
+                          // wrapperProps={state.draggableProps}
+                          // isDragging={state.isDragging}
+                          onUpdate={console.log}
+                          // isHovering={hoveringId === counter.id}
+                          // onMouseEnter={() => setHoveringId(counter.id)}
+                          // onMouseLeave={() => setHoveringId(null)}
+                        />
+                      </ItemWrapper>
+                    ))}
+                </MaterialList>
               </div>
             )}
           </Droppable>
@@ -579,20 +553,30 @@ const TaskListComponent = ({
 const ItemWrapper = ({
   children,
   moreActions,
+  wrapper,
+  wrapperProps,
 }: React.PropsWithChildren<{
+  wrapperProps?: any;
+  wrapper?: React.FC<any>;
   moreActions: {
     label: string;
     onClick: () => void;
   }[];
 }>) => {
+  const Wrapper = wrapper ?? Box;
   return (
-    <Box
-      className="group  flex justify-start items-stretch"
+    <Wrapper
+      {...wrapperProps}
+      className={
+        "group flex justify-start items-stretch " +
+        (wrapperProps?.className ?? "")
+      }
       sx={{
         "&:hover .handle": {
           display: "flex",
           background: theme.palette.secondary.main,
         },
+        ...wrapperProps?.sx,
       }}>
       <Box
         className="handle rounded-lg w-[2px] h-100 mr-[1px]"
@@ -631,7 +615,7 @@ const ItemWrapper = ({
           </DropdownMenu>
         </Box>
       )}
-    </Box>
+    </Wrapper>
   );
 };
 export default TaskListComponent;
