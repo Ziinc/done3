@@ -258,11 +258,12 @@ const TaskListComponent = ({
   return (
     <Paper
       elevation={1}
-      className="overflow-y-scroll"
+      className="overflow-y-auto"
       sx={{
+        scrollbarWidth: "thin",
         borderRadius: 3,
         pt: 1,
-        px: 2,
+        px: 1.4,
         height: "100%",
         maxHeight: "90vh",
       }}>
@@ -613,6 +614,7 @@ const ItemWrapper = ({
             placement="bottom-end"
             renderTrigger={({ ref, onClick }) => (
               <IconButton
+                size="small"
                 sx={{ mt: 1.5 }}
                 ref={ref}
                 onClick={onClick}
