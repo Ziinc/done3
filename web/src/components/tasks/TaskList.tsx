@@ -35,7 +35,7 @@ import TaskListItem from "./Task";
 import { Draggable, Droppable } from "react-beautiful-dnd";
 import sortBy from "lodash/sortBy";
 import { useAuth } from "../Auth";
-import { Note, insertNote, listNotes } from "../../api/notes";
+import { Note, deleteNote, insertNote, listNotes } from "../../api/notes";
 import NoteItem from "../NoteItem";
 import CounterForm, { CounterFormProps } from "../CounterForm";
 import {
@@ -43,6 +43,7 @@ import {
   CountTally,
   Counter,
   createCounter,
+  deleteCounter,
   getCounts,
   increaseCounter,
   listCounters,
@@ -247,6 +248,13 @@ const TaskListComponent = ({
     setEditingTitle(false);
   };
 
+  const handleDeleteNote = (note: Note) => {
+    deleteNote(note.id);
+    mutateNotes(prev => prev?.filter(n => n.id !== note.id), {
+      revalidate: false,
+    });
+  };
+
   return (
     <Paper
       elevation={1}
@@ -443,7 +451,13 @@ const TaskListComponent = ({
                           key={task.id}
                           {...provided.draggableProps}
                           {...provided.dragHandleProps}>
-                          <ItemWrapper>
+                          <ItemWrapper
+                            moreActions={[
+                              {
+                                label: "Delete task",
+                                onClick: () => handleDelete(task),
+                              },
+                            ]}>
                             <TaskListItem
                               task={task}
                               onDeleteTask={() => handleDelete(task)}
@@ -490,7 +504,14 @@ const TaskListComponent = ({
                 </MaterialList>
                 {notes &&
                   notes.map((note: Note) => (
-                    <ItemWrapper key={note.id}>
+                    <ItemWrapper
+                      key={note.id}
+                      moreActions={[
+                        {
+                          label: "Delete note",
+                          onClick: () => handleDeleteNote(note),
+                        },
+                      ]}>
                       <NoteItem
                         note={note}
                         onUpdate={(newNote: Note) => {
@@ -501,11 +522,7 @@ const TaskListComponent = ({
                             )
                           );
                         }}
-                        onDelete={() => {
-                          mutateNotes(notes =>
-                            notes?.filter(n => n.raw.name !== note.raw.name)
-                          );
-                        }}
+                        onDelete={() => handleDeleteNote(note)}
                       />
                     </ItemWrapper>
                   ))}
@@ -513,7 +530,20 @@ const TaskListComponent = ({
                 {counters &&
                   counters.length > 0 &&
                   counters.map((counter, index) => (
-                    <ItemWrapper key={counter.id}>
+                    <ItemWrapper
+                      key={counter.id}
+                      moreActions={[
+                        {
+                          label: "Delete counter",
+                          onClick: () => {
+                            deleteCounter(counter.id);
+                            mutateCounters(
+                              prev => prev?.filter(c => c.id !== counter.id),
+                              { revalidate: false }
+                            );
+                          },
+                        },
+                      ]}>
                       <CounterItem
                         count={
                           countMapping[counter.id]
@@ -545,10 +575,18 @@ const TaskListComponent = ({
   );
 };
 
-const ItemWrapper = ({ children }: React.PropsWithChildren<{}>) => {
+const ItemWrapper = ({
+  children,
+  moreActions,
+}: React.PropsWithChildren<{
+  moreActions: {
+    label: string;
+    onClick: () => void;
+  }[];
+}>) => {
   return (
     <Box
-      className="flex justify-start items-stretch"
+      className="group  flex justify-start items-stretch"
       sx={{
         "&:hover .handle": {
           display: "flex",
@@ -569,6 +607,28 @@ const ItemWrapper = ({ children }: React.PropsWithChildren<{}>) => {
         }}
       />
       {children}
+      {moreActions && (
+        <Box className="">
+          <DropdownMenu
+            placement="bottom-end"
+            renderTrigger={({ ref, onClick }) => (
+              <IconButton
+                sx={{ mt: 1.5 }}
+                ref={ref}
+                onClick={onClick}
+                className="invisible group-hover:visible"
+                title={`More options`}>
+                <MoreVert />
+              </IconButton>
+            )}>
+            {moreActions.map(item => (
+              <MenuItem onClick={item.onClick} key={item.label}>
+                {item.label}
+              </MenuItem>
+            ))}
+          </DropdownMenu>
+        </Box>
+      )}
     </Box>
   );
 };

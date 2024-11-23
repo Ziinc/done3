@@ -86,29 +86,6 @@ const CounterItem: React.FC<Props> = ({
               }}></Typography>
           )}
         </div>
-
-        <DropdownMenu
-          renderTrigger={({ ref, onClick }) => (
-            <IconButton
-              ref={ref}
-              onClick={onClick}
-              className="group-hover:visible invisible"
-              title={`More options for '${counter.name}'`}>
-              <MoreVert />
-            </IconButton>
-          )}>
-          {[
-            {
-              label: "Delete counter",
-              key: "delete",
-              onClick: onDelete,
-            },
-          ].map(item => (
-            <MenuItem onClick={item.onClick} key={item.label}>
-              {item.label}
-            </MenuItem>
-          ))}
-        </DropdownMenu>
       </div>
       {editing && (
         <ClickAwayListener

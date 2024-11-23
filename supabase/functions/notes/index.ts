@@ -195,7 +195,7 @@ app.post("/notes", async (req, res) => {
   res.status(201).json(cacheResult);
 });
 
-app.delete("/notes/:name_id", async (req, res) => {
+app.delete("/notes/:id", async (req, res) => {
   // return all notes
 
   const sbClient = makeSbClient(req);
@@ -207,10 +207,22 @@ app.delete("/notes/:name_id", async (req, res) => {
     return res.status(400).json({ error: "Must be authenticated" });
   }
 
-  const name_id = req.params.name_id;
+  const id = req.params.id;
+
+  const { data: note } = await sbClient
+    .from("notes")
+    .select("*")
+    .eq("id", id)
+    .limit(1)
+    .single();
+
+  await sbClient.from("notes").delete(note.id);
   const client = makeGoogleClient(user.email);
   const result = await client.request({
-    url: `https://keep.googleapis.com/v1/notes/${name_id}`,
+    url: `https://keep.googleapis.com/v1/notes/${note.raw.name.replace(
+      "notes/",
+      ""
+    )}`,
     method: "DELETE",
   });
   res.send("deleted");

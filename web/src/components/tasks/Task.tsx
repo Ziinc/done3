@@ -222,32 +222,6 @@ const TaskListItem = ({
             )}
           </Stack>
         </ClickAwayListener>
-        <div>
-          <DropdownMenu
-            renderTrigger={({ ref, onClick }) => (
-              <IconButton
-                title="More task options"
-                sx={{ position: "absolute" }}
-                className="group-hover:opacity-100 opacity-0 right-0 top-0"
-                size="small"
-                ref={ref}
-                id="composition-button"
-                aria-controls={open ? "composition-menu" : undefined}
-                aria-expanded={open ? "true" : undefined}
-                aria-haspopup="true"
-                onClick={onClick}>
-                <MoreVert />
-              </IconButton>
-            )}>
-            <MenuItem
-              onClick={e => {
-                onDeleteTask();
-                handleClose(e);
-              }}>
-              Delete task
-            </MenuItem>
-          </DropdownMenu>
-        </div>
       </ListItemText>
     </ListItem>
   );

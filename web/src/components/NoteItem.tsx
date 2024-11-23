@@ -49,10 +49,6 @@ const NoteItem = ({ note, onDelete, onUpdate }: Props) => {
     []
   );
 
-  const handleDelete = async () => {
-    await deleteNote(note.id);
-    onDelete();
-  };
   const handleBodyChange = async (value: string) => {
     debouncedUpdateNote(note.id, {
       title: note.raw.title,
@@ -95,7 +91,7 @@ const NoteItem = ({ note, onDelete, onUpdate }: Props) => {
                 {
                   label: "Delete note",
                   key: "delete",
-                  onClick: handleDelete,
+                  onClick: onDelete,
                 },
               ].map(item => (
                 <MenuItem onClick={item.onClick} key={item.label}>
@@ -134,24 +130,6 @@ const NoteItem = ({ note, onDelete, onUpdate }: Props) => {
             </>
           }
         />
-        <div>
-          <DropdownMenu
-            renderTrigger={({ ref, onClick }) => (
-              <IconButton
-                title="More note options"
-                sx={{ position: "absolute" }}
-                className="group-hover:visible invisible"
-                size="small"
-                ref={ref}
-                id="composition-button"
-                aria-haspopup="true"
-                onClick={onClick}>
-                <MoreVert />
-              </IconButton>
-            )}>
-            <MenuItem onClick={handleDelete}>Delete note</MenuItem>
-          </DropdownMenu>
-        </div>
       </ListItem>
     </>
   );
