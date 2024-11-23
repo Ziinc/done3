@@ -61,8 +61,6 @@ const extensions = [
   }),
 ];
 
-const content = "**some bold text** hello\n- testing\n- [x] testing123";
-
 interface Props {
   defaultValue: string;
   onChange: (markdown: string) => void;
@@ -71,7 +69,6 @@ const Editor = ({ defaultValue, onChange }: Props) => {
   const rteRef = useRef<RichTextEditorRef>(null);
   const handleUpdate = ({ editor, transaction }: EditorEvents["update"]) => {
     const md = editor.storage.markdown.getMarkdown();
-    console.log(transaction);
     onChange(md);
   };
   return (

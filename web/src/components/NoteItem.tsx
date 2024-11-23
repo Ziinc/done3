@@ -94,15 +94,16 @@ const NoteItem = ({ note, onDelete, onUpdate }: Props) => {
                 name="title"
                 defaultValue={note.raw?.title}
                 onChange={handleTitleChange}
-                variant="standard"
+                variant="filled"
+                className="w-full"
               />
               {note.raw && note.raw.body.text?.text && (
-                <>
+                <Box sx={{ mt: 2 }}>
                   <Editor
                     onChange={handleBodyChange}
                     defaultValue={note.raw.body.text.text}
                   />
-                </>
+                </Box>
               )}
             </>
           }

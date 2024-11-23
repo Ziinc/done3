@@ -6,8 +6,8 @@ interface Props {
 }
 
 const MainLayout: React.FC<Props> = ({ children }) => (
-  <main className={"bg-violet-50 min-h-screen flex flex-col"}>
-    <section className="px-10 flex-grow flex flex-col">{children}</section>
+  <main className={"bg-violet-50 min-h-screen flex flex-col overflow-y-hidden"}>
+    <section className="mx-5 flex-grow flex flex-col">{children}</section>
   </main>
 );
 

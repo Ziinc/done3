@@ -190,6 +190,18 @@ const Home: React.FC = () => {
                     mutateTaskLists(updated, { revalidate: false });
                   }}
                   onUpdateTaskList={async attrs => {
+                    const mutated = {
+                      ...list,
+                      raw: { ...list.raw, title: attrs.title },
+                    };
+                    mutateTaskLists(
+                      prev => {
+                        return prev?.map(tl =>
+                          tl.id === list.id ? mutated : tl
+                        );
+                      },
+                      { revalidate: false }
+                    );
                     const { data: updated } = await putTaskList(list.id, attrs);
                     if (updated) {
                       const updatedLists = taskLists.map(tl =>

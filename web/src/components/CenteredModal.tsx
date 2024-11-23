@@ -27,6 +27,8 @@ const style = {
 };
 
 interface Props {
+  open?: boolean;
+  onClose?: () => boid;
   showClose?: boolean;
   renderContent:
     | React.ReactNode
@@ -43,11 +45,14 @@ const CenteredModal = ({
   renderContent,
   showClose = true,
   renderTrigger,
+  open: controlledOpen,
+  onClose,
 }: PropsWithChildren<Props>) => {
-  const [open, setOpen] = useState(false);
-
+  const [uncontrolledOpen, setOpen] = useState(controlledOpen || false);
+  const open = controlledOpen ?? uncontrolledOpen;
   const handleClose = () => {
     setOpen(false);
+    onClose?.();
   };
   return (
     <>
@@ -60,9 +65,7 @@ const CenteredModal = ({
               : renderContent}
             <CardActions
               sx={{ flexDirection: "row", justifyContent: "flex-end" }}>
-              {showClose && (
-                <Button onClick={() => setOpen(false)}>Close</Button>
-              )}
+              {showClose && <Button onClick={handleClose}>Close</Button>}
             </CardActions>
           </Card>
 

@@ -30,7 +30,7 @@ import {
   NoteAdd,
   PlusOne,
 } from "@mui/icons-material";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import TaskListItem from "./Task";
 import { Draggable, Droppable } from "react-beautiful-dnd";
 import sortBy from "lodash/sortBy";
@@ -66,6 +66,9 @@ const TaskListComponent = ({
   const [showCompleted, setShowCompleted] = useState(false);
   const [isUpdatingList, setIsUpdatingList] = useState(false);
   const [editingTitle, setEditingTitle] = useState(false);
+  const [updateListAttrs, setUpdateListAttrs] = useState({
+    title: taskList.raw.title,
+  });
   const [showNewForm, setShowNewForm] = useState(false);
   const [showNewNoteForm, setShowNewNoteForm] = useState(false);
   const [newNoteAttrs, setNewNoteAttrs] = useState({
@@ -73,6 +76,12 @@ const TaskListComponent = ({
     text: "",
   });
   const [showNewCounterForm, setShowNewCounterForm] = useState(false);
+
+  useEffect(() => {
+    if (taskList.raw.title !== updateListAttrs.title) {
+      setUpdateListAttrs({ title: taskList.raw.title });
+    }
+  }, [taskList.raw.title]);
 
   const { data: countMapping = {}, mutate: mutateCounts } =
     useSWR<CountMapping>("counts", () => getCounts(), {
@@ -230,12 +239,29 @@ const TaskListComponent = ({
     setNewNoteAttrs({ title: "", text: "" });
   };
 
+  const handleRenameList = () => {
+    if (updateListAttrs.title && taskList.raw.title !== updateListAttrs.title) {
+      onUpdateTaskList(updateListAttrs);
+      setUpdateListAttrs({ title: updateListAttrs.title });
+    }
+    setEditingTitle(false);
+  };
+
   return (
     <Paper
       elevation={1}
-      sx={{ borderRadius: 3, p: 2, flexGrow: "inherit", height: "100%" }}>
+      className="overflow-y-scroll"
+      sx={{
+        borderRadius: 3,
+        pt: 1,
+        px: 2,
+        height: "100%",
+        maxHeight: "90vh",
+      }}>
       <Stack direction="row" alignItems="center" justifyContent="space-between">
-        <Typography variant="h6">{taskList.raw.title}</Typography>
+        <Typography variant="h6" className="overflow-x-hidden">
+          {taskList.raw.title}
+        </Typography>
 
         <DropdownMenu
           renderTrigger={({ ref, onClick }) => (
@@ -263,54 +289,35 @@ const TaskListComponent = ({
             </MenuItem>
           ))}
         </DropdownMenu>
-        {editingTitle && (
-          <Modal
-            open={editingTitle}
-            onClose={() => setEditingTitle(false)}
-            aria-labelledby="modal-modal-title"
-            aria-describedby="modal-modal-description">
-            <Box
-              sx={{
-                position: "absolute",
-                top: "50%",
-                left: "50%",
-                transform: "translate(-50%, -50%)",
-                width: 600,
-                bgcolor: "background.paper",
-                boxShadow: 24,
-                p: 4,
+        <CenteredModal
+          open={editingTitle}
+          onClose={() => {
+            handleRenameList();
+          }}
+          renderTrigger={null}
+          renderContent={({}) => (
+            <form
+              onSubmit={async e => {
+                e.preventDefault();
+                handleRenameList();
               }}>
-              <form
-                onSubmit={async e => {
-                  e.preventDefault();
-                  setIsUpdatingList(true);
-                  await onUpdateTaskList({
-                    title: (e.currentTarget as any).listTitle.value,
-                  });
-                  setEditingTitle(false);
-                  setIsUpdatingList(false);
-                }}>
-                <Stack
-                  direction="column"
-                  gap={4}
-                  justifyContent="start"
-                  alignItems="start">
-                  <TextField
-                    name="listTitle"
-                    label="List title"
-                    defaultValue={taskList.raw.title}
-                  />
-                  <LoadingButton
-                    variant="contained"
-                    loading={isUpdatingList}
-                    type="submit">
-                    Submit
-                  </LoadingButton>
-                </Stack>
-              </form>
-            </Box>
-          </Modal>
-        )}
+              <TextField
+                name="listTitle"
+                label="Title"
+                variant="filled"
+                className="w-full"
+                autoFocus
+                onChange={e => {
+                  setUpdateListAttrs(prev => ({
+                    ...prev,
+                    title: e.currentTarget.value,
+                  }));
+                }}
+                value={updateListAttrs.title}
+              />
+            </form>
+          )}
+        />
       </Stack>
       {import.meta.env.DEV && import.meta.env.VITE_SHOW_IDS === "true" && (
         <Box sx={{ pl: 1.5 }}>
