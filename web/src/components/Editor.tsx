@@ -35,6 +35,7 @@ import {
   TableBubbleMenu,
   LinkBubbleMenu,
   LinkBubbleMenuHandler,
+  RichTextEditorProps,
 } from "mui-tiptap";
 import { useRef } from "react";
 import Underline from "@tiptap/extension-underline";
@@ -61,11 +62,17 @@ const extensions = [
   }),
 ];
 
-interface Props {
+interface Props extends Omit<RichTextEditorProps, "extensions"> {
   defaultValue: string;
   onChange: (markdown: string) => void;
+  showControls?: boolean;
 }
-const Editor = ({ defaultValue, onChange }: Props) => {
+const Editor = ({
+  defaultValue,
+  onChange,
+  showControls = true,
+  ...rest
+}: Props) => {
   const rteRef = useRef<RichTextEditorRef>(null);
   const handleUpdate = ({ editor, transaction }: EditorEvents["update"]) => {
     const md = editor.storage.markdown.getMarkdown();
@@ -73,32 +80,37 @@ const Editor = ({ defaultValue, onChange }: Props) => {
   };
   return (
     <RichTextEditor
+      {...rest}
       ref={rteRef}
       extensions={extensions}
       content={defaultValue}
-      renderControls={() => (
-        <MenuControlsContainer>
-          {/* <MenuButtonUndo />
+      renderControls={() => {
+        if (!showControls) return null;
+
+        return (
+          <MenuControlsContainer>
+            {/* <MenuButtonUndo />
           <MenuButtonRedo /> */}
-          {/* <MenuDivider />
+            {/* <MenuDivider />
           <MenuSelectHeading /> */}
-          {/* <MenuDivider /> */}
-          <MenuButtonBold />
-          <MenuButtonItalic />
-          <MenuButtonUnderline />
-          <MenuButtonCode />
-          <MenuDivider />
-          <MenuButtonCodeBlock />
-          <MenuButtonBlockquote />
-          {/* <MenuButtonHorizontalRule /> */}
-          <MenuDivider />
-          <MenuButtonBulletedList />
-          <MenuButtonOrderedList />
-          <MenuButtonTaskList />
-          <TableBubbleMenu />
-          {/* Add more controls of your choosing here */}
-        </MenuControlsContainer>
-      )}
+            {/* <MenuDivider /> */}
+            <MenuButtonBold />
+            <MenuButtonItalic />
+            <MenuButtonUnderline />
+            <MenuButtonCode />
+            <MenuDivider />
+            <MenuButtonCodeBlock />
+            <MenuButtonBlockquote />
+            {/* <MenuButtonHorizontalRule /> */}
+            <MenuDivider />
+            <MenuButtonBulletedList />
+            <MenuButtonOrderedList />
+            <MenuButtonTaskList />
+            <TableBubbleMenu />
+            {/* Add more controls of your choosing here */}
+          </MenuControlsContainer>
+        );
+      }}
       onUpdate={handleUpdate}></RichTextEditor>
   );
 };

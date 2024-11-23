@@ -10,6 +10,7 @@ import {
 import {
   Box,
   Card,
+  CardContent,
   ClickAwayListener,
   IconButton,
   List as MaterialList,
@@ -54,6 +55,7 @@ import DropdownMenu from "../DropdownMenu";
 import { LoadingButton } from "@mui/lab";
 import theme from "../../theme";
 import CenteredModal from "../CenteredModal";
+import Editor from "../Editor";
 interface Props {
   taskList: List;
   onDeleteTaskList: () => void;
@@ -204,6 +206,10 @@ const TaskListComponent = ({
 
   const handleNewNote = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!newNoteAttrs.title && !newNoteAttrs.text) {
+      setShowNewNoteForm(false);
+      return;
+    }
     const tempId: string = String(self.crypto.randomUUID());
     const tempNote: Note = {
       raw: {
@@ -355,31 +361,33 @@ const TaskListComponent = ({
       </Button>
 
       {showNewNoteForm && (
-        <form onSubmit={handleNewNote}>
-          <TextField
-            label="Title"
-            id="noteTitle"
-            name="noteTitle"
-            type="text"
-            variant="standard"
-            onChange={e =>
-              setNewNoteAttrs(prev => ({ ...prev, title: e.target.value }))
-            }
-          />
-          <TextField
-            label="Text"
-            id="noteText"
-            name="noteText"
-            type="text"
-            variant="standard"
-            minRows={5}
-            maxRows={10}
-            onChange={e =>
-              setNewNoteAttrs(prev => ({ ...prev, text: e.target.value }))
-            }
-          />
-          <Button type="submit">Close</Button>
-        </form>
+        <Card>
+          <CardContent>
+            <form onSubmit={handleNewNote}>
+              <TextField
+                className="w-full"
+                label="Title"
+                id="noteTitle"
+                name="noteTitle"
+                type="text"
+                variant="standard"
+                onChange={e =>
+                  setNewNoteAttrs(prev => ({ ...prev, title: e.target.value }))
+                }
+              />
+              <Editor
+                className="mt-1"
+                autofocus
+                showControls={false}
+                defaultValue=""
+                onChange={v => {
+                  setNewNoteAttrs(prev => ({ ...prev, text: v }));
+                }}
+              />
+              <Button type="submit">Close</Button>
+            </form>
+          </CardContent>
+        </Card>
       )}
       {showNewCounterForm && (
         <ClickAwayListener onClickAway={() => setShowNewCounterForm(false)}>
