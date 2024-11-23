@@ -10,6 +10,7 @@ import {
 import {
   Box,
   Card,
+  CardActions,
   CardContent,
   ClickAwayListener,
   IconButton,
@@ -361,8 +362,8 @@ const TaskListComponent = ({
       </Button>
 
       {showNewNoteForm && (
-        <Card>
-          <CardContent>
+        <Card raised sx={{ py: 0 }}>
+          <CardContent className="!py-1">
             <form onSubmit={handleNewNote}>
               <TextField
                 className="w-full"
@@ -374,9 +375,10 @@ const TaskListComponent = ({
                 onChange={e =>
                   setNewNoteAttrs(prev => ({ ...prev, title: e.target.value }))
                 }
+                size="small"
               />
               <Editor
-                className="mt-1"
+                className="mt-1 min-h-24"
                 autofocus
                 showControls={false}
                 defaultValue=""
@@ -384,7 +386,9 @@ const TaskListComponent = ({
                   setNewNoteAttrs(prev => ({ ...prev, text: v }));
                 }}
               />
-              <Button type="submit">Close</Button>
+              <CardActions sx={{ justifyContent: "flex-end" }}>
+                <Button type="submit">Close</Button>
+              </CardActions>
             </form>
           </CardContent>
         </Card>
