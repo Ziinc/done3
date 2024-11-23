@@ -146,13 +146,22 @@ export const AuthWall = ({ showLoading }: { showLoading: boolean }) => {
               </Grid>
             </Grid>
             <Stack direction={"row"}>
-              <a target="_blank" href="https://docs.done3.tznc.net">
+              <a
+                target="_blank"
+                rel="noreferrer"
+                href="https://docs.done3.tznc.net">
                 <Button>Docs</Button>
               </a>
-              <a target="_blank" href="https://docs.done3.tznc.net/terms">
+              <a
+                target="_blank"
+                rel="noreferrer"
+                href="https://docs.done3.tznc.net/terms">
                 <Button variant="text">Terms</Button>
               </a>
-              <a target="_blank" href="https://docs.done3.tznc.net/privacy">
+              <a
+                target="_blank"
+                rel="noreferrer"
+                href="https://docs.done3.tznc.net/privacy">
                 <Button variant="text">Privacy</Button>
               </a>
             </Stack>

@@ -80,6 +80,7 @@ const NoteItem = ({ note, onDelete, onUpdate }: Props) => {
         <CenteredModal
           actions={[
             <DropdownMenu
+              key="more"
               placement="bottom-end"
               sx={{ zIndex: 99999 }}
               renderTrigger={({ ref, onClick }) => (

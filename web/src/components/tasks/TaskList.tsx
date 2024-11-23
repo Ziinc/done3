@@ -295,7 +295,7 @@ const TaskListComponent = ({
             handleRenameList();
           }}
           renderTrigger={null}
-          renderContent={({}) => (
+          renderContent={
             <form
               onSubmit={async e => {
                 e.preventDefault();
@@ -316,7 +316,7 @@ const TaskListComponent = ({
                 value={updateListAttrs.title}
               />
             </form>
-          )}
+          }
         />
       </Stack>
       {import.meta.env.DEV && import.meta.env.VITE_SHOW_IDS === "true" && (
@@ -513,7 +513,7 @@ const TaskListComponent = ({
                 {counters &&
                   counters.length > 0 &&
                   counters.map((counter, index) => (
-                    <ItemWrapper>
+                    <ItemWrapper key={counter.id}>
                       <CounterItem
                         count={
                           countMapping[counter.id]

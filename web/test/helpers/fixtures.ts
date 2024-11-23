@@ -32,7 +32,7 @@ export const listFixture = (attrs: Partial<List> = {}): List => {
       title: "some title",
       updated: new Date().toISOString(),
       selfLink: "somelink",
-      ...(attrs.raw || {}),
+      ...attrs.raw,
     },
   };
 };
