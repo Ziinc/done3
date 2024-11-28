@@ -57,6 +57,7 @@ import { LoadingButton } from "@mui/lab";
 import theme from "../../theme";
 import CenteredModal from "../CenteredModal";
 import Editor from "../Editor";
+import ActionButton from "./ActionButton";
 interface Props {
   taskList: List;
   onDeleteTaskList: () => void;
@@ -348,18 +349,22 @@ const TaskListComponent = ({
           </Typography>
         </Box>
       )}
-      <Button startIcon={<AddTask />} onClick={() => setShowNewForm(true)}>
+      <ActionButton
+        startIcon={<AddTask />}
+        onClick={() => setShowNewForm(true)}>
         Add a task
-      </Button>
-      <Button startIcon={<NoteAdd />} onClick={() => setShowNewNoteForm(true)}>
+      </ActionButton>
+      <ActionButton
+        startIcon={<NoteAdd />}
+        onClick={() => setShowNewNoteForm(true)}>
         Add a note
-      </Button>
+      </ActionButton>
 
-      <Button
+      <ActionButton
         startIcon={<PlusOne />}
         onClick={() => setShowNewCounterForm(true)}>
         Add a counter
-      </Button>
+      </ActionButton>
 
       {showNewNoteForm && (
         <Card raised sx={{ py: 0 }}>
