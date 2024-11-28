@@ -267,7 +267,7 @@ const TaskListComponent = ({
   return (
     <Paper
       elevation={0}
-      className="overflow-y-auto !shadow-sm hover:!shadow-lg"
+      className="overflow-y-auto !shadow-sm hover:!shadow-lg group"
       sx={{
         scrollbarWidth: "thin",
         borderRadius: 3,
@@ -276,6 +276,9 @@ const TaskListComponent = ({
         height: "100%",
         maxHeight: "90vh",
       }}>
+      <Box
+        className="group-hover:visible invisible bg-gray-300 w-12 cursor-grab h-1 rounded mx-auto"
+      />
       <Stack direction="row" alignItems="center" justifyContent="space-between">
         <Typography variant="h6" className="overflow-x-hidden">
           {taskList.raw.title}
