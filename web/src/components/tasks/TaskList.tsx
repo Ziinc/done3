@@ -266,8 +266,8 @@ const TaskListComponent = ({
 
   return (
     <Paper
-      elevation={1}
-      className="overflow-y-auto"
+      elevation={0}
+      className="overflow-y-auto !shadow-sm hover:!shadow-lg"
       sx={{
         scrollbarWidth: "thin",
         borderRadius: 3,
