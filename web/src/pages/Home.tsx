@@ -126,22 +126,22 @@ const Home: React.FC = () => {
     }
   };
 
-  // hotkey management
-  useEffect(() => {
-    console.log("esc is pressed");
-    if (keydown === "Escape" && newList) {
-      setNewList(false);
-    }
-  }, [keydown]);
+  // // hotkey management
+  // useEffect(() => {
+  //   console.log("esc is pressed");
+  //   if (keydown === "Escape" && newList) {
+  //     setNewList(false);
+  //   }
+  // }, [keydown]);
 
-  const hotkeyHandler = (e: KeyboardEvent) => {
-    setKeydown(e.key);
-  };
+  // const hotkeyHandler = (e: KeyboardEvent) => {
+  //   setKeydown(e.key);
+  // };
 
-  useEffect(() => {
-    document.addEventListener("keydown", hotkeyHandler);
-    return () => removeEventListener("keydown", hotkeyHandler, false);
-  }, []);
+  // useEffect(() => {
+  //   document.addEventListener("keydown", hotkeyHandler);
+  //   return () => removeEventListener("keydown", hotkeyHandler, false);
+  // }, []);
 
   return (
     <>

@@ -1,8 +1,11 @@
 import { Task } from "../../api/tasks";
 import {
+  Box,
   Button,
   Chip,
   ClickAwayListener,
+  Collapse,
+  Fade,
   Grow,
   IconButton,
   ListItem,
@@ -17,6 +20,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import NotesIcon from "@mui/icons-material/Notes";
 import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
 import CheckIcon from "@mui/icons-material/Check";
 import { Delete, MoreVert } from "@mui/icons-material";
@@ -24,6 +28,8 @@ import React, { useEffect } from "react";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import dayjs from "dayjs";
 import DropdownMenu from "../DropdownMenu";
+import { grey } from "@mui/material/colors";
+import { isEqual } from "lodash";
 interface TaskProps {
   task: Task;
   onToggleTask: (task: Task) => void;
@@ -37,37 +43,15 @@ const TaskListItem = ({
   onDeleteTask,
   onUpdateTask,
 }: TaskProps) => {
-  const [open, setOpen] = React.useState(false);
-  const [editData, setEditData] = React.useState({
+  const defaultValues = {
     title: task.raw.title,
     notes: task.raw.notes,
-  });
+  };
+  const [editData, setEditData] = React.useState(defaultValues);
   const [editing, setEditing] = React.useState(false);
-  const anchorRef = React.useRef<HTMLButtonElement>(null);
-
-  const handleToggle = () => {
-    setOpen(prevOpen => !prevOpen);
-  };
-
-  const handleClose = (event: Event | React.SyntheticEvent) => {
-    if (
-      anchorRef.current &&
-      anchorRef.current.contains(event.target as HTMLElement)
-    ) {
-      return;
-    }
-
-    setOpen(false);
-  };
-
-  function handleListKeyDown(event: React.KeyboardEvent) {
-    if (event.key === "Tab") {
-      event.preventDefault();
-      setOpen(false);
-    } else if (event.key === "Escape") {
-      setOpen(false);
-    }
-  }
+  const [showNoteInput, setShowNoteInput] = React.useState(
+    Boolean(task.raw.notes)
+  );
 
   const handleSubmit = async () => {
     // check if there are any changes
@@ -86,9 +70,31 @@ const TaskListItem = ({
   };
 
   const hotkeyHandler = (e: KeyboardEvent) => {
-    if (e.ctrlKey && e.key === "Enter" && editing === true) {
+    if (e.ctrlKey && e.key === "Enter") {
       // submit form
+      setEditing(false);
+    }
+    if (e.key === "Escape") {
+      // close form
+      setEditing(false);
+    }
+  };
+
+  const maybeSubmit = () => {
+    if (!!editing && !isEqual(editData, defaultValues)) {
+      maybeHideNotesInput();
       handleSubmit();
+    }
+  };
+  useEffect(() => {
+    maybeSubmit();
+  }, [editing]);
+
+  const maybeHideNotesInput = () => {
+    if (editData.notes) {
+      setShowNoteInput(true);
+    } else {
+      setShowNoteInput(false);
     }
   };
 
@@ -98,8 +104,8 @@ const TaskListItem = ({
   }, []);
 
   return (
-    <ListItem key={task.id} sx={{ p: 0 }} alignItems="center">
-      <ListItemAvatar>
+    <ListItem key={task.id} sx={{ p: 0 }} alignItems="flex-start">
+      <ListItemIcon>
         <IconButton color={"primary"} onClick={() => onToggleTask(task)}>
           {task.raw.status == "needsAction" ? (
             <RadioButtonUncheckedIcon />
@@ -107,7 +113,7 @@ const TaskListItem = ({
             <CheckIcon />
           )}
         </IconButton>
-      </ListItemAvatar>
+      </ListItemIcon>
       <ListItemText
         className="group  w-32 relative"
         onClick={() => {
@@ -117,41 +123,113 @@ const TaskListItem = ({
           onClickAway={() => {
             if (editing) {
               setEditing(false);
-              handleSubmit();
+              maybeSubmit()
             }
           }}>
           <Stack
             direction="column"
             align-items="start"
-            justifyContent="space-between">
-            {editing ? (
-              <>
-                <form
-                  onSubmit={e => {
-                    e.preventDefault();
-                  }}>
+            justifyContent="space-between"
+            gap={0}>
+            <Box
+              className={[
+                editing ? "h-0 opacity-0" : "opacity-100",
+                "delay-50  transition-all",
+              ].join(" ")}>
+              <Typography
+                variant="body1"
+                className={
+                  task.raw.status === "completed" ? "text-gray-600" : ""
+                }
+                sx={{
+                  textDecoration:
+                    task.raw.status === "completed" ? "line-through" : null,
+                }}>
+                {task.raw.title}
+              </Typography>
+              <Typography variant="body2" className="text-gray-500">
+                {task.raw.notes}
+              </Typography>
+              {task.raw.due && (
+                <Chip
+                  label={dayjs(task.raw.due).format("D MMM")}
+                  variant="outlined"
+                />
+              )}
+              {import.meta.env.DEV &&
+                import.meta.env.VITE_SHOW_IDS === "true" && (
+                  <Typography
+                    variant="body2"
+                    sx={{ fontSize: "0.7rem" }}
+                    className="text-gray-500">
+                    id: {task.id}
+                    <br />
+                    raw: {task.raw.id}
+                  </Typography>
+                )}
+            </Box>
+            <Collapse in={editing}>
+              <form
+                onSubmit={e => {
+                  e.preventDefault();
+                }}>
+                <TextField
+                  name="taskTitle"
+                  value={editData.title}
+                  hiddenLabel
+                  required
+                  sx={{
+                    // pt: 1,
+                    width: "100%",
+                  }}
+                  multiline
+                  variant="standard"
+                  size="small"
+                  onChange={e => {
+                    setEditData(prev => ({
+                      ...prev,
+                      title: e.target.value,
+                    }));
+                  }}
+                />
+                <Box sx={{ mb: 1 }}>
+                  <button
+                    type="button"
+                    onClick={() => setShowNoteInput(true)}
+                    className={[
+                      "bg-transparent relative text-gray-700  outlne-none ring-0 rounded focus:ring-1 border-none flex flex-row  gap-1 my-1 ring-transparent",
+                      showNoteInput ? "hidden" : "",
+                    ].join(" ")}>
+                    <NotesIcon
+                      fontSize="small"
+                      // sx={{ position: "absolute" }}
+                      className="inset-y-0 left-0"
+                    />
+                    <Typography className="hover:cursor-text " fontSize={12}>
+                      Details
+                    </Typography>
+                  </button>
+
                   <TextField
-                    name="taskTitle"
-                    defaultValue={task.raw.title}
-                    hiddenLabel
-                    label="Title"
-                    required
-                    variant="standard"
-                    size="small"
-                    onChange={e => {
-                      setEditData(prev => ({
-                        ...prev,
-                        title: e.target.value,
-                      }));
-                    }}
-                  />
-                  <TextField
+                    autoFocus
                     name="notes"
-                    defaultValue={task.raw.notes}
-                    label="Notes"
+                    value={editData.notes}
                     hiddenLabel
+                    placeholder="Details"
                     variant="standard"
                     size="small"
+                    onBlur={e => {
+                      e.preventDefault();
+                      maybeHideNotesInput();
+                    }}
+                    inputProps={{
+                      sx: {
+                        fontSize: 12,
+                      },
+                    }}
+                    sx={{
+                      display: showNoteInput ? "block" : "none",
+                    }}
                     onChange={e => {
                       setEditData(prev => ({
                         ...prev,
@@ -159,67 +237,41 @@ const TaskListItem = ({
                       }));
                     }}
                   />
-                  <DatePicker
-                    label="Due date"
-                    defaultValue={
-                      task.raw.due ? dayjs(task.raw.due) : undefined
-                    }
-                    slotProps={{
-                      field: {
-                        clearable: true,
-                        onClear: () => {
-                          setEditData(prev => ({
-                            ...prev,
-                            due: null,
-                          }));
-                        },
+                </Box>
+                <DatePicker
+                  label="Date/time"
+                  defaultValue={task.raw.due ? dayjs(task.raw.due) : undefined}
+                  // sx={{fontSize: 12}}
+                  slotProps={{
+                    textField: {
+                      variant: "standard",
+                      size: "small",
+                      sx: {
+                        fontSize: 12,
+                      }
+                      // placeholder: "Due Date"
+                    },
+                    field: {
+                      
+                      clearable: true,
+                      onClear: () => {
+                        setEditData(prev => ({
+                          ...prev,
+                          due: null,
+                        }));
                       },
-                    }}
-                    name="due"
-                    onChange={value => {
-                      setEditData(prev => ({
-                        ...prev,
-                        due: value?.toISOString(),
-                      }));
-                    }}
-                  />
-                </form>
-              </>
-            ) : (
-              <>
-                <Typography
-                  variant="body1"
-                  className={
-                    task.raw.status === "completed" ? "text-gray-600" : ""
-                  }
-                  sx={{
-                    textDecoration:
-                      task.raw.status === "completed" ? "line-through" : null,
-                  }}>
-                  {task.raw.title}
-                </Typography>
-                <Typography variant="body2" className="text-gray-500">
-                  {task.raw.notes}
-                </Typography>
-                {task.raw.due && (
-                  <Chip
-                    label={dayjs(task.raw.due).format("D MMM")}
-                    variant="outlined"
-                  />
-                )}
-                {import.meta.env.DEV &&
-                  import.meta.env.VITE_SHOW_IDS === "true" && (
-                    <Typography
-                      variant="body2"
-                      sx={{ fontSize: "0.7rem" }}
-                      className="text-gray-500">
-                      id: {task.id}
-                      <br />
-                      raw: {task.raw.id}
-                    </Typography>
-                  )}
-              </>
-            )}
+                    },
+                  }}
+                  name="due"
+                  onChange={value => {
+                    setEditData(prev => ({
+                      ...prev,
+                      due: value?.toISOString(),
+                    }));
+                  }}
+                />
+              </form>
+            </Collapse>
           </Stack>
         </ClickAwayListener>
       </ListItemText>
