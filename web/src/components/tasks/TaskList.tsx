@@ -13,8 +13,11 @@ import {
   CardActions,
   CardContent,
   ClickAwayListener,
+  Collapse,
   IconButton,
   List as MaterialList,
+  ListItem,
+  ListItemIcon,
   MenuItem,
   Modal,
   Paper,
@@ -32,6 +35,9 @@ import {
   MoreVert,
   NoteAdd,
   PlusOne,
+  RadioButtonUnchecked,
+  Notes as NotesIcon,
+  CalendarToday as CalendarTodayIcon,
 } from "@mui/icons-material";
 import React, { useEffect, useMemo, useState } from "react";
 import TaskListItem from "./Task";
@@ -58,6 +64,9 @@ import theme from "../../theme";
 import CenteredModal from "../CenteredModal";
 import Editor from "../Editor";
 import ActionButton from "./ActionButton";
+import dayjs from "dayjs";
+import { DatePicker } from "@mui/x-date-pickers";
+
 interface Props {
   taskList: List;
   onDeleteTaskList: () => void;
@@ -82,6 +91,15 @@ const TaskListComponent = ({
     text: "",
   });
   const [showNewCounterForm, setShowNewCounterForm] = useState(false);
+  const [newlyAddedTasks, setNewlyAddedTasks] = useState<Set<string>>(new Set());
+
+  // Hoisted state/refs for create task form
+  const [dueDate, setDueDate] = React.useState<string | null>(null);
+  const [descFocus, setDescFocus] = React.useState(false);
+  const titleRef = React.useRef<HTMLInputElement>(null);
+  const descRef = React.useRef<HTMLInputElement>(null);
+  const [showDatePicker, setShowDatePicker] = React.useState(false);
+  const calendarBtnRef = React.useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (taskList.raw.title !== updateListAttrs.title) {
@@ -264,6 +282,11 @@ const TaskListComponent = ({
     });
   };
 
+  const handleOpenNewForm = () => {
+    setDueDate(null);
+    setShowNewForm(true);
+  };
+
   return (
     <Paper
       elevation={0}
@@ -354,7 +377,7 @@ const TaskListComponent = ({
       )}
       <ActionButton
         startIcon={<AddTask />}
-        onClick={() => setShowNewForm(true)}>
+        onClick={handleOpenNewForm}>
         Add a task
       </ActionButton>
       <ActionButton
@@ -418,34 +441,151 @@ const TaskListComponent = ({
 
       {showNewForm ? (
         <ClickAwayListener onClickAway={() => setShowNewForm(false)}>
-          <form
-            onSubmit={async e => {
-              e.preventDefault();
-              setIsUpdatingList(true);
-              const title = e.currentTarget.taskTitle.value;
-              const { data: returned } = await insertTask(taskList.id, {
-                title,
-              });
-              mutateTasks([returned, ...tasks]);
-              setIsUpdatingList(false);
-              setShowNewForm(false);
-            }}>
-            <TextField
-              disabled={isUpdatingList}
-              name="taskTitle"
-              label="Task title"
-              variant="outlined"
-            />
-            <IconButton
-              onClick={() => setShowNewForm(false)}
-              disabled={isUpdatingList}>
+          <ListItem sx={{ p: 0, bgcolor: '#f6fafd', borderRadius: 2, mb: 1 }} alignItems="flex-start">
+            <ListItemIcon>
+              <IconButton color="primary" disabled>
+                <RadioButtonUnchecked />
+              </IconButton>
+            </ListItemIcon>
+            <form
+              style={{ width: '100%' }}
+              onSubmit={async e => {
+                e.preventDefault();
+                if (isUpdatingList) return;
+                setIsUpdatingList(true);
+                const title = e.currentTarget.taskTitle.value;
+                const notes = e.currentTarget.taskNotes?.value || '';
+                const due = dueDate || undefined;
+                const { data: returned } = await insertTask(taskList.id, {
+                  title,
+                  notes,
+                  due,
+                });
+                setNewlyAddedTasks(prev => new Set(prev).add(returned.id));
+                mutateTasks([returned, ...tasks], { revalidate: false });
+                setIsUpdatingList(false);
+                setShowNewForm(false);
+                setTimeout(() => {
+                  setNewlyAddedTasks(prev => {
+                    const newSet = new Set(prev);
+                    newSet.delete(returned.id);
+                    return newSet;
+                  });
+                }, 600);
+              }}
+            >
+              <Stack direction="column" alignItems="start" gap={0} sx={{ width: '100%' }}>
+                <TextField
+                  name="taskTitle"
+                  placeholder="Title"
+                  variant="standard"
+                  fullWidth
+                  autoFocus
+                  inputRef={titleRef}
+                  InputProps={{ disableUnderline: true }}
+                  sx={{ fontSize: 16, bgcolor: 'transparent', mb: 0.5 }}
+                  disabled={isUpdatingList}
+                  required
+                  onKeyDown={e => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      (e.target as HTMLFormElement).form?.requestSubmit();
+                    } else if (e.key === 'Enter' && e.shiftKey) {
+                      e.preventDefault();
+                      setDescFocus(true);
+                      setTimeout(() => descRef.current?.focus(), 0);
+                    }
+                  }}
+                />
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                  <NotesIcon fontSize="small" sx={{ mr: 0.5, color: 'grey.600' }} />
+                  <TextField
+                    name="taskNotes"
+                    placeholder="Details"
+                    variant="standard"
+                    fullWidth
+                    inputRef={descRef}
+                    InputProps={{ disableUnderline: true }}
+                    sx={{ fontSize: 12, bgcolor: 'transparent' }}
+                    disabled={isUpdatingList}
+                    onFocus={() => setDescFocus(true)}
+                    onBlur={() => setDescFocus(false)}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        (e.target as HTMLFormElement).form?.requestSubmit();
+                      }
+                    }}
+                  />
+                </Box>
+                <Stack direction="row" spacing={1} sx={{ mt: 0.5 }}>
+                  <Button
+                    variant={dueDate && dayjs(dueDate).isSame(dayjs().startOf('day'), 'day') ? 'contained' : 'outlined'}
+                    size="small"
+                    sx={{ borderRadius: 2, textTransform: 'none' }}
+                    onClick={e => { e.preventDefault(); setDueDate(dayjs().startOf('day').toISOString()); }}
+                    disabled={isUpdatingList}
+                  >
+                    Today
+                  </Button>
+                  <Button
+                    variant={dueDate && dayjs(dueDate).isSame(dayjs().add(1, 'day').startOf('day'), 'day') ? 'contained' : 'outlined'}
+                    size="small"
+                    sx={{ borderRadius: 2, textTransform: 'none' }}
+                    onClick={e => { e.preventDefault(); setDueDate(dayjs().add(1, 'day').startOf('day').toISOString()); }}
+                    disabled={isUpdatingList}
+                  >
+                    Tomorrow
+                  </Button>
+                  <Button
+                    ref={calendarBtnRef}
+                    variant={dueDate && !(dayjs(dueDate).isSame(dayjs().startOf('day'), 'day') || dayjs(dueDate).isSame(dayjs().add(1, 'day').startOf('day'), 'day')) ? 'contained' : 'outlined'}
+                    size="small"
+                    sx={{ borderRadius: 2, minWidth: 36, p: 0 }}
+                    onClick={e => { e.preventDefault(); setShowDatePicker(true); }}
+                    disabled={isUpdatingList}
+                  >
+                    <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 24, height: 24 }}>
+                      <CalendarTodayIcon fontSize="small" />
+                    </span>
+                  </Button>
+                  <DatePicker
+                    open={showDatePicker}
+                    onClose={() => setShowDatePicker(false)}
+                    value={dueDate ? dayjs(dueDate) : null}
+                    onChange={v => setDueDate(v ? v.toISOString() : null)}
+                    slotProps={{
+                      textField: { style: { display: 'none' } },
+                      popper: { anchorEl: calendarBtnRef.current },
+                    }}
+                    disablePast
+                  />
+                  {dueDate && !(dayjs(dueDate).isSame(dayjs().startOf('day'), 'day') || dayjs(dueDate).isSame(dayjs().add(1, 'day').startOf('day'), 'day')) && (
+                    <Box sx={{ ml: 1, display: 'flex', alignItems: 'center' }}>
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        sx={{ borderRadius: 2, px: 1, minHeight: 32, fontWeight: 500, fontSize: 14, color: 'text.primary', borderColor: 'grey.300', background: 'white' }}
+                        disabled
+                      >
+                        {dayjs(dueDate).format('D MMM')}
+                      </Button>
+                      <IconButton size="small" sx={{ ml: 0.5 }} onClick={() => setDueDate(null)}>
+                        ×
+                      </IconButton>
+                    </Box>
+                  )}
+                  <Box sx={{ flexGrow: 1 }} />
+                  {isUpdatingList && (
+                    <LoadingButton loading variant="text" size="small" sx={{ p: 0, minWidth: 32, ml: 1 }} />
+                  )}
+                </Stack>
+              </Stack>
+            </form>
+            <IconButton onClick={() => setShowNewForm(false)} disabled={isUpdatingList} sx={{ ml: 1 }}>
               <CancelOutlined />
             </IconButton>
-
-            <LoadingButton loading={isUpdatingList} type="submit">
-              Add
-            </LoadingButton>
-          </form>
+          </ListItem>
         </ClickAwayListener>
       ) : null}
       {isLoadingTasks ? (
@@ -468,97 +608,121 @@ const TaskListComponent = ({
                       index={index}
                       key={task.id}>
                       {(provided, snapshot) => (
-                        <div
-                          ref={provided.innerRef}
-                          key={task.id}
-                          {...provided.draggableProps}
-                          {...provided.dragHandleProps}>
-                          <ItemWrapper
-                            moreActions={[
-                              {
-                                label: "Delete task",
-                                onClick: () => handleDelete(task),
-                              },
-                            ]}>
-                            <TaskListItem
-                              task={task}
-                              onDeleteTask={() => handleDelete(task)}
-                              onToggleTask={onToggleTask}
-                              onUpdateTask={handleUpdate}
-                            />
-                          </ItemWrapper>
-                        </div>
+                        <Collapse
+                          in={true}
+                          timeout={newlyAddedTasks.has(task.id) ? 500 : 0}
+                          sx={{
+                            transformOrigin: 'top',
+                          }}
+                        >
+                          <div
+                            ref={provided.innerRef}
+                            key={task.id}
+                            {...provided.draggableProps}
+                            {...provided.dragHandleProps}
+                            style={{
+                              ...provided.draggableProps.style,
+                              opacity: newlyAddedTasks.has(task.id) ? 0 : 1,
+                              transition: newlyAddedTasks.has(task.id) ? 'opacity 0.5s ease-out' : 'none',
+                            }}
+                          >
+                            <ItemWrapper
+                              moreActions={[
+                                {
+                                  label: "Delete task",
+                                  onClick: () => handleDelete(task),
+                                },
+                              ]}>
+                              <TaskListItem
+                                task={task}
+                                onDeleteTask={() => handleDelete(task)}
+                                onToggleTask={onToggleTask}
+                                onUpdateTask={handleUpdate}
+                              />
+                            </ItemWrapper>
+                          </div>
+                        </Collapse>
                       )}
                     </Draggable>
                   ))}
                   {notes &&
                     notes.map((note: Note) => (
-                      <ItemWrapper
-                        wrapper={Card}
-                        wrapperProps={{
-                          variant: "outlined",
-                          sx: { mt: 0.7 },
-                          className: "hover:shadow-lg",
-                        }}
+                      <Collapse
+                        in={true}
+                        timeout={300}
                         key={note.id}
-                        moreActions={[
-                          {
-                            label: "Delete note",
-                            onClick: () => handleDeleteNote(note),
-                          },
-                        ]}>
-                        <NoteItem
-                          note={note}
-                          onUpdate={(newNote: Note) => {
-                            mutateNotes(notes =>
-                              (notes || []).map(
-                                n => (n.id === newNote.id ? newNote : n),
-                                { revalidate: false }
-                              )
-                            );
+                      >
+                        <ItemWrapper
+                          wrapper={Card}
+                          wrapperProps={{
+                            variant: "outlined",
+                            sx: { mt: 0.7 },
+                            className: "hover:shadow-lg",
                           }}
-                          onDelete={() => handleDeleteNote(note)}
-                        />
-                      </ItemWrapper>
+                          moreActions={[
+                            {
+                              label: "Delete note",
+                              onClick: () => handleDeleteNote(note),
+                            },
+                          ]}>
+                          <NoteItem
+                            note={note}
+                            onUpdate={(newNote: Note) => {
+                              mutateNotes(notes =>
+                                (notes || []).map(
+                                  n => (n.id === newNote.id ? newNote : n),
+                                  { revalidate: false }
+                                )
+                              );
+                            }}
+                            onDelete={() => handleDeleteNote(note)}
+                          />
+                        </ItemWrapper>
+                      </Collapse>
                     ))}
                   {counters &&
                     counters.length > 0 &&
                     counters.map((counter, index) => (
-                      <ItemWrapper
+                      <Collapse
+                        in={true}
+                        timeout={300}
                         key={counter.id}
-                        moreActions={[
-                          {
-                            label: "Delete counter",
-                            onClick: () => {
-                              deleteCounter(counter.id);
-                              mutateCounters(
-                                prev => prev?.filter(c => c.id !== counter.id),
-                                { revalidate: false }
-                              );
+                      >
+                        <ItemWrapper
+                          moreActions={[
+                            {
+                              label: "Delete counter",
+                              onClick: () => {
+                                deleteCounter(counter.id);
+                                mutateCounters(
+                                  prev => prev?.filter(c => c.id !== counter.id),
+                                  { revalidate: false }
+                                );
+                              },
                             },
-                          },
-                        ]}>
-                        <CounterItem
-                          count={
-                            countMapping[counter.id]
-                              ? (countMapping[counter.id] as any)[
-                                  counter.tally_method
-                                ]
-                              : 0
-                          }
-                          key={counter.id}
-                          wrapperTag="li"
-                          counter={counter}
-                          onIncrease={value => handleIncrease(counter, value)}
-                          onDelete={console.log}
-                          // wrapperProps={state.draggableProps}
-                          // isDragging={state.isDragging}
-                          onUpdate={console.log}
-                          // isHovering={hoveringId === counter.id}
-                          // onMouseEnter={() => setHoveringId(counter.id)}
-                          // onMouseLeave={() => setHoveringId(null)}
-                        />
-                      </ItemWrapper>
+                          ]}>
+                          <CounterItem
+                            count={
+                              countMapping[counter.id]
+                                ? (countMapping[counter.id] as any)[
+                                    counter.tally_method
+                                  ]
+                                : 0
+                            }
+                            key={counter.id}
+                            wrapperTag="li"
+                            counter={counter}
+                            onIncrease={value => handleIncrease(counter, value)}
+                            onDelete={console.log}
+                            // wrapperProps={state.draggableProps}
+                            // isDragging={state.isDragging}
+                            onUpdate={console.log}
+                            // isHovering={hoveringId === counter.id}
+                            // onMouseEnter={() => setHoveringId(counter.id)}
+                            // onMouseLeave={() => setHoveringId(null)}
+                          />
+                        </ItemWrapper>
+                      </Collapse>
                     ))}
                 </MaterialList>
               </div>
@@ -596,12 +760,14 @@ const ItemWrapper = ({
           display: "flex",
           background: theme.palette.secondary.main,
         },
+        transition: "all 0.2s ease-in-out",
         ...wrapperProps?.sx,
       }}>
       <Box
         className="handle rounded-lg w-[2px] h-100 mr-[1px]"
         sx={{
           background: "transparent",
+          transition: "background 0.2s ease-in-out",
         }}
       />
 
@@ -609,6 +775,7 @@ const ItemWrapper = ({
         className="handle rounded-lg w-[2px] h-100"
         sx={{
           background: "transparent",
+          transition: "background 0.2s ease-in-out",
         }}
       />
       {children}
@@ -623,7 +790,10 @@ const ItemWrapper = ({
                 ref={ref}
                 onClick={onClick}
                 className="invisible group-hover:visible"
-                title={`More options`}>
+                title={`More options`}
+                style={{
+                  transition: "opacity 0.2s ease-in-out, visibility 0.2s ease-in-out",
+                }}>
                 <MoreVert />
               </IconButton>
             )}>
